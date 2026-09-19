@@ -302,7 +302,7 @@ parts:
     cells_s: 4
     cells_p: 1
     capacity_mah: 4200
-    c_rating: 10
+    c_rating: 10.7
     ir_mohm_per_cell: 15
     chemistry: liion
     mass_g: 300

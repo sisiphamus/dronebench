@@ -118,6 +118,7 @@ parts:
     size: M3x8
     mass_g: 0.8
     cg_mm: [-2.0, 0.0, 0.0]
+  connects: [motor, firewall]
 - id: tray
   type: mount
   cad: tray.stl
@@ -309,6 +310,7 @@ parts:
     size: M5x30
     mass_g: 1.2
     cg_mm: [375.0, 0.0, 42.5]
+  connects: [wing_L1, wing_R1, fuse_front]
 - id: servo_screws
   type: fastener
   group: servo_mount
@@ -318,6 +320,7 @@ parts:
     size: M2x8
     mass_g: 0.25
     cg_mm: [300.0, 0.0, -20.5]
+  connects: [servo_aileron_L, servo_aileron_R, servo_elevator, servo_rudder]
 - id: wiring
   type: wire
   part_number: silicone wiring + XT60

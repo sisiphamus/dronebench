@@ -659,6 +659,6 @@ parts:
   type: battery
   cad: battery.stl
   part_number: 6S2P Molicel P42A Li-ion
-  specs: {cells_s: 6, cells_p: 2, capacity_mah: 8400, c_rating: 10, ir_mohm_per_cell: 15, mass_g: 900, chemistry: liion, nominal_v: 21.6,
-    energy_wh: 181.4}
+  specs: {cells_s: 6, cells_p: 2, capacity_mah: 8400, c_rating: 10.7, ir_mohm_per_cell: 15, mass_g: 900, chemistry: liion,
+    nominal_v: 21.6, energy_wh: 181.4}
   connects: [esc_L, esc_R, fc]
