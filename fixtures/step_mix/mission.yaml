@@ -1,0 +1,3 @@
+preset: endurance
+payload_ids: []
+frame: {units: mm, forward: -x, up: +z}

@@ -186,6 +186,7 @@ class BatterySpec:
     ir_mohm_per_cell: float = 5.0
     mass_g: float = 0.0
     parallel_packs: int = 1        # packs wired in parallel (capacity & current add)
+    cells_p: int = 1               # cells in parallel inside one pack (e.g. 6S2P -> 2); capacity_mah is the whole pack's
 
 
 @dataclass
@@ -204,6 +205,9 @@ class SparSpec:
     length_m: float                # length it spans in the wing (both sides if continuous)
     material: Material
     role: str = "main_spar"        # main_spar | rear_spar | tail_boom
+    spans_root: Optional[bool] = None   # crosses the wing root (y=0)? None = unknown (assumed yes)
+    y_min_m: Optional[float] = None     # spanwise extent (m, y right); None = whole wing (spans_root False: from 0.03 m)
+    y_max_m: Optional[float] = None     # a continuous spar is [-s, +s]; coverage is tested at |y| and -|y|
 
 
 @dataclass

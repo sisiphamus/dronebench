@@ -3,7 +3,7 @@ name = "dronebench"
 version = "0.1.0"
 description = "Benchmark environment for small electric fixed-wing UAV designs"
 requires-python = ">=3.11"
-dependencies = ["numpy", "scipy", "trimesh", "pyyaml", "shapely", "rtree", "networkx", "cascadio"]
+dependencies = ["numpy", "scipy", "trimesh", "pyyaml", "shapely", "rtree", "networkx", "cascadio", "lxml"]
 
 [project.scripts]
 dronebench = "dronebench.cli:main"

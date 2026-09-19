@@ -1,0 +1,447 @@
+# OpenGeoDrone (github.com/enacuavlab/OpenGeoDrone @ 4c611977679d, GPL-3.0), re-assembled by fixtures/fetch_third_party.py.
+# CAD frame = OpenSCAD frame: mm, x aft, y up, z = left span. specs.cg_mm is in this CAD frame.
+# Parts without CAD come from the README hardware list; models/masses marked 'assumed' in notes.
+parts:
+- id: center_part
+  type: fuselage
+  cad: center_part.stl
+  role: fuselage
+  part_number: OpenGeoDrone Center_part
+  material: {name: PETG, infill: 0.15, walls: 2, orientation: flat}
+  notes: center body; carries the spars and wing roots
+  specs:
+    fits: [fuselage_front, fuselage_bottom_back, fuselage_upper]
+- id: fuselage_front
+  type: fuselage
+  cad: fuselage_front.stl
+  role: fuselage
+  part_number: OpenGeoDrone Fuselage_front_part
+  material: {name: PETG, infill: 0.15, walls: 2, orientation: flat}
+- id: fuselage_bottom_back
+  type: fuselage
+  cad: fuselage_bottom_back.stl
+  role: fuselage
+  part_number: OpenGeoDrone Fuselage_bottom_back_part
+  material: {name: PETG, infill: 0.15, walls: 2, orientation: flat}
+  specs:
+    fits: [fuselage_front, fuselage_upper]
+- id: fuselage_upper
+  type: fuselage
+  cad: fuselage_upper.stl
+  role: fuselage
+  part_number: OpenGeoDrone Fuselage_upper_part
+  material: {name: PETG, infill: 0.15, walls: 2, orientation: flat}
+  specs:
+    fits: [fuselage_front]
+- id: rear_motor_mount
+  type: mount
+  cad: rear_motor_mount.stl
+  part_number: OpenGeoDrone Rear_motor_part
+  material: {name: PETG, infill: 0.15, walls: 2, orientation: flat}
+- id: wing_root_L
+  type: wing
+  cad: wing_root_L.3mf
+  role: wing
+  part_number: OpenGeoDrone Left_Root_part
+  material: {name: LW-PLA, infill: 0.0, walls: 1, orientation: vase}
+  notes: PLA Aero (foaming PLA) vase-mode panel with internal grid
+- id: wing_mid_L
+  type: wing
+  cad: wing_mid_L.3mf
+  role: wing
+  part_number: OpenGeoDrone Left_Mid_Aileron_part
+  material: {name: LW-PLA, infill: 0.0, walls: 1, orientation: vase}
+  notes: mid panel printed together with its elevon (flexure/pin hinge); the elevon is not a separate body in the CAD
+- id: motor_arm_front_L
+  type: mount
+  cad: motor_arm_front_L.stl
+  part_number: OpenGeoDrone Left_Motor_arm_front
+  material: {name: PETG, infill: 0.15, walls: 2, orientation: flat}
+  specs:
+    fits: [wing_root_L, wing_mid_L]
+- id: motor_arm_back_L
+  type: mount
+  cad: motor_arm_back_L.stl
+  part_number: OpenGeoDrone Left_Motor_arm_back
+  material: {name: PETG, infill: 0.15, walls: 2, orientation: flat}
+  specs:
+    fits: [wing_root_L, wing_mid_L]
+- id: servo_horn_L
+  type: horn
+  cad: servo_horn_L.stl
+  part_number: OpenGeoDrone Left_Servo_horn
+  material: {name: PETG, infill: 0.15, walls: 2, orientation: flat}
+  specs:
+    fits: [wing_mid_L]
+- id: wing_root_R
+  type: wing
+  cad: wing_root_R.3mf
+  role: wing
+  part_number: OpenGeoDrone Right_Root_part
+  material: {name: LW-PLA, infill: 0.0, walls: 1, orientation: vase}
+  notes: PLA Aero (foaming PLA) vase-mode panel with internal grid
+- id: wing_mid_R
+  type: wing
+  cad: wing_mid_R.3mf
+  role: wing
+  part_number: OpenGeoDrone Right_Mid_Aileron_part
+  material: {name: LW-PLA, infill: 0.0, walls: 1, orientation: vase}
+  notes: mid panel printed together with its elevon (flexure/pin hinge); the elevon is not a separate body in the CAD
+- id: motor_arm_front_R
+  type: mount
+  cad: motor_arm_front_R.stl
+  part_number: OpenGeoDrone Right_Motor_arm_front
+  material: {name: PETG, infill: 0.15, walls: 2, orientation: flat}
+  specs:
+    fits: [wing_root_R, wing_mid_R]
+- id: motor_arm_back_R
+  type: mount
+  cad: motor_arm_back_R.stl
+  part_number: OpenGeoDrone Right_Motor_arm_back
+  material: {name: PETG, infill: 0.15, walls: 2, orientation: flat}
+  specs:
+    fits: [wing_root_R, wing_mid_R]
+- id: servo_horn_R
+  type: horn
+  cad: servo_horn_R.stl
+  part_number: OpenGeoDrone Right_Servo_horn
+  material: {name: PETG, infill: 0.15, walls: 2, orientation: flat}
+  specs:
+    fits: [wing_mid_R]
+- id: clamp_L1
+  type: fastener
+  cad: clamp_L1.stl
+  group: wing_clamps_L
+  part_number: OpenGeoDrone Clamp_fixation_big
+  material: {name: PETG, infill: 0.15, walls: 2, orientation: flat}
+  specs:
+    fits: [center_part, wing_root_L]
+- id: clamp_L2
+  type: fastener
+  cad: clamp_L2.stl
+  group: wing_clamps_L
+  part_number: OpenGeoDrone Clamp_fixation_big
+  material: {name: PETG, infill: 0.15, walls: 2, orientation: flat}
+  specs:
+    fits: [wing_root_L, motor_arm_front_L]
+- id: clamp_L3
+  type: fastener
+  cad: clamp_L3.stl
+  group: wing_clamps_L
+  part_number: OpenGeoDrone Clamp_fixation_big
+  material: {name: PETG, infill: 0.15, walls: 2, orientation: flat}
+  specs:
+    fits: [motor_arm_front_L, wing_mid_L]
+- id: clamp_R4
+  type: fastener
+  cad: clamp_R4.stl
+  group: wing_clamps_R
+  part_number: OpenGeoDrone Clamp_fixation_big
+  material: {name: PETG, infill: 0.15, walls: 2, orientation: flat}
+  specs:
+    fits: [center_part, wing_root_R]
+- id: clamp_R5
+  type: fastener
+  cad: clamp_R5.stl
+  group: wing_clamps_R
+  part_number: OpenGeoDrone Clamp_fixation_big
+  material: {name: PETG, infill: 0.15, walls: 2, orientation: flat}
+  specs:
+    fits: [wing_root_R, motor_arm_front_R]
+- id: clamp_R6
+  type: fastener
+  cad: clamp_R6.stl
+  group: wing_clamps_R
+  part_number: OpenGeoDrone Clamp_fixation_big
+  material: {name: PETG, infill: 0.15, walls: 2, orientation: flat}
+  specs:
+    fits: [motor_arm_front_R, wing_mid_R]
+- id: hover_motor_1
+  type: motor
+  part_number: T-Motor F40 PRO IV 1950KV
+  specs:
+    kv: 1950
+    rm_ohm: 0.06
+    i0_a: 1.4
+    imax_a: 40
+    mass_g: 37
+    cg_mm: [-75.5, 21.2, 269.0]
+    axis: vertical
+  connects: [hover_prop_1]
+  notes: 'README: ''F40'' hover motors; assumed T-Motor F40 PRO IV 1950KV (approx datasheet values)'
+- id: hover_prop_1
+  type: prop
+  part_number: 7x4 prop
+  specs:
+    diam_in: 7
+    pitch_in: 4
+    blades: 2
+    mass_g: 6
+    rotation: CW
+    cg_mm: [-75.5, 39.2, 269.0]
+    axis: vertical
+  notes: 'README: 2x 7x4 + 2x reverse 7x4'
+- id: hover_motor_2
+  type: motor
+  part_number: T-Motor F40 PRO IV 1950KV
+  specs:
+    kv: 1950
+    rm_ohm: 0.06
+    i0_a: 1.4
+    imax_a: 40
+    mass_g: 37
+    cg_mm: [340.5, 21.2, 269.0]
+    axis: vertical
+  connects: [hover_prop_2]
+  notes: 'README: ''F40'' hover motors; assumed T-Motor F40 PRO IV 1950KV (approx datasheet values)'
+- id: hover_prop_2
+  type: prop
+  part_number: 7x4 reverse prop
+  specs:
+    diam_in: 7
+    pitch_in: 4
+    blades: 2
+    mass_g: 6
+    rotation: CCW
+    cg_mm: [340.5, 39.2, 269.0]
+    axis: vertical
+  notes: 'README: 2x 7x4 + 2x reverse 7x4'
+- id: hover_motor_3
+  type: motor
+  part_number: T-Motor F40 PRO IV 1950KV
+  specs:
+    kv: 1950
+    rm_ohm: 0.06
+    i0_a: 1.4
+    imax_a: 40
+    mass_g: 37
+    cg_mm: [-75.5, 21.2, -269.0]
+    axis: vertical
+  connects: [hover_prop_3]
+  notes: 'README: ''F40'' hover motors; assumed T-Motor F40 PRO IV 1950KV (approx datasheet values)'
+- id: hover_prop_3
+  type: prop
+  part_number: 7x4 reverse prop
+  specs:
+    diam_in: 7
+    pitch_in: 4
+    blades: 2
+    mass_g: 6
+    rotation: CCW
+    cg_mm: [-75.5, 39.2, -269.0]
+    axis: vertical
+  notes: 'README: 2x 7x4 + 2x reverse 7x4'
+- id: hover_motor_4
+  type: motor
+  part_number: T-Motor F40 PRO IV 1950KV
+  specs:
+    kv: 1950
+    rm_ohm: 0.06
+    i0_a: 1.4
+    imax_a: 40
+    mass_g: 37
+    cg_mm: [340.5, 21.2, -269.0]
+    axis: vertical
+  connects: [hover_prop_4]
+  notes: 'README: ''F40'' hover motors; assumed T-Motor F40 PRO IV 1950KV (approx datasheet values)'
+- id: hover_prop_4
+  type: prop
+  part_number: 7x4 prop
+  specs:
+    diam_in: 7
+    pitch_in: 4
+    blades: 2
+    mass_g: 6
+    rotation: CW
+    cg_mm: [340.5, 39.2, -269.0]
+    axis: vertical
+  notes: 'README: 2x 7x4 + 2x reverse 7x4'
+- id: esc_4in1
+  type: esc
+  part_number: 4-in-1 ESC 45A (hover)
+  specs:
+    imax_a: 45
+    mass_g: 16
+    cg_mm: [-86.8, -10.0, 0.0]
+  connects: [hover_motor_1, hover_motor_2, hover_motor_3, hover_motor_4]
+  notes: 'README: ''1 ESC 4 to 1''; rating assumed'
+- id: pusher_motor
+  type: motor
+  part_number: T-Motor AT2312 1150KV
+  specs:
+    kv: 1150
+    rm_ohm: 0.09
+    i0_a: 0.8
+    imax_a: 25
+    mass_g: 60
+    cg_mm: [157.5, -11.0, 0.0]
+  connects: [pusher_prop]
+  notes: 'README: pusher motor ''low kV < 1200''; model assumed'
+- id: pusher_prop
+  type: prop
+  part_number: APC 9x6E
+  specs:
+    diam_in: 9
+    pitch_in: 6
+    blades: 2
+    mass_g: 15
+    cg_mm: [181.5, -11.0, 0.0]
+  notes: 'README: 9x6 pusher'
+- id: pusher_esc
+  type: esc
+  part_number: Generic BLHeli 30A ESC
+  specs:
+    imax_a: 30
+    mass_g: 25
+    cg_mm: [101.5, -15.0, 0.0]
+  connects: [pusher_motor]
+- id: battery
+  type: battery
+  part_number: 4S1P Molicel P42A Li-ion
+  specs:
+    cells_s: 4
+    cells_p: 1
+    capacity_mah: 4200
+    c_rating: 10
+    ir_mohm_per_cell: 15
+    chemistry: liion
+    mass_g: 300
+    cg_mm: [0.0, -20.0, 0.0]
+  connects: [esc_4in1, pusher_esc, fc]
+  notes: 'README: ''4S 4Ah battery''; pack type assumed'
+- id: fc
+  type: fc
+  part_number: Tawaki autopilot (Paparazzi)
+  specs:
+    mass_g: 12
+    has_remote_id: false
+    cg_mm: [-56.8, 5.0, 0.0]
+  connects: [esc_4in1, pusher_esc, servo_L, servo_R]
+  notes: 'README: ''Flight controller (e.g. Tawaki)''; mass assumed'
+- id: rx
+  type: rx
+  part_number: ExpressLRS EP2 receiver
+  specs:
+    mass_g: 1
+    cg_mm: [-26.8, 10.0, 10.0]
+  connects: [fc]
+  notes: 'README: ''RC''; model assumed'
+- id: gps
+  type: gps
+  part_number: Matek M10Q-5883
+  specs:
+    mass_g: 9
+    cg_mm: [-36.8, 25.0, 0.0]
+  connects: [fc]
+  notes: 'README: ''GPS module''; model assumed'
+- id: telemetry
+  type: telemetry
+  part_number: SiK 433 MHz telemetry modem
+  specs:
+    mass_g: 15
+    cg_mm: [-16.8, 10.0, -15.0]
+  connects: [fc]
+  notes: 'README: ''Modem to Ground station if needed'''
+- id: pitot
+  type: sensor
+  part_number: Matek ASPD-4525
+  specs:
+    mass_g: 6
+    cg_mm: [-178.4, 0.0, 0.0]
+  connects: [fc]
+  notes: pitot tube through the nose (Create_pitot in OpenGeoDrone.scad)
+- id: servo_L
+  type: servo
+  part_number: 23x8x27 mm 8 g digital servo
+  specs:
+    torque_kgcm: 1.6
+    mass_g: 8
+    dims_mm: [23, 8, 27.3]
+    cg_mm: [201.7, -10.9, 318.0]
+  connects: [wing_mid_L, fc]
+  notes: 'README: ''2 Servo'' (servo_dimension_perso 23x8x27.3 mm); drives the elevon printed in wing_mid'
+- id: servo_R
+  type: servo
+  part_number: 23x8x27 mm 8 g digital servo
+  specs:
+    torque_kgcm: 1.6
+    mass_g: 8
+    dims_mm: [23, 8, 27.3]
+    cg_mm: [201.7, -10.9, -318.0]
+  connects: [wing_mid_R, fc]
+  notes: 'README: ''2 Servo'' (servo_dimension_perso 23x8x27.3 mm); drives the elevon printed in wing_mid'
+- id: spar_front_L
+  type: spar
+  role: main_spar
+  part_number: CF tube 5.5/3.5 mm
+  material: {name: CF tube}
+  specs:
+    outer_d_mm: 5.5
+    inner_d_mm: 3.5
+    length_mm: 420
+    mass_g: 9.2
+    cg_mm: [40.8, -6.0, 255.0]
+  notes: half-wing spar inserted into the center part; ID and length assumed
+- id: spar_rear_L
+  type: spar
+  role: rear_spar
+  part_number: CF tube 5.5/3.5 mm
+  material: {name: CF tube}
+  specs:
+    outer_d_mm: 5.5
+    inner_d_mm: 3.5
+    length_mm: 330
+    mass_g: 7.2
+    cg_mm: [72.2, -6.0, 210.0]
+  notes: half-wing spar inserted into the center part; ID and length assumed
+- id: spar_front_R
+  type: spar
+  role: main_spar
+  part_number: CF tube 5.5/3.5 mm
+  material: {name: CF tube}
+  specs:
+    outer_d_mm: 5.5
+    inner_d_mm: 3.5
+    length_mm: 420
+    mass_g: 9.2
+    cg_mm: [40.8, -6.0, -255.0]
+  notes: half-wing spar inserted into the center part; ID and length assumed
+- id: spar_rear_R
+  type: spar
+  role: rear_spar
+  part_number: CF tube 5.5/3.5 mm
+  material: {name: CF tube}
+  specs:
+    outer_d_mm: 5.5
+    inner_d_mm: 3.5
+    length_mm: 330
+    mass_g: 7.2
+    cg_mm: [72.2, -6.0, -210.0]
+  notes: half-wing spar inserted into the center part; ID and length assumed
+- id: spar_center
+  type: spar
+  role: rear_spar
+  part_number: CF tube 6.5/4.5 mm
+  material: {name: CF tube}
+  specs:
+    outer_d_mm: 6.5
+    inner_d_mm: 4.5
+    length_mm: 506
+    mass_g: 13.6
+    cg_mm: [97.5, -6.0, 0.0]
+  notes: 3rd spar (75 % chord) through the center part and both root panels; ID assumed
+- id: wiring
+  type: wire
+  part_number: silicone wiring + XT60
+  specs:
+    mass_g: 60
+    cg_mm: [-116.8, 0.0, 0.0]
+  connects: [battery, esc_4in1, pusher_esc]
+- id: screws
+  type: fastener
+  group: airframe_screws
+  qty: 16
+  part_number: M3 screws + magnets
+  specs:
+    mass_g: 0.9
+    cg_mm: [-116.8, 0.0, 0.0]

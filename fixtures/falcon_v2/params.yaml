@@ -1,0 +1,58 @@
+# Parametric Titan Falcon V2 replica. Edit and rerun:  .venv/bin/python fixtures/build_falcon_v2.py
+# Lengths in mm (frame: x aft from the nose, y right, z up). Deterministic; rebuild < 10 s.
+wing:
+  span_mm: 2093
+  root_chord_mm: 260
+  tip_chord_mm: 51
+  break_y_mm: 602            # constant chord to here, then linear taper (S = 0.4514 m^2 with these values)
+  sweep_le_deg: 3.0          # LE sweep of the tapered outer part
+  dihedral_deg: 0.5
+  root_airfoil: "4411"
+  tip_airfoil: "3411"
+  x_le_root_mm: 380
+  panel_breaks_mm: [0, 350, 700]   # Wing1 0-350, Wing2 350-700 (flap), Wing3 700-tip (aileron), per side
+  flap_chord_frac: 0.25
+  aileron_chord_frac: 0.25
+  material: {name: LW-PLA, infill: 0.0, walls: 2, orientation: vase}   # walls 2 = skin + vase-printed ribs
+htail:
+  area_m2: 0.075
+  aspect_ratio: 4.5
+  taper: 0.7
+  airfoil: "2410"
+  arm_mm: 750                # wing a.c. -> htail a.c.
+  elevator_chord_frac: 0.30
+vtail:
+  area_m2: 0.040
+  height_mm: 220
+  taper: 0.7
+  airfoil: "0010"
+  rudder_chord_frac: 0.30
+fuselage:
+  wall_mm: 2.4
+  max_width_mm: 120
+  max_height_mm: 130
+  sections_x_mm: [0, 200, 450, 700, 950]   # Fuse1..Fuse5 start x; Fuse5 runs to the tail end
+spars:
+  main: {od_mm: 10, id_mm: 8, half_length_mm: 800, chord_frac: 0.25}
+  rear: {od_mm: 6, id_mm: 4, half_length_mm: 600, chord_frac: 0.58}
+propulsion:
+  motor: BrotherHobby Avenger 2816 620KV
+  prop: APC 11x8E
+  esc: Generic BLHeli 35A ESC
+  motor_y_mm: 300
+servo: Emax ES08MA II
+battery:
+  part_number: 6S2P Molicel P42A Li-ion
+  size_mm: [145, 66, 46]
+  x_mm: auto                 # 'auto' = place the pack so the CG sits at target_cg_frac_mac
+target_cg_frac_mac: 0.29     # CG position as a fraction of MAC aft of the MAC leading edge
+payload:
+  part_number: Sony RX0 II
+  mass_g: 132
+  size_mm: [59, 41, 35]
+waste:                       # seeded unnecessary parts (the idiot-index demo)
+  ballast_nose: true
+  gps_2: true
+  spar_doubler: true
+  fairings: true
+  fuse_armor: true

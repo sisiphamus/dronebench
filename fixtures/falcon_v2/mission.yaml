@@ -1,0 +1,4 @@
+preset: endurance
+payload_ids: [camera]
+cruise_kmh: 55
+frame: {units: mm, forward: -x, up: +z}

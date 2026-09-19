@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DroneBench · __TITLE__</title>
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --panel-2: #f0f2f5; --ink: #16181d; --muted: #5f6672; --line: #dfe3e8;
+  --accent: #2f6fe4; --req: #2e9d5b; --help: #d8a200; --unn: #d2453a; --unk: #9aa0a6;
+  --stage: #eef1f5; --shadow: 0 1px 2px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.05);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1115; --panel: #171a21; --panel-2: #1e222b; --ink: #e8eaee; --muted: #9aa3b2; --line: #2a2f3a;
+    --accent: #6ea0ff; --stage: #12151b; --shadow: 0 1px 2px rgba(0,0,0,.4);
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+button, input, select { font: inherit; color: inherit; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+header { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; padding: 16px 24px;
+  background: var(--panel); border-bottom: 1px solid var(--line); }
+.brand { font-weight: 700; letter-spacing: .02em; color: var(--muted); font-size: 13px; text-transform: uppercase; }
+.dname { font-size: 22px; font-weight: 650; }
+.chip { display: inline-block; padding: 1px 8px; border-radius: 999px; background: var(--panel-2);
+  border: 1px solid var(--line); font-size: 12px; color: var(--muted); white-space: nowrap; }
+.scoreblock { display: flex; align-items: baseline; gap: 10px; }
+.scoreblock .lbl { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.score { font-size: 40px; font-weight: 750; line-height: 1; font-variant-numeric: tabular-nums; }
+.unit { color: var(--muted); font-size: 16px; }
+.delta { font-size: 18px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.delta.up { color: var(--req); } .delta.down { color: var(--unn); }
+.badge { padding: 4px 12px; border-radius: 6px; font-weight: 700; font-size: 14px; color: #fff; letter-spacing: .04em; }
+.badge.pass { background: var(--req); } .badge.fail { background: var(--unn); }
+.fails { display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: var(--unn); }
+.hgroup { display: flex; flex-direction: column; gap: 4px; }
+.spacer { flex: 1; }
+#stats { display: flex; flex-wrap: wrap; gap: 10px; padding: 12px 24px; }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; min-width: 110px; }
+.stat .k { font-size: 12px; color: var(--muted); }
+.stat .v { font-size: 20px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.stat .d { font-size: 12px; font-variant-numeric: tabular-nums; margin-left: 4px; }
+main { display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 12px; padding: 0 24px 12px; height: calc(100vh - 190px); min-height: 520px; }
+#stage { position: relative; background: var(--stage); border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
+  display: flex; flex-direction: column; }
+#toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 10px 12px; background: var(--panel);
+  border-bottom: 1px solid var(--line); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: transparent; padding: 5px 12px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button.on { background: var(--accent); color: #fff; }
+.tbl-lbl { font-size: 13px; color: var(--muted); }
+#legend { display: flex; flex-wrap: wrap; gap: 10px; font-size: 13px; color: var(--muted); }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+#views { flex: 1; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; min-height: 0; }
+.view { position: relative; min-width: 0; min-height: 0; }
+.view + .view { border-left: 1px solid var(--line); }
+.view canvas { display: block; width: 100%; height: 100%; outline: none; }
+.vlabel { position: absolute; top: 10px; left: 12px; font-size: 13px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--muted); pointer-events: none; }
+.vscore { position: absolute; top: 28px; left: 12px; font-size: 13px; color: var(--muted); pointer-events: none; }
+.vmsg { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); padding: 20px; text-align: center; }
+#tooltip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); padding: 4px 9px; border-radius: 6px;
+  font-size: 13px; display: none; z-index: 10; white-space: nowrap; }
+aside { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
+#detail { flex: 1.3; overflow: auto; padding: 16px; min-height: 0; }
+#listcard { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+#listhead { display: flex; gap: 8px; padding: 10px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+#search { flex: 1; min-width: 120px; padding: 5px 9px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel-2); }
+#sort { padding: 5px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel-2); }
+#plist { list-style: none; margin: 0; padding: 0; overflow: auto; flex: 1; }
+#plist li { display: grid; grid-template-columns: 14px 1fr auto; gap: 8px; align-items: center; padding: 6px 12px; cursor: pointer;
+  border-bottom: 1px solid var(--line); font-size: 14px; }
+#plist li:hover { background: var(--panel-2); }
+#plist li.sel { background: color-mix(in srgb, var(--accent) 16%, transparent); }
+#plist .pid { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#plist .ptype { color: var(--muted); font-size: 12px; }
+#plist .pm { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 13px; }
+.nocad { font-size: 11px; color: var(--muted); border: 1px dashed var(--line); border-radius: 4px; padding: 0 4px; margin-left: 4px; }
+h2 { font-size: 20px; margin: 0 0 2px; word-break: break-word; }
+h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin: 18px 0 6px; }
+.sub { color: var(--muted); font-size: 13px; }
+.row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.nbadge { padding: 2px 10px; border-radius: 999px; color: #fff; font-weight: 650; font-size: 13px; }
+table.kv { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.kv td { padding: 4px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.kv td:first-child { color: var(--muted); width: 42%; word-break: break-word; }
+table.kv td:nth-child(2) { font-variant-numeric: tabular-nums; word-break: break-word; }
+.src { font-size: 10.5px; padding: 0 6px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line);
+  color: var(--muted); margin-left: 4px; white-space: nowrap; }
+.why { font-size: 15px; margin: 8px 0 0; }
+.iface { padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.iface a { color: var(--accent); cursor: pointer; text-decoration: none; font-weight: 600; }
+.bar { height: 8px; border-radius: 4px; background: var(--panel-2); overflow: hidden; margin-top: 4px; }
+.bar > i { display: block; height: 100%; }
+.empty { color: var(--muted); padding: 24px 4px; text-align: center; }
+#chartcard { margin: 0 24px 24px; padding: 14px 18px; }
+#chartcard svg { width: 100%; height: auto; display: block; }
+.axis text { fill: var(--muted); font-size: 12px; }
+.axis line, .axis path { stroke: var(--line); }
+ul.regs { margin: 0; padding-left: 18px; font-size: 14px; }
+@media (max-width: 900px) {
+  main { grid-template-columns: 1fr; height: auto; }
+  #stage { height: 60vh; }
+  #views { grid-auto-flow: row; }
+  .view + .view { border-left: 0; border-top: 1px solid var(--line); }
+  header, #stats { padding-left: 16px; padding-right: 16px; }
+  main { padding: 0 16px 12px; }
+  #chartcard { margin: 0 16px 16px; }
+}
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<header id="hdr"></header>
+<section id="stats"></section>
+<main>
+  <div id="stage">
+    <div id="toolbar">
+      <span class="tbl-lbl">Color by</span>
+      <div class="seg" id="modes">
+        <button data-mode="necessity" class="on">Necessity</button>
+        <button data-mode="function">Function</button>
+        <button data-mode="margin">Margin</button>
+      </div>
+      <label class="tbl-lbl" style="display:flex;align-items:center;gap:8px">Explode
+        <input id="explode" type="range" min="0" max="1" step="0.01" value="0" style="width:140px"></label>
+      <div id="legend"></div>
+    </div>
+    <div id="views"></div>
+  </div>
+  <aside>
+    <div id="detail" class="card"></div>
+    <div id="listcard" class="card">
+      <div id="listhead">
+        <input id="search" type="search" placeholder="Search parts" aria-label="Search parts">
+        <select id="sort" aria-label="Sort parts">
+          <option value="necessity">Sort: necessity</option>
+          <option value="mass">Sort: mass</option>
+          <option value="id">Sort: id</option>
+        </select>
+        <div class="seg" id="dswitch" style="display:none"></div>
+      </div>
+      <ul id="plist"></ul>
+    </div>
+  </aside>
+</main>
+<section id="chartcard" class="card" style="display:none"></section>
+<div id="tooltip"></div>
+<!--__GLB__-->
+<script type="application/json" id="db-data">/*__DATA__*/null</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+
+const DATA = JSON.parse(document.getElementById('db-data').textContent);
+const D = DATA.designs;
+const TWO = D.length === 2;
+const NEC = { required: '#2e9d5b', helpful: '#d8a200', unnecessary: '#d2453a' };
+const GREY = '#9aa0a6';
+const FUNC = { lift: '#4e79a7', stability: '#76b7b2', control: '#59a14f', propulsion: '#e15759', power: '#f28e2b',
+  avionics: '#b07aa1', structure: '#9c755f', fastening: '#8c8c8c', payload: '#edc948', aerodynamic_fairing: '#ff9da7',
+  ballast: '#5b5b5b', cosmetic: '#d4a6c8', unknown: GREY };
+const NEC_ORDER = { unnecessary: 0, helpful: 1, required: 2 };
+const state = { mode: 'necessity', explode: 0, active: TWO ? 1 : 0, sel: null, hover: null };
+
+// ---------- helpers ----------
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function fmt(v, nd = 2) {
+  if (v === null || v === undefined) return '–';
+  if (typeof v === 'boolean') return v ? 'yes' : 'no';
+  if (typeof v === 'number') {
+    if (!isFinite(v)) return '–';
+    if (Number.isInteger(v)) return v.toLocaleString();
+    const a = Math.abs(v);
+    return (a >= 100 ? v.toFixed(0) : a >= 10 ? v.toFixed(1) : v.toFixed(nd)).replace(/\.?0+$/, '') || '0';
+  }
+  if (Array.isArray(v)) return v.map((x) => fmt(x, nd)).join(', ');
+  if (typeof v === 'object') return Object.entries(v).map(([k, x]) => `${k}: ${fmt(x, nd)}`).join('; ');
+  return String(v);
+}
+function limitStr(l) {
+  if (Array.isArray(l) && l.length === 2) {
+    if (l[0] == null) return '≤ ' + fmt(l[1]);
+    if (l[1] == null) return '≥ ' + fmt(l[0]);
+    return `${fmt(l[0])}–${fmt(l[1])}`;
+  }
+  return fmt(l);
+}
+const src = (s) => (s ? `<span class="src">${esc(s)}</span>` : '');
+const partsOf = (i) => (D[i].report.parts || []);
+const partById = D.map((d) => Object.fromEntries((d.report.parts || []).map((p) => [String(p.id), p])));
+function marginOf(p) { const m = p?.operating_point?.margin; return typeof m === 'number' && isFinite(m) ? m : null; }
+function marginColor(m) { return m == null ? GREY : m < 1.5 ? NEC.unnecessary : m < 3 ? NEC.helpful : NEC.required; }
+function colorFor(p) {
+  if (!p) return GREY;
+  if (state.mode === 'function') return FUNC[p.function] || GREY;
+  if (state.mode === 'margin') return marginColor(marginOf(p));
+  return NEC[p.necessity] || GREY;
+}
+const scoreOf = (i) => D[i].report.score?.value;
+
+// ---------- header + stats ----------
+function renderHeader() {
+  const r0 = D[0].report;
+  const preset = r0.preset || r0.score?.preset || '';
+  let h = `<div class="hgroup"><span class="brand">DroneBench</span><span class="dname">${esc(DATA.title)}</span>
+    <span class="row"><span class="chip">preset: ${esc(preset)}</span>${r0.dronebench_version ? `<span class="chip">v${esc(r0.dronebench_version)}</span>` : ''}</span></div>`;
+  D.forEach((d, i) => {
+    const r = d.report, s = r.score || {}, g = r.gate || {};
+    const fails = (g.checks || []).filter((c) => !c.pass);
+    h += `<div class="hgroup"><div class="scoreblock">${d.label ? `<span class="lbl">${esc(d.label)}</span>` : ''}
+      <span class="score">${fmt(s.value)}</span><span class="unit">${esc(s.unit || '')}</span>
+      ${s.error_band ? `<span class="chip">±${Math.round(s.error_band * 100)}%</span>` : ''}
+      <span class="badge ${g.pass ? 'pass' : 'fail'}">${g.pass ? 'GATE PASS' : 'GATE FAIL'}</span></div>
+      ${fails.length ? `<div class="fails">${fails.map((c) => `<span>✕ ${esc(c.name)}: ${fmt(c.value)} vs ${esc(limitStr(c.limit))}${c.detail ? ' — ' + esc(c.detail) : ''}</span>`).join('')}</div>` : ''}</div>`;
+  });
+  if (TWO && typeof scoreOf(0) === 'number' && typeof scoreOf(1) === 'number') {
+    const dv = scoreOf(1) - scoreOf(0);
+    const pct = scoreOf(0) ? ` (${dv >= 0 ? '+' : ''}${(100 * dv / scoreOf(0)).toFixed(1)}%)` : '';
+    h += `<div class="hgroup"><span class="lbl sub">score change</span><span class="delta ${dv >= 0 ? 'up' : 'down'}">${dv >= 0 ? '▲ +' : '▼ '}${fmt(dv)}${pct}</span></div>`;
+  }
+  $('#hdr').innerHTML = h;
+}
+const STATS = [['mass_g', 'Mass', 'g', -1], ['span_m', 'Span', 'm', 0], ['stall_kmh', 'Stall', 'km/h', -1],
+  ['cruise_kmh', 'Cruise', 'km/h', 0], ['wh_per_km', 'Wh/km', '', -1], ['endurance_min', 'Endurance', 'min', 1],
+  ['range_km', 'Range', 'km', 1], ['static_margin', 'Static margin', '', 0], ['spar_sf', 'Spar SF', '', 0]];
+function renderStats() {
+  const ac = D[state.active].report.aircraft || {}, other = TWO ? (D[1 - state.active].report.aircraft || {}) : null;
+  let h = '';
+  for (const [k, label, unit, good] of STATS) {
+    if (!(k in ac)) continue;
+    let d = '';
+    if (other && state.active === 1 && typeof ac[k] === 'number' && typeof other[k] === 'number' && ac[k] !== other[k]) {
+      const dv = ac[k] - other[k], better = good === 0 ? null : (dv * good > 0);
+      d = `<span class="d" style="color:${better == null ? 'var(--muted)' : better ? 'var(--req)' : 'var(--unn)'}">${dv > 0 ? '+' : ''}${fmt(dv)}</span>`;
+    }
+    h += `<div class="stat"><div class="k">${label}${TWO ? ` · ${esc(D[state.active].label)}` : ''}</div><div class="v">${fmt(ac[k])}<span class="unit" style="font-size:13px"> ${unit}</span>${d}</div></div>`;
+  }
+  $('#stats').innerHTML = h;
+}
+
+// ---------- 3D ----------
+const views = [];
+const tooltip = $('#tooltip');
+function sanitize(name) { return THREE.PropertyBinding.sanitizeNodeName(name); }
+function decodeB64(id) {
+  const s = (document.getElementById(id)?.textContent || '').trim();
+  const bin = atob(s); const u = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+  return u.buffer;
+}
+function cssVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+
+function makeView(i) {
+  const el = document.createElement('div'); el.className = 'view';
+  el.innerHTML = `${D[i].label ? `<div class="vlabel">${esc(D[i].label)}</div>` : ''}${TWO ? `<div class="vscore">${esc(D[i].name)} · ${fmt(scoreOf(i))} ${esc(D[i].report.score?.unit || '')}</div>` : ''}`;
+  $('#views').appendChild(el);
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  el.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f99, 1.6));
+  const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(-2, 4, 3); scene.add(sun);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.6); fill.position.set(3, -1, -4); scene.add(fill);
+  const camera = new THREE.PerspectiveCamera(35, 1, 0.005, 500);
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; controls.dampingFactor = 0.12;
+  const v = { i, el, renderer, scene, camera, controls, meshes: {}, root: null, box: null };
+  views.push(v);
+  const byName = {};
+  for (const id of D[i].mesh_ids || []) byName[sanitize(id)] = id;
+  if (!(D[i].mesh_ids || []).length) { el.insertAdjacentHTML('beforeend', '<div class="vmsg">No CAD meshes in this design.</div>'); return Promise.resolve(v); }
+  return new Promise((resolve) => {
+    new GLTFLoader().parse(decodeB64('glb-' + i), '', (gltf) => {
+      v.root = gltf.scene; scene.add(v.root);
+      v.root.traverse((o) => {
+        if (!o.isMesh) return;
+        let n = o, id;
+        while (n && !(id = byName[n.name])) n = n.parent;
+        if (!id) return;
+        try { o.geometry = toCreasedNormals(o.geometry, Math.PI / 6); } catch (e) { o.geometry.computeVertexNormals(); }
+        o.geometry.computeBoundingBox();
+        o.material = new THREE.MeshStandardMaterial({ color: GREY, roughness: 0.62, metalness: 0.05, side: THREE.DoubleSide });
+        o.userData.partId = id;
+        o.userData.base = o.position.clone();
+        v.meshes[id] = o;
+      });
+      v.root.updateMatrixWorld(true);
+      v.box = new THREE.Box3().setFromObject(v.root);
+      const cg = D[i].report.aircraft?.cg_m;
+      v.center = Array.isArray(cg) && cg.length === 3 && cg.every((x) => typeof x === 'number')
+        ? new THREE.Vector3(cg[0], cg[2], -cg[1]) : v.box.getCenter(new THREE.Vector3());
+      for (const o of Object.values(v.meshes)) {
+        const c = o.geometry.boundingBox.getCenter(new THREE.Vector3()).applyMatrix4(o.matrixWorld);
+        o.userData.dir = c.sub(v.center);
+      }
+      resolve(v);
+    }, (err) => {
+      el.insertAdjacentHTML('beforeend', `<div class="vmsg">Could not load 3D model: ${esc(err?.message || err)}</div>`);
+      resolve(v);
+    });
+  });
+}
+
+function frameAll() {
+  const box = new THREE.Box3();
+  views.forEach((v) => v.box && box.union(v.box));
+  if (box.isEmpty()) return;
+  const size = box.getSize(new THREE.Vector3()), c = box.getCenter(new THREE.Vector3());
+  const r = size.length() / 2;
+  const aspect = Math.min(...views.map((v) => v.camera.aspect).filter((a) => a > 0), 1.5);
+  const vfov = THREE.MathUtils.degToRad(35), hfov = 2 * Math.atan(Math.tan(vfov / 2) * aspect);
+  const dist = r / Math.sin(Math.min(vfov, hfov) / 2) * 0.95;
+  // three frame: nose -X, up +Y, right wing -Z. View from front-left-above.
+  const dir = new THREE.Vector3(-0.55, 0.55, 0.65).normalize();
+  views.forEach((v) => {
+    v.controls.target.copy(c);
+    v.camera.position.copy(c).addScaledVector(dir, dist);
+    v.camera.near = dist / 200; v.camera.far = dist * 20; v.camera.updateProjectionMatrix();
+    v.controls.update();
+  });
+}
+
+let syncing = false;
+function syncFrom(src) {
+  if (syncing || !TWO) return;
+  syncing = true;
+  for (const v of views) if (v !== src) {
+    v.camera.position.copy(src.camera.position); v.camera.quaternion.copy(src.camera.quaternion);
+    v.controls.target.copy(src.controls.target); v.controls.update();
+  }
+  syncing = false;
+}
+
+function applyColors() {
+  views.forEach((v) => {
+    for (const [id, o] of Object.entries(v.meshes)) {
+      const p = partById[v.i][id];
+      o.material.color.set(colorFor(p));
+      const isSel = state.sel === id, isHov = state.hover && state.hover.id === id && state.hover.i === v.i;
+      o.material.emissive.set(isSel ? 0x2f6fe4 : isHov ? 0xffffff : 0x000000);
+      o.material.emissiveIntensity = isSel ? 0.55 : isHov ? 0.22 : 0;
+      const dim = state.sel && !isSel;
+      o.material.transparent = !!dim; o.material.opacity = dim ? 0.55 : 1; o.material.depthWrite = !dim;
+    }
+  });
+  renderLegend();
+}
+function applyExplode() {
+  const k = state.explode * 0.8;
+  views.forEach((v) => { for (const o of Object.values(v.meshes)) o.position.copy(o.userData.base).addScaledVector(o.userData.dir, k); });
+}
+
+function renderLegend() {
+  let items;
+  if (state.mode === 'necessity') items = [['required', NEC.required], ['helpful', NEC.helpful], ['unnecessary', NEC.unnecessary], ['unknown', GREY]];
+  else if (state.mode === 'margin') items = [['margin < 1.5', NEC.unnecessary], ['1.5–3', NEC.helpful], ['≥ 3', NEC.required], ['n/a', GREY]];
+  else {
+    const used = new Set(); D.forEach((d, i) => partsOf(i).forEach((p) => used.add(p.function || 'unknown')));
+    items = [...used].map((f) => [f.replace(/_/g, ' '), FUNC[f] || GREY]);
+  }
+  $('#legend').innerHTML = items.map(([l, c]) => `<span><span class="dot" style="background:${c}"></span>${esc(l)}</span>`).join('');
+}
+
+function pick(v, ev) {
+  const rect = v.renderer.domElement.getBoundingClientRect();
+  const m = new THREE.Vector2(((ev.clientX - rect.left) / rect.width) * 2 - 1, -((ev.clientY - rect.top) / rect.height) * 2 + 1);
+  const rc = new THREE.Raycaster(); rc.setFromCamera(m, v.camera);
+  const hits = rc.intersectObjects(Object.values(v.meshes), false);
+  return hits.length ? hits[0].object.userData.partId : null;
+}
+
+function wireEvents(v) {
+  const c = v.renderer.domElement;
+  v.controls.addEventListener('change', () => syncFrom(v));
+  let down = null;
+  c.addEventListener('pointerdown', (e) => { down = [e.clientX, e.clientY]; });
+  c.addEventListener('pointerup', (e) => {
+    if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return;
+    const id = pick(v, e);
+    select(id, v.i);
+  });
+  c.addEventListener('pointermove', (e) => {
+    if (e.buttons) { tooltip.style.display = 'none'; return; }
+    const id = pick(v, e);
+    const prev = state.hover;
+    state.hover = id ? { id, i: v.i } : null;
+    if (id) {
+      const p = partById[v.i][id];
+      tooltip.innerHTML = `<b>${esc(id)}</b>${p?.necessity ? ' · ' + esc(p.necessity) : ''}${p?.mass_g != null ? ' · ' + fmt(p.mass_g) + ' g' : ''}`;
+      tooltip.style.display = 'block';
+      tooltip.style.left = (e.clientX + 14) + 'px'; tooltip.style.top = (e.clientY + 12) + 'px';
+      c.style.cursor = 'pointer';
+    } else { tooltip.style.display = 'none'; c.style.cursor = ''; }
+    if ((prev && prev.id) !== id || (prev && prev.i) !== v.i) applyColors();
+  });
+  c.addEventListener('pointerleave', () => { tooltip.style.display = 'none'; if (state.hover) { state.hover = null; applyColors(); } });
+}
+
+function resize() {
+  for (const v of views) {
+    const w = v.el.clientWidth, h = v.el.clientHeight;
+    if (!w || !h) continue;
+    v.renderer.setSize(w, h, false); v.camera.aspect = w / h; v.camera.updateProjectionMatrix();
+  }
+}
+function loop() {
+  requestAnimationFrame(loop);
+  for (const v of views) { v.controls.update(); v.renderer.render(v.scene, v.camera); }
+}
+
+// ---------- part detail ----------
+function kvTable(obj, sources = {}) {
+  const rows = Object.entries(obj || {}).filter(([, v]) => v !== null && v !== undefined && v !== '');
+  if (!rows.length) return '<div class="sub">none</div>';
+  return `<table class="kv">${rows.map(([k, v]) => `<tr><td>${esc(k.replace(/_/g, ' '))}</td><td>${esc(fmt(v))}${src(sources[k])}</td></tr>`).join('')}</table>`;
+}
+function renderDetail() {
+  const el = $('#detail');
+  const i = state.active, p = state.sel ? partById[i][state.sel] : null;
+  if (!p) {
+    const r = D[i].report;
+    const counts = {}; partsOf(i).forEach((q) => { counts[q.necessity || 'unknown'] = (counts[q.necessity || 'unknown'] || 0) + 1; });
+    el.innerHTML = `<h2>${esc(D[i].name)}${D[i].label ? ` <span class="chip">${esc(D[i].label)}</span>` : ''}</h2>
+      <div class="sub">${partsOf(i).length} parts · click a part in the model or the list for its report</div>
+      <h3>Necessity</h3><div class="row">${['required', 'helpful', 'unnecessary', 'unknown'].filter((k) => counts[k]).map((k) => `<span class="nbadge" style="background:${NEC[k] || GREY}">${counts[k]} ${k}</span>`).join('')}</div>
+      <h3>Gate checks</h3><table class="kv">${(r.gate?.checks || []).map((c) => `<tr><td>${esc(c.name)}</td><td><span style="color:${c.pass ? 'var(--req)' : 'var(--unn)'};font-weight:700">${c.pass ? '✓' : '✕'}</span> ${esc(fmt(c.value))} <span class="sub">(${esc(limitStr(c.limit))})</span>${c.detail ? `<div class="sub">${esc(c.detail)}</div>` : ''}</td></tr>`).join('')}</table>
+      ${(r.regulations || []).length ? `<h3>Regulations</h3><ul class="regs">${r.regulations.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+      ${(r.warnings || []).length ? `<h3>Warnings</h3><ul class="regs">${r.warnings.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+      ${(D[i].notes || []).length ? `<h3>Viewer notes</h3><ul class="regs">${D[i].notes.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}`;
+    return;
+  }
+  const S = p.sources || {}, mat = p.material || {}, op = p.operating_point || {};
+  const nc = NEC[p.necessity] || GREY;
+  const matRows = { name: mat.name, kind: mat.kind, density_kg_m3: mat.density_kg_m3,
+    infill: typeof mat.infill === 'number' ? Math.round(mat.infill * 100) + '%' : mat.infill,
+    walls: mat.walls, orientation: mat.orientation, tensile_mpa: mat.tensile_mpa, modulus_gpa: mat.modulus_gpa };
+  const m = marginOf(p);
+  const conf = typeof p.confidence === 'number' ? p.confidence : null;
+  el.innerHTML = `
+    <h2 class="mono">${esc(p.id)}</h2>
+    <div class="sub">${esc(p.part_number || '')}${p.part_number ? ' · ' : ''}${esc(p.type || '')}${p.role ? ' · ' + esc(p.role) : ''}${p.qty > 1 ? ' · ×' + p.qty : ''}${D[i].mesh_ids.includes(p.id) ? '' : ' · no CAD'}</div>
+    <div class="row" style="margin-top:10px"><span class="nbadge" style="background:${nc}">${esc(p.necessity || 'unknown')}</span>
+      <span class="chip" style="border-color:${FUNC[p.function] || GREY}">${esc((p.function || 'unknown').replace(/_/g, ' '))}</span></div>
+    ${p.why ? `<p class="why">${esc(p.why)}</p>` : ''}
+    <h3>Removal test</h3>
+    <div>${esc(p.removal_test || '–')}</div>
+    ${p.score_delta_if_removed != null ? `<div class="sub">score change if removed: ${p.score_delta_if_removed > 0 ? '+' : ''}${fmt(p.score_delta_if_removed)}</div>` : ''}
+    <h3>Mass</h3>
+    <table class="kv"><tr><td>mass</td><td>${fmt(p.mass_g)} g${src(S.mass_g)}</td></tr>
+      ${p.cg_m ? `<tr><td>CG (x aft, y right, z up)</td><td>${esc(fmt(p.cg_m, 3))} m${src(S.cg_m)}</td></tr>` : ''}</table>
+    <h3>Material ${src(mat.source || S.material)}</h3>
+    ${kvTable(matRows)}
+    ${mat.sub && Object.keys(mat.sub).length ? `<div class="sub" style="margin-top:6px">sub-parts</div>${kvTable(mat.sub)}` : ''}
+    <h3>Specs</h3>${kvTable(p.specs, Object.fromEntries(Object.entries(S).filter(([k]) => k.startsWith('specs.')).map(([k, v]) => [k.slice(6), v])))}
+    <h3>Operating point</h3>
+    ${kvTable(op)}
+    ${m != null ? `<div class="bar" title="margin ${fmt(m)}"><i style="width:${Math.min(100, m / 5 * 100)}%;background:${marginColor(m)}"></i></div><div class="sub">headroom ×${fmt(m)} (red &lt; 1.5, amber &lt; 3)</div>` : ''}
+    <h3>Interfaces</h3>
+    ${(p.interfaces || []).length ? p.interfaces.map((f) => `<div class="iface"><a data-goto="${esc(f.mates)}">${esc(f.mates)}</a> <span class="chip">${esc(f.kind || '')}</span>${src(f.source)}
+      <div class="sub">${esc(f.joint || '')}${f.gap_mm != null ? ` · gap ${fmt(f.gap_mm)} mm` : ''}${f.tolerance ? ` · tol ${esc(f.tolerance)}` : ''}</div></div>`).join('') : '<div class="sub">none</div>'}
+    <h3>Regulations</h3>
+    ${(p.regulations || []).length ? `<ul class="regs">${p.regulations.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : '<div class="sub">none apply</div>'}
+    <h3>Confidence</h3>
+    ${conf != null ? `<div>${Math.round(conf * 100)}%</div><div class="bar"><i style="width:${conf * 100}%;background:var(--accent)"></i></div>` : '–'}
+    ${Object.keys(S).length ? `<h3>Sources</h3><div class="row">${Object.entries(S).map(([k, v]) => `<span class="src" style="margin:0">${esc(k)}: ${esc(v)}</span>`).join('')}</div>` : ''}`;
+  el.querySelectorAll('[data-goto]').forEach((a) => a.addEventListener('click', () => select(a.dataset.goto, state.active)));
+  el.scrollTop = 0;
+}
+
+// ---------- part list ----------
+function renderList() {
+  const i = state.active, q = $('#search').value.trim().toLowerCase(), sort = $('#sort').value;
+  let ps = partsOf(i).filter((p) => !q || [p.id, p.type, p.function, p.part_number, p.necessity].some((x) => String(x ?? '').toLowerCase().includes(q)));
+  ps = ps.slice().sort((a, b) => sort === 'mass' ? (b.mass_g ?? -1) - (a.mass_g ?? -1)
+    : sort === 'id' ? String(a.id).localeCompare(String(b.id))
+    : ((NEC_ORDER[a.necessity] ?? 3) - (NEC_ORDER[b.necessity] ?? 3)) || (b.mass_g ?? 0) - (a.mass_g ?? 0));
+  const ids = new Set(D[i].mesh_ids);
+  $('#plist').innerHTML = ps.map((p) => `<li data-id="${esc(p.id)}" class="${state.sel === String(p.id) ? 'sel' : ''}">
+    <span class="dot" style="background:${colorFor(p)}"></span>
+    <span class="pid"><span class="mono">${esc(p.id)}</span>${ids.has(String(p.id)) ? '' : '<span class="nocad">no CAD</span>'}<br><span class="ptype">${esc(p.type || '')} · ${esc(p.necessity || 'unknown')}</span></span>
+    <span class="pm">${fmt(p.mass_g)} g</span></li>`).join('') || '<li class="empty">no matching parts</li>';
+  $('#plist').querySelectorAll('li[data-id]').forEach((li) => li.addEventListener('click', () => select(li.dataset.id, state.active)));
+  const selLi = $('#plist li.sel'); if (selLi) selLi.scrollIntoView({ block: 'nearest' });
+}
+
+function select(id, i) {
+  state.sel = id ? String(id) : null;
+  if (i != null && i !== state.active) { state.active = i; renderStats(); renderSwitch(); }
+  applyColors(); renderDetail(); renderList();
+}
+function renderSwitch() {
+  if (!TWO) return;
+  const sw = $('#dswitch'); sw.style.display = '';
+  sw.innerHTML = D.map((d, i) => `<button data-i="${i}" class="${i === state.active ? 'on' : ''}">${esc(d.label || d.name)}</button>`).join('');
+  sw.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => select(state.sel, +b.dataset.i)));
+}
+
+// ---------- runs chart ----------
+function renderChart() {
+  const runs = (DATA.runs || []).filter((r) => typeof r.step === 'number');
+  if (!runs.length) return;
+  const card = $('#chartcard'); card.style.display = '';
+  const W = 900, H = 260, L = 54, R = 16, T = 16, B = 38;
+  const agents = [...new Set(runs.map((r) => r.agent || 'agent'))];
+  const COLORS = ['#2f6fe4', '#8a8f99', '#b07aa1', '#f28e2b', '#59a14f'];
+  const colOf = (a) => /baseline|random/i.test(a) && agents.length > 1 ? '#8a8f99' : COLORS[agents.filter((x) => !/baseline|random/i.test(x)).indexOf(a) % COLORS.length] || COLORS[0];
+  const ok = (r) => r.gate_pass !== false && !r.rejected && !(r.errors && r.errors.length) && typeof r.score === 'number';
+  const xs = runs.map((r) => r.step), ys = runs.map((r) => (typeof r.score === 'number' ? r.score : 0));
+  const x0 = Math.min(...xs), x1 = Math.max(...xs, x0 + 1), y1 = Math.max(...ys, 1e-9) * 1.1;
+  const sx = (x) => L + (x - x0) / (x1 - x0) * (W - L - R), sy = (y) => T + (1 - y / y1) * (H - T - B);
+  const nice = (max, n) => { const raw = max / n, p = Math.pow(10, Math.floor(Math.log10(raw))); const s = [1, 2, 2.5, 5, 10].map((k) => k * p).find((k) => k >= raw); return s; };
+  let g = `<g class="axis">`;
+  const ys_ = nice(y1, 5); for (let y = 0; y <= y1 + 1e-9; y += ys_) g += `<line x1="${L}" x2="${W - R}" y1="${sy(y)}" y2="${sy(y)}"/><text x="${L - 8}" y="${sy(y) + 4}" text-anchor="end">${fmt(y)}</text>`;
+  const xs_ = Math.max(1, Math.ceil(nice(x1 - x0, 10))); for (let x = x0; x <= x1; x += xs_) g += `<text x="${sx(x)}" y="${H - B + 18}" text-anchor="middle">${x}</text>`;
+  const unit = runs.find((r) => r.unit)?.unit || D[0].report.score?.unit || '';
+  g += `<text x="${(L + W - R) / 2}" y="${H - 4}" text-anchor="middle">step</text><text transform="translate(14 ${(T + H - B) / 2}) rotate(-90)" text-anchor="middle">score${unit ? ' (' + esc(unit) + ')' : ''}</text></g>`;
+  let body = '';
+  const labelYs = [];
+  for (const a of agents) {
+    const rs = runs.filter((r) => (r.agent || 'agent') === a).sort((p, q) => p.step - q.step);
+    const good = rs.filter(ok), c = colOf(a), dashed = /baseline|random/i.test(a) && agents.length > 1;
+    if (good.length) body += `<polyline fill="none" stroke="${c}" stroke-width="2.5" ${dashed ? 'stroke-dasharray="6 5"' : ''} points="${good.map((r) => `${sx(r.step)},${sy(r.score)}`).join(' ')}"/>`;
+    for (const r of good) body += `<circle cx="${sx(r.step)}" cy="${sy(r.score)}" r="4" fill="${c}"><title>${esc(a)} · step ${r.step}: ${fmt(r.score)} ${esc(unit)}${r.ops && r.ops.length ? '\n' + esc(r.ops.map((o) => [o.op, o.id || o.path || ''].join(' ')).join(', ')) : ''}</title></circle>`;
+    for (const r of rs.filter((r) => !ok(r))) {
+      const X = sx(r.step), Y = sy(typeof r.score === 'number' ? r.score : 0), s = 5;
+      const why = [...(r.failures || []), ...(r.errors || [])].join(', ') || (r.rejected ? 'rejected' : 'gate fail');
+      body += `<g stroke="#d2453a" stroke-width="2.5"><title>${esc(a)} · step ${r.step}: ${esc(why)}</title><line x1="${X - s}" y1="${Y - s}" x2="${X + s}" y2="${Y + s}"/><line x1="${X - s}" y1="${Y + s}" x2="${X + s}" y2="${Y - s}"/><rect x="${X - 8}" y="${Y - 8}" width="16" height="16" fill="transparent" stroke="none"/></g>`;
+    }
+    const last = good[good.length - 1];
+    let ly = sy(last?.score ?? 0) - 8;
+    while (labelYs.some((y) => Math.abs(y - ly) < 16)) ly += 16;
+    labelYs.push(ly);
+    if (last && agents.length > 1) body += `<text x="${Math.min(sx(last.step) + 8, W - R - 4)}" y="${ly}" fill="${c}" font-size="13" font-weight="600" text-anchor="${sx(last.step) > W - 120 ? 'end' : 'start'}">${esc(a)}</text>`;
+  }
+  const legend = agents.map((a) => `<span><span class="dot" style="background:${colOf(a)}"></span>${esc(a)}</span>`).join('') +
+    `<span><span style="color:#d2453a;font-weight:700;margin-right:5px">✕</span>rejected / gate fail</span>`;
+  card.innerHTML = `<div class="row" style="justify-content:space-between;margin-bottom:6px"><h3 style="margin:0">Score by step</h3><div id="clegend" class="row" style="gap:14px;font-size:13px;color:var(--muted)">${legend}</div></div>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Score by step">${g}${body}</svg>`;
+}
+
+// ---------- init ----------
+document.querySelectorAll('#modes button').forEach((b) => b.addEventListener('click', () => {
+  state.mode = b.dataset.mode;
+  document.querySelectorAll('#modes button').forEach((x) => x.classList.toggle('on', x === b));
+  applyColors(); renderList();
+}));
+$('#explode').addEventListener('input', (e) => { state.explode = +e.target.value; applyExplode(); });
+$('#search').addEventListener('input', renderList);
+$('#sort').addEventListener('change', renderList);
+addEventListener('keydown', (e) => { if (e.key === 'Escape') select(null, state.active); });
+
+renderHeader(); renderStats(); renderSwitch(); renderDetail(); renderList(); renderChart(); renderLegend();
+Promise.all(D.map((_, i) => makeView(i))).then(() => {
+  views.forEach(wireEvents);
+  new ResizeObserver(resize).observe($('#views'));
+  resize(); frameAll(); applyColors(); applyExplode(); loop();
+  window.__dronebench_ready = true;
+});
+</script>
+</body>
+</html>

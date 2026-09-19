@@ -1,0 +1,1307 @@
+{
+ "design": "trainer_demo",
+ "preset": "endurance",
+ "dronebench_version": "0.1.0",
+ "score": {
+  "preset": "endurance",
+  "value": 41.6,
+  "unit": "min",
+  "error_band": 0.15
+ },
+ "gate": {
+  "pass": true,
+  "checks": [
+   {
+    "name": "lifting_surfaces",
+    "value": true,
+    "limit": true,
+    "pass": true,
+    "detail": "wing, htail, vtail"
+   },
+   {
+    "name": "static_margin",
+    "value": 0.11,
+    "limit": [
+     0.05,
+     0.2
+    ],
+    "pass": true,
+    "detail": ""
+   },
+   {
+    "name": "stall_margin",
+    "value": 1.6,
+    "limit": [
+     1.3,
+     null
+    ],
+    "pass": true,
+    "detail": "cruise 56 km/h / stall 35 km/h"
+   },
+   {
+    "name": "climb",
+    "value": 3.8,
+    "limit": [
+     2.0,
+     null
+    ],
+    "pass": true,
+    "detail": "m/s"
+   },
+   {
+    "name": "spar",
+    "value": 3.3,
+    "limit": [
+     1.5,
+     null
+    ],
+    "pass": true,
+    "detail": ""
+   },
+   {
+    "name": "tail_volume",
+    "value": {
+     "vh": 0.48,
+     "vv": 0.034
+    },
+    "limit": {
+     "vh": [
+      0.35,
+      0.7
+     ],
+     "vv": [
+      0.02,
+      0.06
+     ]
+    },
+    "pass": true,
+    "detail": ""
+   },
+   {
+    "name": "servo_torque",
+    "value": 3.5,
+    "limit": [
+     1.5,
+     null
+    ],
+    "pass": true,
+    "detail": "min over servos"
+   },
+   {
+    "name": "motor_current",
+    "value": 22.1,
+    "limit": [
+     null,
+     35
+    ],
+    "pass": true,
+    "detail": ""
+   },
+   {
+    "name": "esc_current",
+    "value": 22.1,
+    "limit": [
+     null,
+     40
+    ],
+    "pass": true,
+    "detail": ""
+   },
+   {
+    "name": "battery_current",
+    "value": 2.6,
+    "limit": [
+     null,
+     5
+    ],
+    "pass": true,
+    "detail": "C"
+   },
+   {
+    "name": "power_chain",
+    "value": true,
+    "limit": true,
+    "pass": true,
+    "detail": ""
+   },
+   {
+    "name": "control_chain",
+    "value": true,
+    "limit": true,
+    "pass": true,
+    "detail": ""
+   },
+   {
+    "name": "payload",
+    "value": true,
+    "limit": true,
+    "pass": true,
+    "detail": "no payload declared"
+   },
+   {
+    "name": "clearance",
+    "value": 0.4,
+    "limit": [
+     null,
+     1.0
+    ],
+    "pass": true,
+    "detail": "max interpenetration mm"
+   }
+  ]
+ },
+ "aircraft": {
+  "mass_g": 2224.8,
+  "cg_m": [
+   0.31,
+   0,
+   0.01
+  ],
+  "span_m": 2.0,
+  "wing_area_m2": 0.42,
+  "aspect_ratio": 9.5,
+  "mac_m": 0.21,
+  "stall_kmh": 35,
+  "cruise_kmh": 56,
+  "vmax_kmh": 104,
+  "climb_ms": 3.8,
+  "endurance_min": 41.6,
+  "range_km": 38,
+  "wh_per_km": 1.52,
+  "static_margin": 0.11,
+  "tail_vh": 0.48,
+  "tail_vv": 0.034,
+  "spar_sf": 3.3,
+  "cd0": 0.031,
+  "ld_max": 12.8,
+  "sources": {
+   "span_m": "cad",
+   "stall_kmh": "computed",
+   "mass_g": "computed"
+  }
+ },
+ "regulations": [
+  "FAA Part 107: aircraft 250 g-25 kg; register and mark with FAA number",
+  "FAA Part 89: standard Remote ID or FRIA required"
+ ],
+ "parts": [
+  {
+   "id": "wing_L",
+   "part_number": null,
+   "type": "wing",
+   "role": "wing",
+   "qty": 1,
+   "function": "lift",
+   "why": "left wing panel; carries 50% of lift",
+   "necessity": "required",
+   "removal_test": "gate fail: lifting_surfaces (no wing)",
+   "score_delta_if_removed": null,
+   "mass_g": 310,
+   "cg_m": [
+    0.3,
+    -0.5,
+    0.02
+   ],
+   "specs": {
+    "airfoil": "NACA4411",
+    "span_mm": 1000
+   },
+   "material": {
+    "name": "LW-PLA",
+    "kind": "printed",
+    "sub": {},
+    "infill": 0.0,
+    "walls": 1,
+    "orientation": "vase",
+    "density_kg_m3": 1240,
+    "source": "bom"
+   },
+   "interfaces": [
+    {
+     "mates": "fuselage",
+     "kind": "physical",
+     "joint": "spar socket",
+     "gap_mm": 0.1,
+     "tolerance": "\u00b10.2 mm",
+     "source": "inferred"
+    },
+    {
+     "mates": "spar_main",
+     "kind": "physical",
+     "joint": "slip fit",
+     "gap_mm": 0.05,
+     "tolerance": "H7/g6",
+     "source": "inferred"
+    }
+   ],
+   "operating_point": {},
+   "regulations": [],
+   "confidence": 1.0,
+   "sources": {
+    "mass_g": "computed",
+    "material": "bom",
+    "cg_m": "cad"
+   }
+  },
+  {
+   "id": "wing_R",
+   "part_number": null,
+   "type": "wing",
+   "role": "wing",
+   "qty": 1,
+   "function": "lift",
+   "why": "right wing panel; carries 50% of lift",
+   "necessity": "required",
+   "removal_test": "gate fail: lifting_surfaces (no wing)",
+   "score_delta_if_removed": null,
+   "mass_g": 310,
+   "cg_m": [
+    0.3,
+    0.5,
+    0.02
+   ],
+   "specs": {
+    "airfoil": "NACA4411",
+    "span_mm": 1000
+   },
+   "material": {
+    "name": "LW-PLA",
+    "kind": "printed",
+    "sub": {},
+    "infill": 0.0,
+    "walls": 1,
+    "orientation": "vase",
+    "density_kg_m3": 1240,
+    "source": "bom"
+   },
+   "interfaces": [
+    {
+     "mates": "fuselage",
+     "kind": "physical",
+     "joint": "spar socket",
+     "gap_mm": 0.1,
+     "tolerance": "\u00b10.2 mm",
+     "source": "inferred"
+    },
+    {
+     "mates": "spar_main",
+     "kind": "physical",
+     "joint": "slip fit",
+     "gap_mm": 0.05,
+     "tolerance": "H7/g6",
+     "source": "inferred"
+    }
+   ],
+   "operating_point": {},
+   "regulations": [],
+   "confidence": 1.0,
+   "sources": {
+    "mass_g": "computed",
+    "material": "bom"
+   }
+  },
+  {
+   "id": "fuselage",
+   "part_number": null,
+   "type": "fuselage",
+   "role": "fuselage",
+   "qty": 1,
+   "function": "structure",
+   "why": "carries avionics, battery and tail boom; mounts wing",
+   "necessity": "required",
+   "removal_test": "gate fail: control_chain (FC has no mount)",
+   "score_delta_if_removed": null,
+   "mass_g": 420,
+   "cg_m": [
+    0.35,
+    0,
+    0
+   ],
+   "specs": {
+    "length_mm": 1100
+   },
+   "material": {
+    "name": "PLA",
+    "kind": "printed",
+    "sub": {},
+    "infill": 0.15,
+    "walls": 2,
+    "orientation": "flat",
+    "density_kg_m3": 1240,
+    "source": "assumed"
+   },
+   "interfaces": [
+    {
+     "mates": "wing_L",
+     "kind": "physical",
+     "joint": "bonded",
+     "gap_mm": 0.0,
+     "tolerance": "\u00b10.2 mm",
+     "source": "inferred"
+    },
+    {
+     "mates": "wing_R",
+     "kind": "physical",
+     "joint": "bonded",
+     "gap_mm": 0.0,
+     "tolerance": "\u00b10.2 mm",
+     "source": "inferred"
+    },
+    {
+     "mates": "tail_boom",
+     "kind": "physical",
+     "joint": "clamp",
+     "gap_mm": 0.0,
+     "tolerance": "\u00b10.2 mm",
+     "source": "inferred"
+    }
+   ],
+   "operating_point": {},
+   "regulations": [],
+   "confidence": 1.0,
+   "sources": {
+    "mass_g": "computed",
+    "material": "assumed"
+   }
+  },
+  {
+   "id": "spar_main",
+   "part_number": null,
+   "type": "spar",
+   "role": "main_spar",
+   "qty": 1,
+   "function": "structure",
+   "why": "main spar; takes wing bending at 3.5 g",
+   "necessity": "required",
+   "removal_test": "gate fail: spar SF 0.00 < 1.5",
+   "score_delta_if_removed": null,
+   "mass_g": 64,
+   "cg_m": [
+    0.29,
+    0,
+    0.02
+   ],
+   "specs": {
+    "od_mm": 10,
+    "id_mm": 8,
+    "length_mm": 1400
+   },
+   "material": {
+    "name": "CF tube",
+    "kind": "composite",
+    "sub": {},
+    "infill": null,
+    "walls": null,
+    "orientation": null,
+    "density_kg_m3": 1550,
+    "source": "bom"
+   },
+   "interfaces": [
+    {
+     "mates": "wing_L",
+     "kind": "physical",
+     "joint": "slip fit",
+     "gap_mm": 0.05,
+     "tolerance": "H7/g6",
+     "source": "inferred"
+    },
+    {
+     "mates": "wing_R",
+     "kind": "physical",
+     "joint": "slip fit",
+     "gap_mm": 0.05,
+     "tolerance": "H7/g6",
+     "source": "inferred"
+    }
+   ],
+   "operating_point": {
+    "stress_mpa": 180,
+    "limit_mpa": 600,
+    "margin": 3.3
+   },
+   "regulations": [],
+   "confidence": 1.0,
+   "sources": {
+    "mass_g": "bom",
+    "material": "catalog"
+   }
+  },
+  {
+   "id": "tail_boom",
+   "part_number": null,
+   "type": "spar",
+   "role": "tail_boom",
+   "qty": 1,
+   "function": "structure",
+   "why": "connects tail to fuselage",
+   "necessity": "required",
+   "removal_test": "gate fail: tail_volume Vh 0 < 0.35",
+   "score_delta_if_removed": null,
+   "mass_g": 38,
+   "cg_m": [
+    0.85,
+    0,
+    0.02
+   ],
+   "specs": {
+    "od_mm": 12,
+    "id_mm": 10
+   },
+   "material": {
+    "name": "CF tube",
+    "kind": "composite",
+    "sub": {},
+    "infill": null,
+    "walls": null,
+    "orientation": null,
+    "density_kg_m3": 1550,
+    "source": "bom"
+   },
+   "interfaces": [
+    {
+     "mates": "fuselage",
+     "kind": "physical",
+     "joint": "clamp",
+     "gap_mm": 0.0,
+     "tolerance": "\u00b10.2 mm",
+     "source": "inferred"
+    },
+    {
+     "mates": "htail",
+     "kind": "physical",
+     "joint": "bonded",
+     "gap_mm": 0.0,
+     "tolerance": "\u00b10.2 mm",
+     "source": "inferred"
+    }
+   ],
+   "operating_point": {},
+   "regulations": [],
+   "confidence": 1.0,
+   "sources": {
+    "mass_g": "bom",
+    "material": "catalog"
+   }
+  },
+  {
+   "id": "htail",
+   "part_number": null,
+   "type": "tail",
+   "role": "htail",
+   "qty": 1,
+   "function": "stability",
+   "why": "horizontal stabiliser; pitch stability",
+   "necessity": "required",
+   "removal_test": "gate fail: tail_volume Vh 0.00 < 0.35",
+   "score_delta_if_removed": null,
+   "mass_g": 55,
+   "cg_m": [
+    1.25,
+    0,
+    0.05
+   ],
+   "specs": {
+    "span_mm": 450
+   },
+   "material": {
+    "name": "LW-PLA",
+    "kind": "printed",
+    "sub": {},
+    "infill": 0.0,
+    "walls": 1,
+    "orientation": "vase",
+    "density_kg_m3": 1240,
+    "source": "bom"
+   },
+   "interfaces": [
+    {
+     "mates": "tail_boom",
+     "kind": "physical",
+     "joint": "bonded",
+     "gap_mm": 0.0,
+     "tolerance": "\u00b10.2 mm",
+     "source": "inferred"
+    }
+   ],
+   "operating_point": {},
+   "regulations": [],
+   "confidence": 1.0,
+   "sources": {
+    "mass_g": "bom",
+    "material": "catalog"
+   }
+  },
+  {
+   "id": "vtail",
+   "part_number": null,
+   "type": "tail",
+   "role": "vtail",
+   "qty": 1,
+   "function": "stability",
+   "why": "vertical fin; yaw stability",
+   "necessity": "required",
+   "removal_test": "gate fail: tail_volume Vv 0.000 < 0.02",
+   "score_delta_if_removed": null,
+   "mass_g": 30,
+   "cg_m": [
+    1.25,
+    0,
+    0.12
+   ],
+   "specs": {
+    "height_mm": 200
+   },
+   "material": {
+    "name": "LW-PLA",
+    "kind": "printed",
+    "sub": {},
+    "infill": 0.0,
+    "walls": 1,
+    "orientation": "vase",
+    "density_kg_m3": 1240,
+    "source": "bom"
+   },
+   "interfaces": [
+    {
+     "mates": "htail",
+     "kind": "physical",
+     "joint": "bonded",
+     "gap_mm": 0.0,
+     "tolerance": "\u00b10.2 mm",
+     "source": "inferred"
+    }
+   ],
+   "operating_point": {},
+   "regulations": [],
+   "confidence": 1.0,
+   "sources": {
+    "mass_g": "bom",
+    "material": "catalog"
+   }
+  },
+  {
+   "id": "motor",
+   "part_number": "BrotherHobby Avenger 2816 620KV",
+   "type": "motor",
+   "role": null,
+   "qty": 1,
+   "function": "propulsion",
+   "why": "drives prop; only thrust source",
+   "necessity": "required",
+   "removal_test": "gate fail: power_chain (prop has no motor)",
+   "score_delta_if_removed": null,
+   "mass_g": 128,
+   "cg_m": [
+    0.02,
+    0,
+    0.0
+   ],
+   "specs": {
+    "kv": 620,
+    "rm_ohm": 0.061,
+    "i0_a": 0.9,
+    "imax_a": 35
+   },
+   "material": {
+    "name": "motor (mixed)",
+    "kind": "mixed",
+    "sub": {
+     "bell": "Al 6061",
+     "stator": "Si steel",
+     "windings": "Cu",
+     "shaft": "steel"
+    },
+    "infill": null,
+    "walls": null,
+    "orientation": null,
+    "density_kg_m3": 0,
+    "source": "catalog"
+   },
+   "interfaces": [
+    {
+     "mates": "fuselage",
+     "kind": "physical",
+     "joint": "bolt pattern 4xM3",
+     "gap_mm": 0.0,
+     "tolerance": "\u00b10.1 mm",
+     "source": "inferred"
+    },
+    {
+     "mates": "esc",
+     "kind": "electrical",
+     "joint": "3x 3.5 mm bullet",
+     "gap_mm": null,
+     "tolerance": null,
+     "source": "bom"
+    }
+   ],
+   "operating_point": {
+    "cruise_a": 4.2,
+    "max_a": 22.1,
+    "limit_a": 35,
+    "margin": 1.58
+   },
+   "regulations": [],
+   "confidence": 1.0,
+   "sources": {
+    "mass_g": "catalog",
+    "material": "catalog",
+    "specs.kv": "bom"
+   }
+  },
+  {
+   "id": "prop",
+   "part_number": "APC 12x8E",
+   "type": "prop",
+   "role": null,
+   "qty": 1,
+   "function": "propulsion",
+   "why": "converts shaft power to thrust",
+   "necessity": "required",
+   "removal_test": "gate fail: power_chain (motor has no prop)",
+   "score_delta_if_removed": null,
+   "mass_g": 22,
+   "cg_m": [
+    0.0,
+    0,
+    0.0
+   ],
+   "specs": {
+    "diam_in": 12,
+    "pitch_in": 8,
+    "blades": 2
+   },
+   "material": {
+    "name": "glass-filled nylon",
+    "kind": "polymer",
+    "sub": {},
+    "infill": null,
+    "walls": null,
+    "orientation": null,
+    "density_kg_m3": 1350,
+    "source": "catalog"
+   },
+   "interfaces": [
+    {
+     "mates": "motor",
+     "kind": "physical",
+     "joint": "prop adapter M6",
+     "gap_mm": 0.0,
+     "tolerance": "\u00b10.05 mm",
+     "source": "inferred"
+    }
+   ],
+   "operating_point": {
+    "cruise_rpm": 5200,
+    "max_rpm": 11800,
+    "limit_rpm": 14500,
+    "margin": 1.23
+   },
+   "regulations": [],
+   "confidence": 1.0,
+   "sources": {
+    "mass_g": "bom",
+    "material": "catalog"
+   }
+  },
+  {
+   "id": "esc",
+   "part_number": null,
+   "type": "esc",
+   "role": null,
+   "qty": 1,
+   "function": "power",
+   "why": "drives motor from battery",
+   "necessity": "required",
+   "removal_test": "gate fail: power_chain (motor has no ESC)",
+   "score_delta_if_removed": null,
+   "mass_g": 36,
+   "cg_m": [
+    0.12,
+    0,
+    -0.01
+   ],
+   "specs": {
+    "imax_a": 40
+   },
+   "material": {
+    "name": "electronic",
+    "kind": "electronic",
+    "sub": {},
+    "infill": null,
+    "walls": null,
+    "orientation": null,
+    "density_kg_m3": 0,
+    "source": "assumed"
+   },
+   "interfaces": [
+    {
+     "mates": "battery",
+     "kind": "electrical",
+     "joint": "XT60",
+     "gap_mm": null,
+     "tolerance": null,
+     "source": "inferred"
+    },
+    {
+     "mates": "motor",
+     "kind": "electrical",
+     "joint": "3x bullet",
+     "gap_mm": null,
+     "tolerance": null,
+     "source": "inferred"
+    }
+   ],
+   "operating_point": {
+    "max_a": 22.1,
+    "limit_a": 40,
+    "margin": 1.81
+   },
+   "regulations": [],
+   "confidence": 1.0,
+   "sources": {
+    "mass_g": "bom",
+    "material": "catalog"
+   }
+  },
+  {
+   "id": "battery",
+   "part_number": "6S2P P42A",
+   "type": "battery",
+   "role": null,
+   "qty": 1,
+   "function": "power",
+   "why": "sole energy store: 6S2P Li-ion 6000 mAh",
+   "necessity": "required",
+   "removal_test": "gate fail: power_chain (no battery)",
+   "score_delta_if_removed": null,
+   "mass_g": 620,
+   "cg_m": [
+    0.22,
+    0,
+    -0.01
+   ],
+   "specs": {
+    "cells_s": 6,
+    "capacity_mah": 8400,
+    "c_rating": 5,
+    "chemistry": "liion"
+   },
+   "material": {
+    "name": "Li-ion 21700",
+    "kind": "cell",
+    "sub": {
+     "cells": "Molicel P42A",
+     "wrap": "PVC"
+    },
+    "infill": null,
+    "walls": null,
+    "orientation": null,
+    "density_kg_m3": 0,
+    "source": "catalog"
+   },
+   "interfaces": [
+    {
+     "mates": "esc",
+     "kind": "electrical",
+     "joint": "XT60",
+     "gap_mm": null,
+     "tolerance": null,
+     "source": "inferred"
+    }
+   ],
+   "operating_point": {
+    "max_a": 22.1,
+    "limit_a": 42,
+    "margin": 1.9
+   },
+   "regulations": [
+    "UN 38.3 required for shipping lithium cells"
+   ],
+   "confidence": 1.0,
+   "sources": {
+    "mass_g": "bom",
+    "material": "catalog"
+   }
+  },
+  {
+   "id": "servo_elev",
+   "part_number": "SG90",
+   "type": "servo",
+   "role": null,
+   "qty": 1,
+   "function": "control",
+   "why": "moves elevator; pitch control",
+   "necessity": "required",
+   "removal_test": "gate fail: control_chain (elevator has no servo)",
+   "score_delta_if_removed": null,
+   "mass_g": 13,
+   "cg_m": [
+    1.1,
+    0,
+    0.02
+   ],
+   "specs": {
+    "torque_kgcm": 1.8
+   },
+   "material": {
+    "name": "servo (mixed)",
+    "kind": "mixed",
+    "sub": {
+     "case": "PA66",
+     "gears": "POM"
+    },
+    "infill": null,
+    "walls": null,
+    "orientation": null,
+    "density_kg_m3": 0,
+    "source": "catalog"
+   },
+   "interfaces": [
+    {
+     "mates": "fc",
+     "kind": "electrical",
+     "joint": "JR servo lead",
+     "gap_mm": null,
+     "tolerance": null,
+     "source": "inferred"
+    },
+    {
+     "mates": "tail_boom",
+     "kind": "physical",
+     "joint": "screw mount 2xM2",
+     "gap_mm": 0.0,
+     "tolerance": "\u00b10.2 mm",
+     "source": "inferred"
+    }
+   ],
+   "operating_point": {
+    "hinge_nm": 0.05,
+    "rated_nm": 0.176,
+    "margin": 3.5
+   },
+   "regulations": [],
+   "confidence": 1.0,
+   "sources": {
+    "mass_g": "bom",
+    "material": "catalog"
+   }
+  },
+  {
+   "id": "fc",
+   "part_number": null,
+   "type": "fc",
+   "role": null,
+   "qty": 1,
+   "function": "avionics",
+   "why": "flight controller; stabilisation + servo outputs",
+   "necessity": "required",
+   "removal_test": "gate fail: control_chain (no FC)",
+   "score_delta_if_removed": null,
+   "mass_g": 12,
+   "cg_m": [
+    0.18,
+    0,
+    0.02
+   ],
+   "specs": {
+    "mcu": "STM32F405"
+   },
+   "material": {
+    "name": "electronic",
+    "kind": "electronic",
+    "sub": {},
+    "infill": null,
+    "walls": null,
+    "orientation": null,
+    "density_kg_m3": 0,
+    "source": "assumed"
+   },
+   "interfaces": [
+    {
+     "mates": "rx",
+     "kind": "electrical",
+     "joint": "UART",
+     "gap_mm": 0.0,
+     "tolerance": "\u00b10.2 mm",
+     "source": "inferred"
+    },
+    {
+     "mates": "gps",
+     "kind": "electrical",
+     "joint": "UART",
+     "gap_mm": 0.0,
+     "tolerance": "\u00b10.2 mm",
+     "source": "inferred"
+    },
+    {
+     "mates": "servo_elev",
+     "kind": "electrical",
+     "joint": "PWM",
+     "gap_mm": 0.0,
+     "tolerance": "\u00b10.2 mm",
+     "source": "inferred"
+    }
+   ],
+   "operating_point": {},
+   "regulations": [],
+   "confidence": 0.9,
+   "sources": {
+    "mass_g": "bom",
+    "material": "catalog"
+   }
+  },
+  {
+   "id": "rx",
+   "part_number": null,
+   "type": "rx",
+   "role": null,
+   "qty": 1,
+   "function": "avionics",
+   "why": "receives pilot commands",
+   "necessity": "required",
+   "removal_test": "gate fail: control_chain (no RX)",
+   "score_delta_if_removed": null,
+   "mass_g": 3,
+   "cg_m": [
+    0.16,
+    0.02,
+    0.03
+   ],
+   "specs": {
+    "protocol": "ELRS 2.4 GHz"
+   },
+   "material": {
+    "name": "electronic",
+    "kind": "electronic",
+    "sub": {},
+    "infill": null,
+    "walls": null,
+    "orientation": null,
+    "density_kg_m3": 0,
+    "source": "assumed"
+   },
+   "interfaces": [
+    {
+     "mates": "fc",
+     "kind": "electrical",
+     "joint": "UART",
+     "gap_mm": 0.0,
+     "tolerance": "\u00b10.2 mm",
+     "source": "inferred"
+    }
+   ],
+   "operating_point": {},
+   "regulations": [
+    "FCC Part 15 radio"
+   ],
+   "confidence": 1.0,
+   "sources": {
+    "mass_g": "bom",
+    "material": "catalog"
+   }
+  },
+  {
+   "id": "gps",
+   "part_number": null,
+   "type": "gps",
+   "role": null,
+   "qty": 1,
+   "function": "avionics",
+   "why": "position fix for RTH and Remote ID",
+   "necessity": "helpful",
+   "removal_test": "gate passes; score -0.0; loses RTH capability",
+   "score_delta_if_removed": 0.8,
+   "mass_g": 14,
+   "cg_m": [
+    0.25,
+    0,
+    0.06
+   ],
+   "specs": {
+    "chip": "M10"
+   },
+   "material": {
+    "name": "electronic",
+    "kind": "electronic",
+    "sub": {},
+    "infill": null,
+    "walls": null,
+    "orientation": null,
+    "density_kg_m3": 0,
+    "source": "assumed"
+   },
+   "interfaces": [
+    {
+     "mates": "fc",
+     "kind": "electrical",
+     "joint": "UART",
+     "gap_mm": 0.0,
+     "tolerance": "\u00b10.2 mm",
+     "source": "inferred"
+    }
+   ],
+   "operating_point": {},
+   "regulations": [
+    "needed by FAA Part 89 standard Remote ID"
+   ],
+   "confidence": 1.0,
+   "sources": {
+    "mass_g": "bom",
+    "material": "catalog"
+   }
+  },
+  {
+   "id": "gps_2",
+   "part_number": null,
+   "type": "gps",
+   "role": null,
+   "qty": 1,
+   "function": "avionics",
+   "why": "second GPS on the same FC UART bus",
+   "necessity": "unnecessary",
+   "removal_test": "gate passes; score +1.1 min when removed",
+   "score_delta_if_removed": 1.1,
+   "mass_g": 14,
+   "cg_m": [
+    0.27,
+    0,
+    0.06
+   ],
+   "specs": {
+    "chip": "M10"
+   },
+   "material": {
+    "name": "electronic",
+    "kind": "electronic",
+    "sub": {},
+    "infill": null,
+    "walls": null,
+    "orientation": null,
+    "density_kg_m3": 0,
+    "source": "assumed"
+   },
+   "interfaces": [
+    {
+     "mates": "fc",
+     "kind": "electrical",
+     "joint": "UART",
+     "gap_mm": "",
+     "tolerance": "",
+     "source": "inferred"
+    }
+   ],
+   "operating_point": {},
+   "regulations": [],
+   "confidence": 0.8,
+   "sources": {
+    "mass_g": "bom",
+    "material": "catalog"
+   }
+  },
+  {
+   "id": "ballast_nose",
+   "part_number": null,
+   "type": "ballast",
+   "role": null,
+   "qty": 1,
+   "function": "ballast",
+   "why": "lead weight in the nose; shifts CG forward",
+   "necessity": "unnecessary",
+   "removal_test": "gate passes (SM 0.11 -> 0.08); score +3.4 min when removed",
+   "score_delta_if_removed": 3.4,
+   "mass_g": 80,
+   "cg_m": [
+    0.05,
+    0,
+    0.0
+   ],
+   "specs": {},
+   "material": {
+    "name": "lead",
+    "kind": "metal",
+    "sub": {},
+    "infill": null,
+    "walls": null,
+    "orientation": null,
+    "density_kg_m3": 11340,
+    "source": "inferred"
+   },
+   "interfaces": [
+    {
+     "mates": "fuselage",
+     "kind": "physical",
+     "joint": "bonded",
+     "gap_mm": 0.0,
+     "tolerance": "\u00b10.2 mm",
+     "source": "inferred"
+    }
+   ],
+   "operating_point": {},
+   "regulations": [],
+   "confidence": 1.0,
+   "sources": {
+    "mass_g": "bom",
+    "material": "inferred"
+   }
+  },
+  {
+   "id": "fairing_canopy",
+   "part_number": null,
+   "type": "fairing",
+   "role": null,
+   "qty": 1,
+   "function": "cosmetic",
+   "why": "canopy cover over the avionics bay",
+   "necessity": "helpful",
+   "removal_test": "gate passes; cd0 +4% without it; score -0.6 min",
+   "score_delta_if_removed": -0.6,
+   "mass_g": 25,
+   "cg_m": [
+    0.2,
+    0,
+    0.08
+   ],
+   "specs": {},
+   "material": {
+    "name": "PLA",
+    "kind": "printed",
+    "sub": {},
+    "infill": 0.15,
+    "walls": 2,
+    "orientation": "flat",
+    "density_kg_m3": 1240,
+    "source": "assumed"
+   },
+   "interfaces": [
+    {
+     "mates": "fuselage",
+     "kind": "physical",
+     "joint": "magnets 4x",
+     "gap_mm": 0.0,
+     "tolerance": "\u00b10.2 mm",
+     "source": "inferred"
+    }
+   ],
+   "operating_point": {},
+   "regulations": [],
+   "confidence": 1.0,
+   "sources": {
+    "mass_g": "bom",
+    "material": "catalog"
+   }
+  },
+  {
+   "id": "wire_main",
+   "part_number": null,
+   "type": "wire",
+   "role": null,
+   "qty": 1,
+   "function": "power",
+   "why": "battery-to-ESC lead, 12 AWG",
+   "necessity": "required",
+   "removal_test": "gate fail: power_chain (battery not linked to ESC)",
+   "score_delta_if_removed": null,
+   "mass_g": 18,
+   "cg_m": null,
+   "specs": {
+    "awg": 12,
+    "length_mm": 150
+   },
+   "material": {
+    "name": "copper + silicone",
+    "kind": "mixed",
+    "sub": {},
+    "infill": null,
+    "walls": null,
+    "orientation": null,
+    "density_kg_m3": 0,
+    "source": "assumed"
+   },
+   "interfaces": [
+    {
+     "mates": "battery",
+     "kind": "electrical",
+     "joint": "XT60",
+     "gap_mm": 0.0,
+     "tolerance": "\u00b10.2 mm",
+     "source": "inferred"
+    },
+    {
+     "mates": "esc",
+     "kind": "electrical",
+     "joint": "solder",
+     "gap_mm": 0.0,
+     "tolerance": "\u00b10.2 mm",
+     "source": "inferred"
+    }
+   ],
+   "operating_point": {
+    "max_a": 22.1,
+    "limit_a": 41,
+    "margin": 1.86
+   },
+   "regulations": [],
+   "confidence": 0.7,
+   "sources": {
+    "mass_g": "computed",
+    "material": "assumed"
+   }
+  },
+  {
+   "id": "screws_motor",
+   "part_number": null,
+   "type": "fastener",
+   "role": null,
+   "qty": 4,
+   "function": "fastening",
+   "why": "4x M3x8 hold the motor to the firewall",
+   "necessity": "required",
+   "removal_test": "gate fail: clearance (motor not retained)",
+   "score_delta_if_removed": null,
+   "mass_g": 3.2,
+   "cg_m": [
+    0.03,
+    0,
+    0.0
+   ],
+   "specs": {
+    "size": "M3x8"
+   },
+   "material": {
+    "name": "steel",
+    "kind": "metal",
+    "sub": {},
+    "infill": null,
+    "walls": null,
+    "orientation": null,
+    "density_kg_m3": 7850,
+    "source": "assumed"
+   },
+   "interfaces": [
+    {
+     "mates": "motor",
+     "kind": "physical",
+     "joint": "threaded M3",
+     "gap_mm": 0.0,
+     "tolerance": "6H/6g",
+     "source": "inferred"
+    }
+   ],
+   "operating_point": {},
+   "regulations": [],
+   "confidence": 1.0,
+   "sources": {
+    "mass_g": "bom",
+    "material": "catalog"
+   }
+  }
+ ],
+ "warnings": [
+  "fuselage material not in BOM; assumed PLA 15% infill"
+ ],
+ "timing_ms": {
+  "total": 412,
+  "necessity": 280
+ }
+}
