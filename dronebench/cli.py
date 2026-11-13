@@ -257,6 +257,13 @@ def cmd_serve(args) -> int:
     return 0
 
 
+def cmd_export(args) -> int:
+    from dronebench.server import export_site
+    out = _ws_call(export_site, args.workspace, args.out)
+    print(f"static dashboard written to {out} (serve it from any web host)")
+    return 0
+
+
 def cmd_run(args) -> int:
     from dronebench import agents
     if args.agent == "random":
@@ -363,6 +370,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--open", action="store_true", help="open in the default browser")
     p.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
     p.set_defaults(func=cmd_serve)
+
+    p = sub.add_parser("export", help="static copy of the dashboard for a finished run (for hosting)")
+    p.add_argument("workspace", nargs="?", default=".")
+    p.add_argument("--out", required=True)
+    p.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
+    p.set_defaults(func=cmd_export)
 
     p = sub.add_parser("run", help="run a built-in agent in a workspace (random baseline or Claude Code)")
     p.add_argument("workspace", nargs="?", default=".")

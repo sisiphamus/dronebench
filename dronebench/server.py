@@ -139,3 +139,37 @@ def serve(ws, port: int = 8765, open_browser: bool = False) -> None:
         pass
     finally:
         httpd.server_close()
+
+
+def export_site(ws, out, title: str = "DroneBench") -> Path:
+    """Write a static copy of the dashboard for a finished run (GitHub Pages, a USB stick, an email).
+
+    out/index.html + vendor/ + data/state.json + data/step/N.json|glb. Paths are relative, so it works
+    from any sub-folder. Absolute design paths are stripped from the run log.
+    """
+    import shutil
+    ws, out = Path(ws).resolve(), Path(out)
+    st = state(ws)
+    for r in st["runs"]:
+        r.pop("design", None)
+    st["version"] = "static"
+    (out / "data" / "step").mkdir(parents=True, exist_ok=True)
+    (out / "data" / "state.json").write_text(json.dumps(st, default=str))
+    for r in st["runs"]:
+        n = r.get("step")
+        if not isinstance(n, int):
+            continue
+        pay = step_payload(ws, n)
+        if pay and pay.get("report"):
+            (out / "data" / "step" / f"{n}.json").write_text(json.dumps(pay, default=str))
+            glb = step_glb(ws, n)
+            if glb:
+                (out / "data" / "step" / f"{n}.glb").write_bytes(glb)
+    html = (VIEWER / "dashboard.html").read_text().replace(
+        "<head>", '<head>\n<meta name="static" content="1">', 1).replace("<title>DroneBench</title>", f"<title>{title}</title>", 1)
+    (out / "index.html").write_text(html)
+    vend = out / "vendor"
+    if vend.exists():
+        shutil.rmtree(vend)
+    shutil.copytree(VIEWER / "vendor", vend)
+    return out

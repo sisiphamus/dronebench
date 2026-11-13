@@ -116,7 +116,7 @@ table.log tr.sel td { background: rgba(91,157,255,.13); }
 }
 </style>
 <script type="importmap">
-{ "imports": { "three": "/vendor/three.module.js", "three/addons/": "/vendor/addons/" } }
+{ "imports": { "three": "./vendor/three.module.js", "three/addons/": "./vendor/addons/" } }
 </script>
 </head>
 <body>
@@ -173,7 +173,10 @@ const S = { meta: null, runs: [], version: '', sel: 0, follow: true, mode: 'nece
             play: null, reports: {}, models: {}, part: null, hover: null };
 
 // ------------------------------------------------------------------ data
-async function jget(u) { const r = await fetch(u, { cache: 'no-store' }); if (!r.ok) throw new Error(u + ' ' + r.status); return r.json(); }
+const STATIC = !!document.querySelector('meta[name=static]');   // exported site: read data/ files instead of the live API
+const url = (u) => !STATIC ? u : u === '/api/state' ? 'data/state.json'
+  : u.replace(/^\/api\/step\/(\d+)\/model\.glb$/, 'data/step/$1.glb').replace(/^\/api\/step\/(\d+)$/, 'data/step/$1.json');
+async function jget(u) { u = url(u); const r = await fetch(u, { cache: 'no-store' }); if (!r.ok) throw new Error(u + ' ' + r.status); return r.json(); }
 
 function steps() {           // one record per step number, last write wins
   const m = new Map();
@@ -211,6 +214,7 @@ async function poll() {
   } catch (e) { setLive(false); }
 }
 function setLive(ok) {
+  if (STATIC) { $('#live').className = 'live'; $('#live').querySelector('span').textContent = 'recorded run'; return; }
   const el = $('#live'); const recent = S.runs.length && (Date.now() - new Date(S.runs[S.runs.length - 1].timestamp).getTime()) < 45000;
   el.className = 'live' + (ok && recent ? ' on' : '');
   el.querySelector('span').textContent = !ok ? 'server offline' : recent ? 'agent working' : 'idle';
@@ -402,7 +406,7 @@ new ResizeObserver(resize).observe(stage); resize();
 async function model(n) {
   if (S.models[n] !== undefined) return S.models[n];
   S.models[n] = (async () => {
-    const r = await fetch(`/api/step/${n}/model.glb`);
+    const r = await fetch(url(`/api/step/${n}/model.glb`));
     if (!r.ok) return null;
     const buf = await r.arrayBuffer();
     return await new Promise((res, rej) => loader.parse(buf, '', (g) => res(g.scene), rej));
@@ -550,7 +554,7 @@ addEventListener('keydown', (e) => {
   if (e.key === 'ArrowLeft' && i > 0) { S.follow = false; select(ss[i - 1]); }
 });
 
-poll(); setInterval(poll, 1500);
+poll(); if (!STATIC) setInterval(poll, 1500);
 </script>
 </body>
 </html>
