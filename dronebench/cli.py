@@ -1,4 +1,4 @@
-"""`dronebench` command line: score | parts | view | edit | baseline.
+"""`dronebench` command line: score | parts | view | edit | baseline | init | try | build | status | serve | run.
 
 Exit codes: 0 ok, 2 usage error, 1 internal error (traceback only with --debug).
 """
@@ -190,6 +190,82 @@ def cmd_baseline(args) -> int:
     return 0
 
 
+# ---------- workspace commands (the agent loop) ----------
+
+def _agent_label(args) -> str:
+    import os
+    return getattr(args, "agent", None) or os.environ.get("DRONEBENCH_AGENT") or "agent"
+
+
+def _ws_call(fn, *a, **kw):
+    from dronebench.workspace import WorkspaceError
+    try:
+        return fn(*a, **kw)
+    except WorkspaceError as e:
+        raise UsageError(str(e))
+
+
+def cmd_init(args) -> int:
+    from dronebench import workspace as W
+    m = _ws_call(W.init, args.workspace, args.fixture, args.preset, args.steps, args.force)
+    print(f"workspace ready: {Path(args.workspace).resolve()}")
+    print(f"  fixture {m['fixture']}  preset {m['preset']}  baseline {m['baseline']:.2f} {m.get('unit') or ''}  budget {m['max_steps']} steps")
+    print("  next: cd into it, read TASK.md, then `dronebench serve .` in another terminal")
+    return 0
+
+
+def cmd_try(args) -> int:
+    from dronebench import workspace as W
+    src = sys.stdin.read() if args.ops == "-" else (Path(args.ops).read_text() if Path(args.ops).exists() else None)
+    if src is None:
+        raise UsageError(f"ops file not found: {args.ops}")
+    try:
+        ops = json.loads(src)
+    except json.JSONDecodeError as e:
+        raise UsageError(f"ops are not valid JSON: {e}")
+    if isinstance(ops, dict):
+        ops = ops.get("ops", [ops])
+    if not isinstance(ops, list):
+        raise UsageError("ops must be a JSON list")
+    o = _ws_call(W.try_step, args.workspace, ops, args.note or "", _agent_label(args), args.keep)
+    print(_dumps(o, pretty=True) if args.json else W.outcome_text(o))
+    return 0 if o["accepted"] else 3
+
+
+def cmd_build(args) -> int:
+    from dronebench import workspace as W
+    sets = _ws_call(W.parse_sets, args.set)
+    if not sets:
+        raise UsageError("nothing to build: pass --set path=value (see params.yaml)")
+    o = _ws_call(W.build_step, args.workspace, sets, args.note or "", _agent_label(args), args.keep)
+    print(_dumps(o, pretty=True) if args.json else W.outcome_text(o))
+    return 0 if o["accepted"] else 3
+
+
+def cmd_status(args) -> int:
+    from dronebench import workspace as W
+    if args.json:
+        print(_dumps(_ws_call(W.status, args.workspace), pretty=True))
+    else:
+        print(_ws_call(W.status_text, args.workspace))
+    return 0
+
+
+def cmd_serve(args) -> int:
+    from dronebench.server import serve
+    _ws_call(serve, args.workspace, args.port, args.open)
+    return 0
+
+
+def cmd_run(args) -> int:
+    from dronebench import agents
+    if args.agent == "random":
+        r = _ws_call(agents.run_random, args.workspace, args.steps, args.seed)
+        print(f"random agent: {r['start']:.2f} -> {r['best']:.2f}")
+        return 0
+    return _ws_call(agents.run_claude, args.workspace, args.steps, args.model)
+
+
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(prog="dronebench", description="Benchmark small electric fixed-wing UAV designs.")
     ap.add_argument("--debug", action="store_true", help="show tracebacks on errors")
@@ -245,6 +321,57 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--runs", default=None, help="runs.jsonl to append to")
     p.add_argument("--out", default=None, help="working folder (default: <design>_baseline)")
     p.set_defaults(func=cmd_baseline)
+
+    p = sub.add_parser("init", help="create a workspace (design + brief + step log) for an agent to iterate in")
+    p.add_argument("workspace")
+    p.add_argument("--fixture", default="falcon_v2", help="falcon_v2 (default), trainer, bad_tail, step_mix, or a design folder")
+    p.add_argument("--preset", choices=PRESETS, default=None)
+    p.add_argument("--steps", type=int, default=12, help="step budget (default 12)")
+    p.add_argument("--force", action="store_true", help="replace a non-empty folder")
+    p.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
+    p.set_defaults(func=cmd_init)
+
+    p = sub.add_parser("try", help="apply JSON edit ops to a workspace, score, accept or reject")
+    p.add_argument("workspace", nargs="?", default=".")
+    p.add_argument("--ops", required=True, help="JSON file with a list of ops ('-' = stdin)")
+    p.add_argument("--note", help="one line: what you expect")
+    p.add_argument("--keep", action="store_true", help="accept a gate-passing design even if the score dipped")
+    p.add_argument("--agent", help="label for the run log (default: $DRONEBENCH_AGENT or 'agent')")
+    p.add_argument("--json", action="store_true")
+    p.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
+    p.set_defaults(func=cmd_try)
+
+    p = sub.add_parser("build", help="change design parameters (params.yaml) and regenerate the aircraft")
+    p.add_argument("workspace", nargs="?", default=".")
+    p.add_argument("--set", action="append", default=[], metavar="PATH=VALUE", help="e.g. wing.span_mm=2200 (repeatable)")
+    p.add_argument("--note")
+    p.add_argument("--keep", action="store_true")
+    p.add_argument("--agent")
+    p.add_argument("--json", action="store_true")
+    p.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
+    p.set_defaults(func=cmd_build)
+
+    p = sub.add_parser("status", help="workspace summary: score, tightest checks, removable parts")
+    p.add_argument("workspace", nargs="?", default=".")
+    p.add_argument("--json", action="store_true")
+    p.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
+    p.set_defaults(func=cmd_status)
+
+    p = sub.add_parser("serve", help="live dashboard for a workspace (localhost)")
+    p.add_argument("workspace", nargs="?", default=".")
+    p.add_argument("--port", type=int, default=8765)
+    p.add_argument("--open", action="store_true", help="open in the default browser")
+    p.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
+    p.set_defaults(func=cmd_serve)
+
+    p = sub.add_parser("run", help="run a built-in agent in a workspace (random baseline or Claude Code)")
+    p.add_argument("workspace", nargs="?", default=".")
+    p.add_argument("--agent", choices=("random", "claude"), default="random")
+    p.add_argument("--steps", type=int, default=12)
+    p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--model", default=None)
+    p.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
+    p.set_defaults(func=cmd_run)
     return ap
 
 

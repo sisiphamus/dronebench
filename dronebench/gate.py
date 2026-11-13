@@ -236,6 +236,11 @@ def check_control_chain(design, links) -> Check:
         surf = servo_surface(s, links)
         if surf:
             driven.setdefault(surf, []).append(s.id)
+    roles = {s.role for s in surfaces}
+    for axis, need in (("roll", ("aileron", "elevon")), ("pitch", ("elevator", "elevon", "ruddervator")),
+                       ("yaw", ("rudder", "ruddervator"))):
+        if not roles & set(need):
+            probs.append(f"no {axis} control surface ({' / '.join(need)})")
     ok_count = 0
     for surf in surfaces:
         servos = driven.get(surf.id, [])
@@ -357,6 +362,90 @@ def check_clearance(design, G, links) -> Check:
     return Check("clearance", len(pen) + len(strikes), [None, 0], not probs, "; ".join(probs))
 
 
+def check_harness(design: Design, G) -> Check:
+    """Every ESC needs a power lead from the battery, and the wiring must weigh at least a minimum for the
+    ESCs, servos and FC it serves (10 g/ESC, 4 g/servo, 5 g FC). Deleting the wire parts to save their mass is
+    not a design improvement."""
+    if G is None:
+        return Check("harness", 0, [None, 0], True, "no part graph given; not checked")
+
+    def wires_of(pid):
+        if pid not in G:
+            return set()
+        return {n for n in G.neighbors(pid) if G.nodes[n].get("type") == "wire"
+                and any(l["kind"] == "electrical" for l in G.edges[pid, n]["links"])}
+
+    probs = []
+    batts = [b.id for b in design.of_type("battery")]
+    fcs = [f.id for f in design.of_type("fc")]
+    for e in design.of_type("esc"):
+        if batts and not any(wires_of(e.id) & wires_of(b) for b in batts):
+            probs.append(f"{e.id}: no power wiring to the battery")
+    wires = design.of_type("wire")
+    have = sum(float(w.mass_g or 0) for w in wires)
+    need = 10.0 * len(design.of_type("esc")) + 4.0 * len(design.of_type("servo")) + (5.0 if fcs else 0.0)
+    if have + 1e-9 < need:
+        probs.append(f"harness mass {have:.0f} g < {need:.0f} g minimum for {len(design.of_type('esc'))} ESC(s), "
+                     f"{len(design.of_type('servo'))} servo(s)")
+    return Check("harness", len(probs), [None, 0], not probs, "; ".join(probs[:6]))
+
+
+CONNECT_MM = 25.0   # parts closer than this are treated as held together (standoffs, brackets, mounting pods)
+
+
+def _surface_points(part, n=300) -> np.ndarray:
+    import trimesh
+    pts, _ = trimesh.sample.sample_surface(part.mesh, n, seed=0)
+    return np.vstack([np.asarray(part.mesh.vertices), pts])
+
+
+def airframe_clusters(design: Design, G) -> list[list[str]]:
+    """Groups of meshed parts that hang together: physical contacts, then anything within CONNECT_MM."""
+    import networkx as nx
+    from scipy.spatial import cKDTree
+    meshed = [p for p in design.parts.values() if getattr(p, "mesh", None) is not None]
+    h = nx.Graph()
+    h.add_nodes_from(p.id for p in meshed)
+    for u, v, a in G.edges(data=True):
+        if u in h and v in h and any(l["kind"] == "physical" for l in a["links"]):
+            h.add_edge(u, v)
+    comps = list(nx.connected_components(h))
+    if len(comps) > 1:
+        trees, boxes = {}, {}
+        by_id = {p.id: p for p in meshed}
+        for i, c in enumerate(comps):
+            pts = np.vstack([_surface_points(by_id[x]) for x in c])
+            trees[i] = cKDTree(pts)
+            boxes[i] = (pts.min(0), pts.max(0))
+        cg = nx.Graph()
+        cg.add_nodes_from(trees)
+        lim = CONNECT_MM * 1e-3
+        for i in trees:
+            for j in trees:
+                if i < j:
+                    lo_i, hi_i = boxes[i]; lo_j, hi_j = boxes[j]
+                    if (np.maximum(lo_i, lo_j) - np.minimum(hi_i, hi_j) > lim).any():
+                        continue
+                    d, _ = trees[j].query(trees[i].data, distance_upper_bound=lim)
+                    if np.isfinite(d).any():
+                        cg.add_edge(i, j)
+        merged = [sorted(x for k in grp for x in comps[k]) for grp in nx.connected_components(cg)]
+    else:
+        merged = [sorted(c) for c in comps]
+    return sorted(merged, key=len, reverse=True)
+
+
+def check_airframe_connected(design: Design, G) -> Check:
+    if G is None:
+        return Check("airframe_connected", 1, [None, 1], True, "no part graph given; not checked")
+    groups = airframe_clusters(design, G)
+    if len(groups) <= 1:
+        return Check("airframe_connected", 1, [None, 1], True, "every part is attached to the airframe")
+    stray = [x for g in groups[1:] for x in g]
+    return Check("airframe_connected", len(groups), [None, 1], False,
+                 f"{len(groups)} separate pieces; not attached to the main airframe: " + ", ".join(stray[:10]))
+
+
 # ---------------------------------------------------------------- gate
 
 def evaluate_gate(design: Design, graph, geom: AeroGeometry, pres: PhysicsResult, pin=None,
@@ -378,8 +467,8 @@ def evaluate_gate(design: Design, graph, geom: AeroGeometry, pres: PhysicsResult
             c.passed = False
             c.detail = f"physics could not run: {note}" + (f" ({c.detail})" if c.detail else "")
     checks = [check_lifting_surfaces(design, geom), *phys, check_power_chain(design, links), check_control_chain(design, links), check_payload(design),
-              check_clearance(design, graph, links)]
+              check_clearance(design, graph, links), check_airframe_connected(design, graph), check_harness(design, graph)]
     order = ["lifting_surfaces", "static_margin", "stall_margin", "climb", "spar", "tail_volume", "servo_torque",
-             "motor_current", "esc_current", "battery_current", "power_chain", "control_chain", "payload", "clearance"]
+             "motor_current", "esc_current", "battery_current", "power_chain", "control_chain", "payload", "clearance", "airframe_connected", "harness"]
     checks.sort(key=lambda c: order.index(c.name))
     return GateResult(passed=all(c.passed for c in checks), checks=checks)

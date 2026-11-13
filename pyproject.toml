@@ -16,4 +16,4 @@ build-backend = "setuptools.build_meta"
 include = ["dronebench*"]
 
 [tool.setuptools.package-data]
-dronebench = ["viewer/*.html", "viewer/*.js"]
+dronebench = ["viewer/*.html", "viewer/*.js", "viewer/vendor/*.js", "viewer/vendor/addons/*/*.js"]
