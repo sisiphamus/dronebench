@@ -33,7 +33,7 @@ op and raise its own endurance without touching the aircraft (found in review; c
    design method. A design the controller cannot fly is a design problem.
 4. **Flown missions** (`mission.py`): a full-throttle climb, orbits and upwind/downwind legs.
    *Scored* segments fly in calm air and in a steady 5 m/s wind (no random turbulence), so a design's score is identical every run and two
-   designs differ only because the aircraft differs. *Robustness* segments fly in light and gusty turbulence and are pass/fail: does it still
+   designs differ only because the aircraft differs. *Turbulence* segments fly in light and gusty turbulence and are pass/fail: does it still
    complete, within altitude and speed tracking limits, load factor and stall? Turbulence is not scored because a 30 to 130 s gust realisation
    moves average power by tens of percent through sustained updrafts (found in review). Endurance is usable energy divided by flown orbit power at two
    states of charge; range is usable energy divided by the mean of an upwind and a downwind leg's Wh per km.
@@ -93,7 +93,7 @@ choice moves it: how much drag a built-in tail incidence costs (here 40% of what
 - **Structure is a spar, a gate on printed shells, and a load-factor limit.** Skins and joints are not analysed; shells need two walls (a skin and printed ribs),
   a manufacturing rule and not a stress result. The flown load-factor check does not bind on its own (peaks are about 2 g against 7 to 16 g limits); the
   spar check at 3.5 g does the work.
-- **Fixed weather.** Every design flies the same conditions, so scores compare. An optimiser could overfit the robustness seeds;
+- **Fixed weather.** Every design flies the same conditions, so scores compare. An optimiser could overfit the turbulence seeds;
   `mission.evaluate_flight(..., seed_offset=n)` rotates them, so hold some back. The scored segments are deterministic and need no seeds.
 - **Top speed is a trim calculation, not flown**, and is limited to 49 m/s (the edge of the propeller table).
 - **Stall and post-stall** come from the section polars and a table extrapolation above 25 degrees. Treat anything past the stall angle as qualitative.

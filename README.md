@@ -1,6 +1,6 @@
 # DroneBench
 
-An environment for small electric fixed-wing drones where designs are **flown**, not estimated. It has two halves that
+An environment for small electric fixed-wing drones where every design is **flown** in a simulator before it scores. It has two halves that
 share one simulator:
 
 - **Design environment.** An agent (an LLM, a black-box optimiser, an RL policy) edits an aircraft. DroneBench builds the
@@ -67,7 +67,7 @@ zero-action and random policies as reference lines.
 | Orbit and legs in turbulence | light (3 m/s wind, Dryden sigma 1) and gusty (6 m/s, sigma 2) | **pass/fail only**: completes, tracks altitude and speed, stays under the load and stall limits |
 
 The scored segments are deterministic (no random turbulence), so a design's score is identical every run. Random turbulence is flown for
-robustness, not scored: one realisation moves average power by tens of percent. Same weather for every design, so scores compare;
+pass or fail, not scored: one realisation moves average power by tens of percent. Same weather for every design, so scores compare;
 `seed_offset` rotates the turbulence seeds if you want to hold some back.
 
 The gate checks static margin, stall margin, climb, that every segment is completed, peak load factor, no stall, a pack that fits its volume, the
