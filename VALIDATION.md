@@ -23,9 +23,9 @@ op and raise its own endurance without touching the aircraft (found in review; c
 ## What it does now
 
 1. **Aerodynamics from geometry** (`dronebench/aero.py`, AeroSandbox). Section polars (NeuralFoil) and a body build-up give lift, drag and pitching
-   moment against angle of attack through stall at three airspeeds, so Reynolds-number effects are real. The vortex lattice gives the stability
+   moment against angle of attack through stall at three airspeeds, so Reynolds-number effects are included. The vortex lattice gives the stability
    and damping derivatives, and sets the pitching-moment slope below the stall. Control effectiveness comes from the build-up with surfaces deflected,
-   with hinge lines from the real control-surface chord. A slender-body term adds the fuselage's destabilising moment. The choice of tool for each
+   with hinge lines from the control-surface chord. A slender-body term adds the fuselage's destabilising moment. The choice of tool for each
    quantity was made by testing them against each other (docstring in `aero.py`).
 2. **A 6-degree-of-freedom simulator** (`flight.py`, `_dyn.py`): rigid body, quaternion attitude, RK4, numba-compiled (15 microseconds per step).
    Motor, propeller and battery with voltage sag and state of charge. Dryden turbulence. Servos with lag, rate and travel limits. Inertia from the part masses.
@@ -85,7 +85,7 @@ choice moves it: how much drag a built-in tail incidence costs (here 40% of what
 
 ## Open problems (read before trusting a result)
 
-- **Only one real data point.** Nothing here has been compared with measured flight logs. `dronebench calibrate` fits the single drag factor to
+- **Only one external data point.** Nothing here has been compared with measured flight logs. `dronebench calibrate` fits the single drag factor to
   measured battery power in steady flight and reports the residual; with real logs this is the first thing to do.
 - **The propeller model is a generic fit**, calibrated against published APC 11x8E curves, not per-prop measured data. Thrust and efficiency for unusual
   props are less certain than for common ones. Idle (windmilling) prop drag and prop torque are not modelled.

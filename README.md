@@ -163,7 +163,7 @@ dronebench calibrate fixtures/falcon_v2 --point 15.3:92 --point 18:124      # ai
 | `trainer` | small trainer | 42 |
 | `bad_tail` | trainer with an undersized tail (statically unstable; a repair task) | 42 |
 | `step_mix` | trainer with STEP parts mixed in | 42 |
-| `third_party` | real downloaded CAD, no tail (flying wing); fails with a message | 48 |
+| `third_party` | CAD downloaded from a third-party design, no tail (flying wing); fails with a message | 48 |
 
 ## Dashboard
 
