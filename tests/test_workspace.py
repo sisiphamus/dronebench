@@ -91,6 +91,17 @@ def test_force_only_replaces_a_dronebench_workspace(tmp_path):
     with pytest.raises(W.WorkspaceError, match="not a DroneBench workspace"):
         W.init(mine, "trainer", steps=2, necessity=False, fidelity="analytic", force=True)
     assert (mine / "notes.txt").read_text() == "keep me"
+    fake = tmp_path / "fake"
+    fake.mkdir()
+    (fake / "thesis.txt").write_text("keep me")
+    (fake / "workspace.json").write_text("{}")                 # a file with the right name is not enough
+    with pytest.raises(W.WorkspaceError, match="not a DroneBench workspace"):
+        W.init(fake, "trainer", steps=2, necessity=False, fidelity="analytic", force=True)
+    assert (fake / "thesis.txt").exists()
+    a_file = tmp_path / "plain.txt"
+    a_file.write_text("x")
+    with pytest.raises(W.WorkspaceError, match="not a folder"):
+        W.init(a_file, "trainer", steps=2, necessity=False, fidelity="analytic")
     W.init(tmp_path / "w", "trainer", steps=2, necessity=False, fidelity="analytic")
     W.init(tmp_path / "w", "trainer", steps=2, necessity=False, fidelity="analytic", force=True)   # a real workspace: fine
 

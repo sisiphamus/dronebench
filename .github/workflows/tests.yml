@@ -22,14 +22,15 @@ jobs:
         with:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v5
-      - run: uv venv --python 3.12 && uv pip install -e .
-      - name: Replay changed result files
+      - name: List result files changed by the pull request
+        run: git -c core.quotepath=off diff -z --name-only --no-renames --diff-filter=AM origin/${{ github.base_ref }}...HEAD -- 'results/*.json' > "$RUNNER_TEMP/changed.list"
+      - name: Check them with the base branch's code, not the pull request's
         run: |
-          git diff --name-only --diff-filter=AM origin/${{ github.base_ref }}...HEAD -- 'results/**/*.json' > changed.txt
-          cat changed.txt
+          git checkout origin/${{ github.base_ref }} -- dronebench fixtures pyproject.toml
+          uv venv --python 3.12 && uv pip install -e .
           status=0
-          while IFS= read -r f; do
+          while IFS= read -r -d '' f; do
             echo "== $f"
             .venv/bin/dronebench verify --standard "$f" || status=1
-          done < changed.txt
+          done < "$RUNNER_TEMP/changed.list"
           exit $status

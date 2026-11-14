@@ -22,7 +22,7 @@ uv venv && uv pip install -e ".[dev]"
 Rules for a result to count, all checked by `verify --standard`: the unmodified `falcon_v2` with the default mission, flown, at most 30 steps,
 and no `add` op that reads a mesh from your disk (`cad_file`), because nobody else has that file. Use only `dronebench try` and
 `dronebench build`; edits made outside them do not replay and fail the check. Say in the pull request which model or method it was.
-One run is a sample, not a ranking; repeat runs are welcome. Scores must reproduce to 0.1%.
+One run is a sample, not a ranking; repeat runs are welcome. Scores must reproduce to 0.1%. Replay can prove the accepted steps but not the rejected ones, so the attempt count rests on the submitter being honest: steps must be numbered 1 to N with none missing, and say in the pull request how many attempts you ran.
 
 ## Add a design or a fixture
 

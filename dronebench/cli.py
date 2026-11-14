@@ -303,7 +303,7 @@ def cmd_verify(args) -> int:
     from dronebench import results
     try:
         r = json.loads(Path(args.result).read_text())
-    except (OSError, json.JSONDecodeError) as e:
+    except (OSError, ValueError) as e:      # includes bad JSON and files that are not text
         raise UsageError(f"cannot read {args.result}: {e}")
     try:
         v = results.verify_result(r, args.design, args.standard)
@@ -330,10 +330,12 @@ def _command_label(line: str) -> str:
     if not words:
         raise UsageError("--cmd is empty; give the command that starts your agent, e.g. --cmd \"python my_agent.py\"")
     i = 0
+    while i < len(words) and "=" in words[i] and not words[i].startswith("-"):    # FOO=1 python a.py
+        i += 1
     while i < len(words) and Path(words[i]).name in _RUNNERS | {"run"}:
         i += 1
         while i < len(words) and words[i].startswith("-") and words[i] != "-m":
-            i += 1
+            i += 2 if words[i] in ("-W", "-X") else 1                              # these two take a value
         if i < len(words) and words[i] == "-m":
             return words[i + 1] if i + 1 < len(words) else "agent"
     word = words[i] if i < len(words) else words[0]

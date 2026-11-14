@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import shutil
 import tempfile
 from pathlib import Path
@@ -22,6 +23,7 @@ import yaml
 
 from . import __version__
 from . import workspace as W
+from .score import PRESETS
 
 FORMAT = "dronebench-result/1"
 TOLERANCE = 1e-3   # relative, between a claimed score and the replayed one
@@ -72,27 +74,52 @@ def uses_local_files(result: dict) -> list[int]:
             and any(isinstance(o, dict) and o.get("cad_file") for o in s.get("ops") or [])]
 
 
+def _num(v, name, integer=False):
+    if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v):
+        raise ValueError(f"{name} is not a finite number")
+    if integer and int(v) != v:
+        raise ValueError(f"{name} is not a whole number")
+    return v
+
+
 def _schema(result) -> None:
     if not isinstance(result, dict) or result.get("format") != FORMAT:
         raise ResultError(f"not a DroneBench result file (format should be '{FORMAT}')")
     try:
         for k in ("fixture", "preset", "fidelity"):
             if not isinstance(result[k], str):
-                raise TypeError(k)
-        for k in ("baseline", "best", "budget"):
-            float(result[k])
+                raise ValueError(f"{k} is not text")
+        if result["preset"] not in PRESETS:
+            raise ValueError(f"preset '{result['preset']}' is not one of {', '.join(PRESETS)}")
+        if result["fidelity"] not in ("flown", "analytic"):
+            raise ValueError("fidelity must be flown or analytic")
+        if not isinstance(result.get("start_params") or {}, dict):
+            raise ValueError("start_params is not a mapping")
+        for k in ("baseline", "best"):
+            _num(result[k], k)
+        _num(result["budget"], "budget", integer=True)
         if not isinstance(result["steps"], list):
-            raise TypeError("steps")
+            raise ValueError("steps is not a list")
         for s in result["steps"]:
-            int(s["step"])
-            bool(s["accepted"])
-            float(s["score"])
-            if not isinstance(s.get("ops") or [], list):
-                raise TypeError("ops")
+            _num(s["step"], "step", integer=True)
+            _num(s["score"], "a step score")
+            if not isinstance(s["accepted"], bool):
+                raise ValueError("accepted is not true or false")
+            ops = s.get("ops") or []
+            if not isinstance(ops, list) or not all(isinstance(o, dict) for o in ops):
+                raise ValueError("ops is not a list of edits")
     except (KeyError, TypeError, ValueError) as e:
-        raise ResultError(f"malformed result file (problem with {e!s})")
+        raise ResultError(f"malformed result file ({e!s})")
+    if [int(s["step"]) for s in result["steps"]] != list(range(1, len(result["steps"]) + 1)):
+        raise ResultError("steps must be numbered 1, 2, 3, ... with none left out (rejected attempts count)")
     if int(result["budget"]) < len(result["steps"]):
         raise ResultError(f"budget {int(result['budget'])} is smaller than the {len(result['steps'])} attempts in the file")
+
+
+def recount(result: dict) -> dict:
+    """The attempt and acceptance counts the steps actually give (a file's own counts are not trusted)."""
+    steps = result.get("steps", [])
+    return {"attempts": len(steps), "accepted": sum(1 for s in steps if s.get("accepted"))}
 
 
 def standard_problems(result: dict) -> list[str]:
@@ -123,6 +150,8 @@ def verify_result(result: dict, design: Optional[str] = None, standard: bool = F
     Without `design`, the starting design must be a built-in fixture (a result file cannot point at a folder of its own).
     """
     _schema(result)
+    if standard and design is not None:
+        raise ResultError("--standard replays the built-in falcon_v2 only; it cannot be combined with --design")
     mism: list[dict] = []
     if standard:
         mism += [{"what": "standard task", "claimed": "-", "replayed": "-", "why": p} for p in standard_problems(result)]

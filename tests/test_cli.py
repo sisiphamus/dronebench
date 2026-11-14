@@ -182,9 +182,16 @@ def test_run_label_defaults_to_the_command_name(monkeypatch):
     monkeypatch.setattr(agents, "run_command", lambda ws, cmd, label="agent", say=print: seen.update(label=label) or 0)
     for line, label in (("python my_agent.py --fast", "my_agent"), ("python3 -u agents/solver.py", "solver"),
                         ("uv run tool.py x", "tool"), ("python -m mypkg.agent", "mypkg.agent"),
-                        ("./run.sh", "run.sh"), ("my-agent --budget 5", "my-agent")):
+                        ("./run.sh", "run.sh"), ("my-agent --budget 5", "my-agent"),
+                        ("FOO=1 python a.py", "a"), ("python -W ignore b.py", "b")):
         assert cli.main(["run", "w", "--cmd", line]) == 0
         assert seen["label"] == label, line
+
+
+def test_verify_a_file_that_is_not_text_is_a_usage_error(tmp_path):
+    f = tmp_path / "r.json"
+    f.write_bytes(b"\xff\xfe\x00bad")
+    assert cli.main(["verify", str(f)]) == 2
 
 
 def test_run_with_an_empty_or_broken_command_is_a_usage_error(monkeypatch, capsys):

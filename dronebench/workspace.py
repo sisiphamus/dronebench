@@ -171,14 +171,22 @@ def _build_note(has_params: bool) -> str:
 
 
 # ---------------------------------------------------------------- init / state
+def _looks_like_a_workspace(ws: Path) -> bool:
+    m = _read_json(ws / "workspace.json")
+    return (isinstance(m, dict) and "fixture" in m and "max_steps" in m
+            and (ws / "design").is_dir() and (ws / "steps").is_dir())
+
+
 def init(ws, fixture: str = "falcon_v2", preset: Optional[str] = None, steps: int = 12, force: bool = False,
          necessity: bool = True, fidelity: str = "flown", sets: Optional[dict] = None) -> dict:
     ws = Path(ws).resolve()
     src = fixture_path(fixture)
+    if ws.exists() and not ws.is_dir():
+        raise WorkspaceError(f"{ws} is not a folder")
     if ws.exists() and any(ws.iterdir()):
         if not force:
             raise WorkspaceError(f"{ws} is not empty (use --force to replace a workspace)")
-        if not (ws / "workspace.json").exists():
+        if not _looks_like_a_workspace(ws):
             raise WorkspaceError(f"{ws} is not a DroneBench workspace (no workspace.json), so --force will not delete it; pick an empty folder")
         shutil.rmtree(ws)
     ws.mkdir(parents=True, exist_ok=True)

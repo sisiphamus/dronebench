@@ -39,7 +39,7 @@ dronebench score fixtures/trainer --flown --summary      # flies one design and 
 
 A run happens in a **workspace**: a folder holding the current design, a brief for the agent (`TASK.md`), and a log of every attempt.
 The agent never edits files itself; it calls `dronebench try` or `dronebench build`, and the workspace keeps the change only if the
-design passes the gate and scores at least as well. The step budget is enforced by the workspace.
+design passes the gate and scores at least as well (or the agent adds `--keep` for a setup step that should stay even if the score dips). The step budget is enforced by the workspace.
 
 ```bash
 dronebench init ws --fixture falcon_v2 --steps 30          # the standard task: improve endurance of the Falcon V2

@@ -149,6 +149,43 @@ def test_a_design_folder_result_needs_that_folder(tmp_path):
         results.verify_result(r, design=str(other))
 
 
+def test_standard_cannot_be_combined_with_your_own_design(run, tmp_path):
+    r = results.export_result(run)
+    with pytest.raises(results.ResultError, match="standard"):
+        results.verify_result(r, design="fixtures/trainer", standard=True)
+
+
+def test_attempt_numbers_must_be_complete_and_counts_are_recomputed(run):
+    r = results.export_result(run)
+    r["steps"] = [s for s in r["steps"] if s["accepted"]]       # rejected steps left out
+    r["attempts"] = 2
+    with pytest.raises(results.ResultError, match="steps must be numbered"):
+        results.verify_result(r)
+    r = results.export_result(run)
+    r["attempts"], r["accepted"] = 99, 99
+    v = results.verify_result(r)
+    assert v["ok"]                                              # the claim is recomputed, not trusted
+    assert results.recount(r)["attempts"] == 3 and results.recount(r)["accepted"] == 2
+
+
+@pytest.mark.parametrize("field,value", [
+    ("budget", float("nan")), ("budget", float("inf")), ("start_params", "wing.span_mm=2"), ("start_params", ["a"]),
+    ("preset", "nonsense"), ("fidelity", "dreamed"), ("baseline", float("nan"))])
+def test_odd_field_values_are_refused_cleanly(run, field, value):
+    r = results.export_result(run)
+    r[field] = value
+    with pytest.raises(results.ResultError):
+        results.verify_result(r)
+
+
+def test_odd_step_values_are_refused_cleanly(run):
+    for key, value in (("accepted", "false"), ("ops", ["abc"]), ("score", float("nan")), ("step", "x")):
+        r = results.export_result(run)
+        r["steps"][1][key] = value
+        with pytest.raises(results.ResultError):
+            results.verify_result(r)
+
+
 def test_edits_that_read_local_files_are_flagged(run):
     r = results.export_result(run)
     assert results.uses_local_files(r) == []
