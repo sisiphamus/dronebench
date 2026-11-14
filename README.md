@@ -88,7 +88,7 @@ One run each from the same starting design, same weather and gate; scores are fl
 
 A learned flight controller: PPO on `FlightEnv` (orbit in wind and turbulence) reaches a return of 138 against the cascaded autopilot's 152 after 800,000
 steps (about 30 minutes on one core), completing all 8 held-out test flights; doing nothing returns -894 and random actions -207.
-One run per agent is not a ranking, it is a sanity check that the environment rewards good engineering over luck.
+One run per agent gives a sanity check that the environment rewards engineering over luck, with no ranking between the search methods.
 
 ## What an agent can change
 
