@@ -87,6 +87,7 @@ class Mission:
     cruise_kmh: Optional[float] = None       # optional required cruise; else best-range speed is used
     rho: float = 1.225
     usable_battery_fraction: float = 0.85
+    max_mass_kg: Optional[float] = None      # takeoff mass limit (MTOW); None = no limit
 
 
 @dataclass

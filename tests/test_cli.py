@@ -13,7 +13,7 @@ from test_viewer import fake_design, load_sample
 def fake_eval(monkeypatch):
     calls = []
 
-    def _eval(design_dir, preset=None, necessity=True):
+    def _eval(design_dir, preset=None, necessity=True, flown=False):
         calls.append((str(design_dir), preset, necessity))
         rep = load_sample()
         if preset:

@@ -78,6 +78,8 @@ def _parse_mission(raw: dict | None) -> Mission:
         mission.cruise_kmh = float(raw["cruise_kmh"])
     mission.rho = float(raw.get("rho", mission.rho))
     mission.usable_battery_fraction = float(raw.get("usable_battery_fraction", mission.usable_battery_fraction))
+    if raw.get("max_mass_kg") is not None:
+        mission.max_mass_kg = float(raw["max_mass_kg"])
     return mission
 
 

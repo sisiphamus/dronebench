@@ -68,7 +68,7 @@ def core(design: Design, preset: str, graph=None, geom=None, timing: Optional[di
 
 
 def evaluate_design(design: Design, preset: Optional[str] = None, necessity: bool = True,
-                    workers: int = NECESSITY_WORKERS) -> dict:
+                    workers: int = NECESSITY_WORKERS, flown: bool = False) -> dict:
     """Evaluate an in-memory (already ingested) Design and return the report dict."""
     from .report import build_report
     t0 = time.perf_counter()
@@ -82,17 +82,23 @@ def evaluate_design(design: Design, preset: Optional[str] = None, necessity: boo
         from .necessity import removal_test
         nec = removal_test(design, preset, bits, workers=workers, timing=timing)
     timing["total"] = _ms(t0)
-    return build_report(design, bits["graph"], bits["geom"], bits["mass"], bits["pres"], bits["gate"],
-                        bits["score"], nec, timing, preset=preset, pin=bits["pin"], links=bits["links"])
+    report = build_report(design, bits["graph"], bits["geom"], bits["mass"], bits["pres"], bits["gate"],
+                          bits["score"], nec, timing, preset=preset, pin=bits["pin"], links=bits["links"])
+    if flown:
+        t2 = time.perf_counter()
+        from .flown import merge_flown
+        merge_flown(report, design, bits, preset)
+        report["timing_ms"]["flight"] = _ms(t2)
+    return report
 
 
-def evaluate(design_dir, preset: Optional[str] = None, necessity: bool = True) -> dict:
+def evaluate(design_dir, preset: Optional[str] = None, necessity: bool = True, flown: bool = False) -> dict:
     """Load a design folder and return its report dict (PLAN §4)."""
     from .ingest import load_design
     t0 = time.perf_counter()
     design = load_design(Path(design_dir))
     load_ms = _ms(t0)
-    report = evaluate_design(design, preset=preset, necessity=necessity)
+    report = evaluate_design(design, preset=preset, necessity=necessity, flown=flown)
     report["timing_ms"]["ingest"] = load_ms
     report["timing_ms"]["total"] = round(report["timing_ms"].get("total", 0) + load_ms, 1)
     return report

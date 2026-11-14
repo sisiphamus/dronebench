@@ -459,7 +459,7 @@ edit params.yaml and rebuild. Frame: mm, x aft (nose at 0), y right, z up.
 {sm_note}
 AUW estimate (dronebench.materials.part_mass_g): {total:.0f} g
 specs.fits lists parts this part is allowed to sit inside (declared fits for the clearance check)."""
-    mission = {"preset": "endurance", "payload_ids": ["camera"], "cruise_kmh": 55,
+    mission = {"preset": "endurance", "payload_ids": ["camera"], "cruise_kmh": 55, "max_mass_kg": 7.0,
                "frame": {"units": "mm", "forward": "-x", "up": "+z"}}
     A.write(out, mission, header)
     info = {"S": S, "mac": mac, "x_le_mac": x_le_mac, "x_ac": x_ac_w, "mass_g": total, "cg": cg,

@@ -42,9 +42,9 @@ def _design_dir(path: str) -> Path:
     return p
 
 
-def _evaluate(design_dir: Path, preset=None, necessity=True) -> dict:
+def _evaluate(design_dir: Path, preset=None, necessity=True, flown=False) -> dict:
     from dronebench.pipeline import evaluate
-    return evaluate(design_dir, preset=preset, necessity=necessity)
+    return evaluate(design_dir, preset=preset, necessity=necessity, flown=flown)
 
 
 # ---------- formatting ----------
@@ -78,7 +78,7 @@ def summary_text(report: dict) -> str:
     score = report.get("score") or {}
     gate = report.get("gate") or {}
     ac = report.get("aircraft") or {}
-    lines = [f"{report.get('design', '?')}  preset={report.get('preset') or score.get('preset')}",
+    lines = [f"{report.get('design', '?')}  preset={report.get('preset') or score.get('preset')}  scored by {score.get('fidelity') or 'closed-form estimate'}",
              f"  score      {_fmt(score.get('value'))} {score.get('unit') or ''}".rstrip()]
     fails = [c for c in gate.get("checks", []) if not c.get("pass")]
     lines.append(f"  gate       {'PASS' if gate.get('pass') else 'FAIL'}")
@@ -121,7 +121,7 @@ def parts_table(parts: list[dict]) -> str:
 
 def cmd_score(args) -> int:
     d = _design_dir(args.design)
-    report = _evaluate(d, preset=args.preset, necessity=not args.no_necessity)
+    report = _evaluate(d, preset=args.preset, necessity=not args.no_necessity, flown=getattr(args, "flown", False))
     if args.out:
         Path(args.out).write_text(_dumps(report, pretty=True))
     if args.runs:
@@ -207,7 +207,7 @@ def _ws_call(fn, *a, **kw):
 
 def cmd_init(args) -> int:
     from dronebench import workspace as W
-    m = _ws_call(W.init, args.workspace, args.fixture, args.preset, args.steps, args.force)
+    m = _ws_call(W.init, args.workspace, args.fixture, args.preset, args.steps, args.force, True, args.fidelity)
     print(f"workspace ready: {Path(args.workspace).resolve()}")
     print(f"  fixture {m['fixture']}  preset {m['preset']}  baseline {m['baseline']:.2f} {m.get('unit') or ''}  budget {m['max_steps']} steps")
     print("  next: cd into it, read TASK.md, then `dronebench serve .` in another terminal")
@@ -264,11 +264,30 @@ def cmd_export(args) -> int:
     return 0
 
 
+def cmd_calibrate(args) -> int:
+    from dronebench.calibrate import fit_cd0_factor
+    pts = []
+    for it in args.point:
+        try:
+            v, w = it.split(":")
+            pts.append((float(v), float(w)))
+        except ValueError:
+            raise UsageError(f"bad --point '{it}' (use airspeed_m_s:battery_watts, e.g. 15.3:92)")
+    if not pts:
+        raise UsageError("give at least one --point")
+    r = fit_cd0_factor(_design_dir(args.design), pts)
+    print(f"cd0_factor = {r['factor']:.3f}   rms error {r['uncalibrated_rms_error_pct']:.1f}% -> {r['rms_error_pct']:.1f}%")
+    for row in r["rows"]:
+        print(f"  {row['V']:5.1f} m/s  measured {row['measured_w']:6.1f} W   model {row['model_w']:6.1f} W   {row['error_pct']:+.1f}%")
+    return 0
+
+
 def cmd_run(args) -> int:
     from dronebench import agents
-    if args.agent == "random":
-        r = _ws_call(agents.run_random, args.workspace, args.steps, args.seed)
-        print(f"random agent: {r['start']:.2f} -> {r['best']:.2f}")
+    if args.agent in ("random", "cma", "random-params"):
+        fn = {"random": agents.run_random, "cma": agents.run_cma, "random-params": agents.run_random_params}[args.agent]
+        r = _ws_call(fn, args.workspace, args.steps, args.seed)
+        print(f"{args.agent} agent: {r['start']:.2f} -> {r['best']:.2f}")
         return 0
     return _ws_call(agents.run_claude, args.workspace, args.steps, args.model)
 
@@ -292,6 +311,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--runs", help="append a record to this runs.jsonl")
     p.add_argument("--label", default="agent", help="agent label for the runs record (default: agent)")
     p.add_argument("--step", type=int, default=None, help="step number (default: auto-increment)")
+    p.add_argument("--flown", action="store_true", help="fly the design in the 6-DOF simulator and score the flights (about 10 s)")
     g = p.add_mutually_exclusive_group()
     g.add_argument("--pretty", action="store_true", help="indent the JSON")
     g.add_argument("--summary", action="store_true", help="short human-readable summary instead of JSON")
@@ -335,6 +355,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--preset", choices=PRESETS, default=None)
     p.add_argument("--steps", type=int, default=12, help="step budget (default 12)")
     p.add_argument("--force", action="store_true", help="replace a non-empty folder")
+    p.add_argument("--fidelity", choices=("flown", "analytic"), default="flown",
+                   help="flown: every design is flown in the 6-DOF simulator (about 10 s); analytic: closed-form estimate (about 2 s)")
     p.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
     p.set_defaults(func=cmd_init)
 
@@ -377,9 +399,15 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
     p.set_defaults(func=cmd_export)
 
+    p = sub.add_parser("calibrate", help="fit the drag factor to measured steady-flight battery power")
+    p.add_argument("design")
+    p.add_argument("--point", action="append", default=[], metavar="V:W", help="airspeed m/s : battery watts (repeatable)")
+    p.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
+    p.set_defaults(func=cmd_calibrate)
+
     p = sub.add_parser("run", help="run a built-in agent in a workspace (random baseline or Claude Code)")
     p.add_argument("workspace", nargs="?", default=".")
-    p.add_argument("--agent", choices=("random", "claude"), default="random")
+    p.add_argument("--agent", choices=("random", "random-params", "cma", "claude"), default="random")
     p.add_argument("--steps", type=int, default=12)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--model", default=None)

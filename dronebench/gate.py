@@ -390,6 +390,57 @@ def check_harness(design: Design, G) -> Check:
     return Check("harness", len(probs), [None, 0], not probs, "; ".join(probs[:6]))
 
 
+SHELL_ROLES = ("wing", "htail", "vtail", "fuselage", "nacelle")
+
+
+def check_shell_structure(design: Design) -> Check:
+    """Printed airframe shells need a skin and internal ribs or webs (walls >= 2; in vase mode the second wall stands
+    for the printed ribs). A single wall with nothing behind it has no bending or buckling margin, and nothing else
+    in the model would notice, so thinning shells is not allowed to pass as a weight saving."""
+    bad = []
+    for p in design.parts.values():
+        m = p.material
+        if m is None or m.kind != "printed" or (p.role or p.type) not in SHELL_ROLES or p.mesh is None:
+            continue
+        if m.walls is not None and m.walls < 2:
+            bad.append(f"{p.id} (walls {m.walls})")
+    return Check("shell_structure", len(bad), [None, 0], not bad,
+                 "" if not bad else "printed shell with a single wall and no ribs: " + ", ".join(bad[:8]))
+
+
+LIION_PACK_CM3_PER_CELL = 29.1     # 21700 cell (21 x 70 mm) plus 20% for wiring, spacing and wrap
+LIPO_WH_PER_CM3 = 0.33             # pouch pack, about 330 Wh/L
+
+
+def check_battery_fit(design: Design, pin) -> Check:
+    """The pack has to fit inside the volume the CAD gives it. An agent may add cells (more energy), but the cells take
+    room: energy without volume is a free lunch the model would otherwise grant."""
+    from .physics import propulsion as P
+    b = pin.battery if pin is not None else None
+    parts = [p for p in design.of_type("battery") if getattr(p, "bbox_m", None) is not None]
+    if b is None or not parts:
+        return Check("battery_fit", 0.0, [None, 1.0], True, "no battery CAD to compare")
+    cells = max(int(b.cells_s), 1) * P.pack_parallel(b)
+    if (b.chemistry or "").lower().replace("-", "") == "liion":
+        need = cells * LIION_PACK_CM3_PER_CELL
+    else:
+        need = P.battery_energy_wh(b) / LIPO_WH_PER_CM3
+    have = 0.0
+    for p in parts:
+        d = np.abs(np.asarray(p.bbox_m[1], float) - np.asarray(p.bbox_m[0], float))
+        have += float(d[0] * d[1] * d[2]) * 1e6
+    ratio = need / max(have, 1e-9)
+    return Check("battery_fit", round(ratio, 2), [None, 1.05], ratio <= 1.05,
+                 f"pack needs {need:.0f} cm3, the CAD gives it {have:.0f} cm3")
+
+
+def check_mtow(design: Design, mass_kg: float) -> Check:
+    lim = design.mission.max_mass_kg
+    if lim is None:
+        return Check("mtow", round(mass_kg, 3), [None, None], True, "no takeoff mass limit in mission.yaml")
+    return Check("mtow", round(mass_kg, 3), [None, lim], mass_kg <= lim + 1e-9, f"takeoff mass {mass_kg:.2f} kg vs limit {lim:.2f} kg")
+
+
 FUSELAGE_GAP_MM = 10.0
 
 
@@ -488,8 +539,9 @@ def evaluate_gate(design: Design, graph, geom: AeroGeometry, pres: PhysicsResult
             c.passed = False
             c.detail = f"physics could not run: {note}" + (f" ({c.detail})" if c.detail else "")
     checks = [check_lifting_surfaces(design, geom), *phys, check_power_chain(design, links), check_control_chain(design, links), check_payload(design),
-              check_clearance(design, graph, links), check_airframe_connected(design, graph), check_harness(design, graph), check_fuselage_continuous(design)]
+              check_clearance(design, graph, links), check_airframe_connected(design, graph), check_harness(design, graph), check_fuselage_continuous(design), check_shell_structure(design),
+              check_battery_fit(design, pin), check_mtow(design, pres.mass_kg)]
     order = ["lifting_surfaces", "static_margin", "stall_margin", "climb", "spar", "tail_volume", "servo_torque",
-             "motor_current", "esc_current", "battery_current", "power_chain", "control_chain", "payload", "clearance", "airframe_connected", "harness", "fuselage_continuous"]
+             "motor_current", "esc_current", "battery_current", "power_chain", "control_chain", "payload", "clearance", "airframe_connected", "harness", "fuselage_continuous", "shell_structure", "battery_fit", "mtow"]
     checks.sort(key=lambda c: order.index(c.name))
     return GateResult(passed=all(c.passed for c in checks), checks=checks)

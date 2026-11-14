@@ -16,6 +16,8 @@ import sys
 from pathlib import Path
 from typing import Callable, Optional
 
+import numpy as np
+
 from . import workspace as W
 
 
@@ -38,6 +40,49 @@ def run_random(ws, steps: int = 12, seed: int = 0, say: Callable[[str], None] = 
         o = W.try_step(ws, ops, note=_describe(ops), agent="random")
         say(W.outcome_text(o))
     return {"start": start, "best": W.meta(ws)["best"]}
+
+
+def _param_search(ws, steps: int, seed: int, strategy: str, say) -> dict:
+    """Black-box search over the builder's parameters; every candidate is a workspace step (kept or rejected as usual)."""
+    import yaml
+    from .envs import ParamCoder
+    ws = Path(ws).resolve()
+    m = W.meta(ws)
+    if not m.get("has_params"):
+        raise W.WorkspaceError("this design is not parametric; param search needs a params.yaml")
+    coder = ParamCoder()
+    x0 = coder.encode(yaml.safe_load((ws / "params.yaml").read_text())).astype(float)
+    rng = np.random.default_rng(seed)
+    start = m["best"]
+    left = min(steps, m["max_steps"] - m["steps"])
+    if strategy == "cma":
+        import cma
+        es = cma.CMAEvolutionStrategy(x0, 0.18, {"seed": seed + 1, "bounds": [-1, 1], "verbose": -9, "popsize": 6})
+    done = 0
+    while done < left:
+        xs = es.ask() if strategy == "cma" else [np.clip(x0 + rng.normal(0, 0.3, x0.shape), -1, 1) for _ in range(left - done)]
+        fs = []
+        for x in xs:
+            if done >= left:
+                fs.append(0.0)
+                continue
+            o = W.build_step(ws, coder.decode(x), note=f"{strategy}", agent=strategy)
+            say(W.outcome_text(o))
+            done += 1
+            fs.append(-(o["score"] or 0.0))
+        if strategy == "cma":
+            es.tell(xs, fs)
+        else:
+            break
+    return {"start": start, "best": W.meta(ws)["best"]}
+
+
+def run_cma(ws, steps: int = 12, seed: int = 0, say: Callable[[str], None] = print) -> dict:
+    return _param_search(ws, steps, seed, "cma", say)
+
+
+def run_random_params(ws, steps: int = 12, seed: int = 0, say: Callable[[str], None] = print) -> dict:
+    return _param_search(ws, steps, seed, "random-params", say)
 
 
 def _describe(ops: list) -> str:

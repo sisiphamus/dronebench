@@ -86,7 +86,7 @@ def check(g, name):
 
 
 NAMES = ["lifting_surfaces", "static_margin", "stall_margin", "climb", "spar", "tail_volume", "servo_torque",
-         "motor_current", "esc_current", "battery_current", "power_chain", "control_chain", "payload", "clearance", "airframe_connected", "harness", "fuselage_continuous"]
+         "motor_current", "esc_current", "battery_current", "power_chain", "control_chain", "payload", "clearance", "airframe_connected", "harness", "fuselage_continuous", "shell_structure", "battery_fit", "mtow"]
 
 
 def test_all_pass():

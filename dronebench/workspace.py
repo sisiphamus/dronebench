@@ -77,9 +77,9 @@ def meta(ws) -> dict:
     return m
 
 
-def _evaluate(design: Path, preset: Optional[str], necessity: bool) -> dict:
+def _evaluate(design: Path, preset: Optional[str], necessity: bool, flown: bool = True) -> dict:
     from .pipeline import evaluate
-    return evaluate(design, preset=preset, necessity=necessity)
+    return evaluate(design, preset=preset, necessity=necessity, flown=flown)
 
 
 def fixture_path(name: str) -> Path:
@@ -97,15 +97,23 @@ def fixture_path(name: str) -> Path:
 TASK_TEMPLATE = """# DroneBench task: {fixture}
 
 You are an engineer improving a small electric fixed-wing UAV, working inside DroneBench.
-The aircraft is `design/`. DroneBench analyses it (aero, propulsion, structure, stability, wiring),
-checks that it flies, and gives it a score. You never edit files by hand: every change goes through
-a command, and DroneBench accepts or rejects it with reasons.
+The aircraft is `design/`. DroneBench builds an aerodynamic model of it from the geometry (AeroSandbox: vortex
+lattice and section polars), then **flies it in a 6-degree-of-freedom simulator** with a stock autopilot, in calm
+air, light wind with turbulence, and strong wind with turbulence: a full-throttle climb, orbits, and upwind and
+downwind legs. The score is measured from those flights. You never edit files by hand: every change goes
+through a command, and DroneBench accepts or rejects it with reasons.
 
 ## Goal
 
 Raise the **{preset}** score ({unit_hint}) as far as you can, **without failing the gate**. A design
-that fails any gate check is rejected. Every part must be justified: parts DroneBench marks
-`unnecessary` cost mass for nothing. Baseline score: **{baseline}**.
+that fails any gate check is rejected. The gate has two halves: structure and systems (spar strength, motor and
+battery current, wiring, every part attached, a continuous fuselage) and flight (static margin, stall margin,
+climb, completing every flown orbit and leg, peak load factor in turbulence, no stall). Baseline score: **{baseline}**.
+
+What moves the score is physics, not bookkeeping: lighter is only better if the aircraft still trims, still
+climbs, and still passes the load check in turbulence. Move the battery and the elevator pays trim drag. Shrink
+the tail and the static margin or the yaw damping goes. A bigger wing costs mass and wetted area. The model
+answers every one of those questions by flying it.
 
 The mission payload ({payload}) is locked and must stay. Do not touch `mission.yaml`, `locked`
 flags or `sources` tags. Specs you type for new or swapped parts are tagged `agent_supplied` and
@@ -164,7 +172,7 @@ def _build_note(has_params: bool) -> str:
 
 # ---------------------------------------------------------------- init / state
 def init(ws, fixture: str = "falcon_v2", preset: Optional[str] = None, steps: int = 12, force: bool = False,
-         necessity: bool = True) -> dict:
+         necessity: bool = True, fidelity: str = "flown") -> dict:
     ws = Path(ws).resolve()
     src = fixture_path(fixture)
     if ws.exists() and any(ws.iterdir()):
@@ -185,7 +193,7 @@ def init(ws, fixture: str = "falcon_v2", preset: Optional[str] = None, steps: in
     s0 = ws / "steps" / "0"
     s0.mkdir(parents=True)
     _link_tree(ws / "design", s0 / "design")
-    report = _evaluate(ws / "design", None, necessity)
+    report = _evaluate(ws / "design", None, necessity, fidelity == "flown")
     _write_json(s0 / "report.json", report)
     preset = report.get("preset") or preset
     payload = ", ".join((yaml.safe_load((ws / "design" / "mission.yaml").read_text()) or {}).get("payload_ids") or []) or "none"
@@ -193,7 +201,7 @@ def init(ws, fixture: str = "falcon_v2", preset: Optional[str] = None, steps: in
         fixture=src.name, preset=preset, unit_hint=UNIT_HINT.get(preset, ""), baseline=_fmt_score(report),
         payload=payload, ws=ws, steps=steps, build_note=_build_note(has_params)))
     m = {"fixture": src.name, "preset": preset, "created": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
-         "max_steps": steps, "has_params": has_params, "steps": 0, "best_step": 0, "current_step": 0,
+         "max_steps": steps, "has_params": has_params, "fidelity": fidelity, "steps": 0, "best_step": 0, "current_step": 0,
          "baseline": score_of(report), "best": score_of(report), "unit": (report.get("score") or {}).get("unit")}
     _write_json(ws / "workspace.json", m)
     from .runs import append_run, record_from_report
@@ -316,7 +324,7 @@ def _judge(ws: Path, m: dict, step: int, cand: Path, ops, kind: str, note: str, 
         _log(ws, step, out, None, ops, agent, cand, time.time() - t0)
         return out
     try:
-        report = _evaluate(cand, m["preset"], False)   # fast pass: gate + score (about 2 s)
+        report = _evaluate(cand, m["preset"], False, m.get("fidelity", "flown") == "flown")   # gate + score
     except Exception as e:  # the design could not even be analysed
         out.update(reason="evaluation failed", errors=[f"{type(e).__name__}: {e}"])
         _log(ws, step, out, None, ops, agent, cand, time.time() - t0)
@@ -336,7 +344,7 @@ def _judge(ws: Path, m: dict, step: int, cand: Path, ops, kind: str, note: str, 
         else:
             out.update(reason=f"regression: {new:.2f} < best {m['best']:.2f} (use --keep to accept anyway)")
     if out["accepted"] and necessity:   # only designs we keep get the full removal test (per-part necessity)
-        report = _evaluate(cand, m["preset"], True)
+        report = _evaluate(cand, m["preset"], True, m.get("fidelity", "flown") == "flown")
     _write_json(ws / "steps" / str(step) / "report.json", report)
     _log(ws, step, out, report, ops, agent, cand, time.time() - t0)
     return out
