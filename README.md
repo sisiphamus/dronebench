@@ -7,7 +7,7 @@ share one simulator:
   aerodynamic model from the geometry, flies the design in a 6-degree-of-freedom simulator with wind and turbulence, and keeps
   or rejects the edit with the reason. Reward is the change in a mission score that was measured in flight.
 - **Flight environment.** A Gymnasium environment for learning to fly a given design: continuous control of aileron, elevator,
-  rudder and throttle at 50 Hz, about 4000 steps per second.
+  rudder and throttle at 50 Hz, 3,000 to 5,000 steps per second per core (the compiled simulator alone does 60,000).
 
 ```
 edit  ->  geometry  ->  AeroSandbox aero model  ->  6-DOF simulator  ->  autopilot flies climb, orbits, legs
@@ -59,19 +59,36 @@ zero-action and random policies as reference lines.
 
 ## What gets flown, and what is measured
 
-| Segment | Weather | Measured |
+| Segment | Weather | Used for |
 |---|---|---|
-| Full-throttle climb at best-climb speed | calm | rate of climb |
-| Orbit, 150 m radius, 130 s | calm / 3 m/s + light turbulence / 6 m/s + moderate turbulence, at 100 / 70 / 40% charge | battery power, altitude and speed holding, bank, load factor |
-| Upwind and downwind legs | the same three | energy per ground kilometre |
+| Full-throttle climb at best-climb speed | calm | rate of climb (score and gate) |
+| Orbit, 150 m radius, 130 s, at 100% and 50% charge | calm, and a steady 5 m/s wind | endurance: usable energy / mean battery power |
+| Upwind and downwind legs | calm, and a steady 5 m/s wind | range and Wh/km: mean of the two legs' energy per km |
+| Orbit and legs in turbulence | light (3 m/s wind, Dryden sigma 1) and gusty (6 m/s, sigma 2) | **pass/fail only**: completes, tracks altitude and speed, stays under the load and stall limits |
 
-Endurance is usable battery energy divided by mean flown orbit power. Range is usable energy divided by flown energy per
-kilometre. Weather and seeds are the same for every design, so scores compare. The gate checks static margin, stall margin,
-climb, that every segment is completed, that peak load factor in turbulence stays under the spar's limit, and that the aircraft does
-not stall, plus the structure and systems checks: spar, current limits, wiring, every part attached, continuous fuselage, printed shells with ribs.
+The scored segments are deterministic (no random turbulence), so a design's score is identical every run. Random turbulence is flown for
+robustness, not scored: one realisation moves average power by tens of percent. Same weather for every design, so scores compare;
+`seed_offset` rotates the turbulence seeds if you want to hold some back.
 
-An aircraft that cannot be trimmed, cannot be flown by the autopilot, or has no tail the model can represent fails with the
-reason, instead of receiving a made-up score.
+The gate checks static margin, stall margin, climb, that every segment is completed, peak load factor, no stall, a pack that fits its volume, the
+mission's takeoff mass limit, and structure and systems: spar, current limits, wiring, every part attached, continuous fuselage, printed shells with ribs.
+An aircraft that cannot be trimmed, cannot be flown by the autopilot, or has no tail the model can represent fails with the reason, instead of
+receiving a made-up score.
+
+## Baselines on the Falcon V2 (endurance, minutes)
+
+One run each from the same starting design, same weather and gate; scores are flown. Reproduce with `dronebench run WS --agent claude|cma|random-params|random`.
+
+| Agent | Start | Best | Attempts | Failed the gate | Scored lower |
+|---|---|---|---|---|---|
+| Claude Code | 134 | 204 (+53%) | 15 | 4 | 1 |
+| Random part edits | 134 | 146 (+9%) | 30 | 9 | 7 |
+| Random search over design parameters | 134 | 143 (+7%) | 30 | 22 | 4 |
+| CMA-ES over design parameters | 134 | 142 (+7%) | 30 | 12 | 14 |
+
+A learned flight controller: PPO on `FlightEnv` (orbit in wind and turbulence) reaches a return of 138 against the cascaded autopilot's 152 after 800,000
+steps (about 30 minutes on one core), completing all 8 held-out test flights; doing nothing returns -894 and random actions -207.
+One run per agent is not a ranking, it is a sanity check that the environment rewards good engineering over luck.
 
 ## What an agent can change
 

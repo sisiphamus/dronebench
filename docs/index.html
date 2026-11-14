@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DroneBench</title>
-<meta name="description" content="A test bench where an AI agent edits a small electric drone and every change is checked.">
+<meta name="description" content="A bench where AI agents design small electric drones and every design is flown in a 6-DOF simulator before it counts.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Public+Sans:wght@400;500;600;700&display=swap">
 <style>
@@ -20,64 +20,50 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.55 var(
 a { color: var(--ink); text-underline-offset: 4px; }
 :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
 .wrap { max-width: 1240px; margin: 0 auto; padding: 0 32px; }
-.disp { font-family: var(--display); font-stretch: 62%; font-weight: 800; letter-spacing: -.015em; line-height: .92; }
-
 nav { display: flex; align-items: baseline; gap: 28px; padding: 18px 0; border-bottom: 2px solid var(--ink); }
 nav .logo { font-family: var(--display); font-stretch: 62%; font-weight: 800; font-size: 30px; text-decoration: none; letter-spacing: -.01em; }
 nav .sp { flex: 1; }
 nav a.l { font-size: 15px; font-weight: 600; text-decoration: none; }
 nav a.l:hover { text-decoration: underline; }
-
-.hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 56px; padding: 64px 0 48px; align-items: end; }
-.hero h1 { font-size: clamp(54px, 8.6vw, 124px); margin: 0; }
-.hero h1 b { color: var(--hot); font-weight: 800; }
-.hero .side p { margin: 0 0 22px; max-width: 30em; }
-.btns { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; }
+.hero { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 56px; padding: 64px 0 48px; align-items: end; }
+h1 { font-family: var(--display); font-stretch: 62%; font-weight: 800; letter-spacing: -.015em; line-height: .92; font-size: clamp(50px, 7.6vw, 112px); margin: 0; }
+h1 b { color: var(--hot); font-weight: 800; }
+.hero p { margin: 0 0 22px; max-width: 30em; }
 .btn { display: inline-block; background: var(--ink); color: #fff; padding: 13px 22px; font-weight: 600; font-size: 16px; text-decoration: none; border-radius: 2px; }
 .btn:hover { background: var(--hot); }
-.btns a.t { font-weight: 600; }
-
 .stage { background: var(--panel); border: 2px solid var(--ink); }
 .readout { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 18px 24px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
 .score { font-family: var(--display); font-stretch: 62%; font-weight: 800; font-size: clamp(72px, 9vw, 128px); line-height: .85; letter-spacing: -.02em; }
 .score small { font-size: .3em; font-weight: 700; color: var(--muted); margin-left: 10px; letter-spacing: 0; }
 .cap { max-width: 34em; text-align: right; }
 .cap .v { font-family: var(--display); font-stretch: 62%; font-weight: 800; font-size: 30px; line-height: 1; }
-.cap .v.rej { color: var(--hot); }
 .cap p { margin: 6px 0 0; font-size: 16px; min-height: 3em; }
-#view { height: min(66vh, 620px); min-height: 380px; background: #e5e5e5; position: relative; }
+#view { height: min(66vh, 620px); min-height: 380px; background: #e5e5e5; }
 #view canvas { display: block; width: 100%; height: 100%; }
 .scrub { display: flex; align-items: center; gap: 20px; padding: 14px 24px 16px; border-top: 1px solid var(--line); }
 .scrub button { background: var(--ink); color: #fff; border: 0; border-radius: 2px; padding: 9px 18px; font: 600 15px var(--text); cursor: pointer; min-width: 84px; }
 .scrub button:hover { background: var(--hot); }
 .scrub input { flex: 1; accent-color: var(--ink); height: 28px; }
 .scrub .lbl { font-size: 14px; color: var(--muted); min-width: 9em; text-align: right; font-variant-numeric: tabular-nums; }
-.key { display: flex; gap: 22px; padding: 0 24px 16px; font-size: 14px; flex-wrap: wrap; }
-.key span { display: inline-flex; align-items: center; gap: 8px; }
-.key i { width: 12px; height: 12px; display: inline-block; border: 1px solid var(--ink); }
-
 section { padding: 88px 0 0; }
-h2 { font-family: var(--display); font-stretch: 62%; font-weight: 800; font-size: clamp(40px, 5.2vw, 72px); line-height: .94; letter-spacing: -.015em; margin: 0 0 24px; max-width: 14em; }
-.lead { max-width: 38em; margin: 0 0 32px; }
+h2 { font-family: var(--display); font-stretch: 62%; font-weight: 800; font-size: clamp(36px, 4.6vw, 64px); line-height: .94; letter-spacing: -.015em; margin: 0 0 22px; }
 table { width: 100%; border-collapse: collapse; font-size: 16px; }
 th { text-align: left; font-weight: 500; color: var(--muted); font-size: 14px; padding: 6px 12px 8px 0; border-bottom: 2px solid var(--ink); }
 td { padding: 11px 12px 11px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
 td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; padding-right: 0; white-space: nowrap; }
 td.rej, td.rej * { color: var(--hot); }
-td.rej b { font-weight: 700; }
-tr.hl td { font-weight: 600; }
-.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 56px; }
-.rules p { margin: 0; padding: 16px 0; border-bottom: 1px solid var(--line); max-width: 46em; }
-.rules p:first-child { border-top: 2px solid var(--ink); }
-.rules b { font-weight: 700; }
+tr.top td { font-weight: 700; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: start; }
+.note { color: var(--muted); font-size: 15px; margin: 14px 0 0; max-width: 40em; }
+svg.chart { width: 100%; height: auto; display: block; background: var(--panel); border: 2px solid var(--ink); }
+svg.chart text { font: 12px var(--text); fill: var(--muted); }
 pre { margin: 0; background: var(--panel); border: 2px solid var(--ink); padding: 22px 24px; overflow-x: auto; font: 14.5px/1.7 ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace; }
-pre .c { color: #6b6b6b; }
 footer { margin: 96px 0 0; padding: 22px 0 56px; border-top: 2px solid var(--ink); font-size: 15px; display: flex; gap: 24px; flex-wrap: wrap; }
 footer .sp { flex: 1; }
 @media (max-width: 860px) {
   .wrap { padding: 0 18px; } .hero { grid-template-columns: 1fr; gap: 28px; padding-top: 36px; }
-  .two { grid-template-columns: 1fr; gap: 24px; } .cap { text-align: left; } nav { gap: 16px; }
-  nav a.l.hide { display: none; } .scrub .lbl { display: none; } section { padding-top: 64px; }
+  .two { grid-template-columns: 1fr; gap: 32px; } .cap { text-align: left; } nav { gap: 16px; }
+  .scrub .lbl { display: none; } section { padding-top: 64px; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 </style>
@@ -88,36 +74,52 @@ footer .sp { flex: 1; }
   <nav>
     <a class="logo" href="./">DroneBench</a>
     <span class="sp"></span>
-    <a class="l" href="demo/">Dashboard</a><a class="l" href="https://github.com/sisiphamus/dronebench">Source</a>
+    <a class="l" href="demo/">Dashboard</a><a class="l" href="https://github.com/sisiphamus/dronebench/blob/main/VALIDATION.md">What is checked</a><a class="l" href="https://github.com/sisiphamus/dronebench">Source</a>
   </nav>
 
   <header class="hero">
-    <h1 class="disp">An agent added <b id="gain">more flight time</b> of flight to this drone.</h1>
-    <div class="side">
-      <p>DroneBench checks every change an agent makes to a drone design, and keeps it only if the drone still flies and scores higher.</p>
-      <div class="btns"><a class="btn" href="demo/">Open the dashboard</a></div>
+    <h1 id="h1">Every design is flown before it counts.</h1>
+    <div>
+      <p>DroneBench builds an aerodynamic model of a small electric drone from its geometry and flies it in a 6-degree-of-freedom simulator, in calm air, wind and turbulence. Agents edit the design; only what flies scores.</p>
+      <a class="btn" href="demo/">Open the dashboard</a>
     </div>
   </header>
 
   <div class="stage" id="stage">
     <div class="readout">
-      <div class="score" id="score">139.2<small>min</small></div>
-      <div class="cap"><div class="v" id="verdict">Starting design</div><p id="note"></p></div>
+      <div class="score" id="score">&nbsp;</div>
+      <div class="cap"><div class="v" id="verdict"></div><p id="note"></p></div>
     </div>
-    <div id="view" role="img" aria-label="3D model of the drone. Parts the agent removed turn orange for one step, then disappear."></div>
+    <div id="view" role="img" aria-label="3D model of the drone as the agent changes it step by step. Parts removed at a step turn orange."></div>
     <div class="scrub">
       <button id="play" type="button">Play</button>
-      <input id="range" type="range" min="0" max="9" step="1" value="0" aria-label="Step through the agent's accepted changes">
-      <span class="lbl" id="lbl">Start</span>
+      <input id="range" type="range" min="0" max="1" step="1" value="0" aria-label="Step through the agent's accepted changes">
+      <span class="lbl" id="lbl"></span>
     </div>
-      </div>
+  </div>
 
-  <section id="attempts">
-    <table id="tbl"><thead><tr><th>Step</th><th>Result</th><th>Change</th><th class="n">Flight time</th></tr></thead><tbody></tbody></table>
+  <section>
+    <h2>Agents on the same drone</h2>
+    <table id="board"><thead><tr><th>Agent</th><th class="n">Start</th><th class="n">Best</th><th class="n">Attempts</th><th class="n">Failed the gate</th><th class="n">Scored lower</th></tr></thead><tbody></tbody></table>
+    <p class="note" id="boardnote"></p>
   </section>
 
+  <section>
+    <div class="two">
+      <div>
+        <h2>What Claude tried</h2>
+        <table id="tbl"><thead><tr><th>Step</th><th>Result</th><th>Change</th><th class="n">Minutes</th></tr></thead><tbody></tbody></table>
+      </div>
+      <div>
+        <h2>A learned controller</h2>
+        <svg class="chart" id="learn" viewBox="0 0 560 340" role="img" aria-label="Learning curve of a PPO flight controller"></svg>
+        <p class="note" id="learnnote"></p>
+      </div>
+    </div>
+  </section>
 
   <section id="run">
+    <h2>Run it</h2>
 <pre>git clone https://github.com/sisiphamus/dronebench &amp;&amp; cd dronebench
 uv venv &amp;&amp; uv pip install -e .
 dronebench init runs/demo --fixture falcon_v2
@@ -125,8 +127,7 @@ dronebench serve runs/demo --open
 dronebench run runs/demo --agent claude</pre>
   </section>
 
-
-  <footer><span>Analytic physics, about 15% error: it ranks designs, it does not certify them.</span><span class="sp"></span><a href="https://github.com/sisiphamus/dronebench">Source</a></footer>
+  <footer><span id="foot"></span><span class="sp"></span><a href="demo/">Dashboard</a><a href="https://github.com/sisiphamus/dronebench">Source</a></footer>
 </div>
 
 <script type="module">
@@ -136,40 +137,62 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const j = (u) => fetch(u).then((r) => { if (!r.ok) throw new Error(u); return r.json(); });
+const j = (u) => fetch(u).then((r) => { if (!r.ok) throw new Error(u); return r.json(); }).catch(() => null);
 
-const state = await j('demo/data/state.json');
-const recs = new Map(); for (const r of state.runs) recs.set(r.step, r);
+const [state, board, learn] = await Promise.all([j('demo/data/state.json'), j('data/leaderboard.json'), j('data/learning.json')]);
+const unit = (state.meta.unit || 'min');
+const recs = new Map(state.runs.map((r) => [r.step, r]));
 const all = [...recs.values()].sort((a, b) => a.step - b.step);
-const unit = state.meta.unit || 'min';
-const kept = all.filter((r) => r.accepted).map((r) => r.step);          // 0,1,...
-const ids = {};                                                          // step -> Set(part ids)
-await Promise.all(kept.map(async (n) => { const p = await j(`demo/data/step/${n}.json`); ids[n] = new Set(p.report.parts.map((q) => q.id)); }));
-
-// headline from the data
+const kept = all.filter((r) => r.accepted).map((r) => r.step);
+const base = all[0].score;
 const bestScore = Math.max(...all.filter((r) => r.accepted).map((r) => r.score));
-$('#gain').textContent = `${Math.round(bestScore - all[0].score)} minutes`;
 
-// attempts table (real data)
-const base = all[0].score; let best = base;
+$('#h1').innerHTML = `An agent took this drone from ${Math.round(base)} to <b>${Math.round(bestScore)}</b> minutes of flight.`;
+
+// ---- leaderboard
+if (board) {
+  const rows = board.slice().sort((a, b) => b.best - a.best);
+  $('#board tbody').innerHTML = rows.map((r, i) => `<tr class="${i === 0 ? 'top' : ''}"><td>${esc(r.label)}</td><td class="n">${r.baseline.toFixed(0)} ${unit}</td><td class="n">${r.best.toFixed(0)} ${unit} (${r.gain_pct >= 0 ? '+' : ''}${r.gain_pct.toFixed(0)}%)</td><td class="n">${r.attempts}</td><td class="n ${r.gate_failures ? 'rej' : ''}">${r.gate_failures}</td><td class="n">${r.worse}</td></tr>`).join('');
+  $('#boardnote').textContent = 'One run each, same Falcon V2 replica, same weather, same gate. A failed gate means the aircraft could not be flown or broke a limit, and the reply says which.';
+} else $('#board').closest('section').style.display = 'none';
+
+// ---- attempts of the agent run
 $('#tbl tbody').innerHTML = all.map((r) => {
   const rej = r.step > 0 && !r.accepted;
   const note = r.step === 0 ? 'Starting design' : (r.note || '');
-  const res = r.step === 0 ? 'Start' : rej ? 'Rejected' : 'Kept';
-  const detail = rej ? (r.reason && r.reason.startsWith('regression') ? 'scored lower than the best so far' : (r.reason || '')) : '';
-  if (r.accepted) best = Math.max(best, r.score);
-  return `<tr><td>${r.step}</td><td class="${rej ? 'rej' : ''}"><b>${res}</b></td><td class="${rej ? 'rej' : ''}">${esc(note)}</td><td class="n ${rej ? 'rej' : ''}">${(r.score ?? 0).toFixed(1)} ${unit}</td></tr>`;
+  return `<tr><td>${r.step}</td><td class="${rej ? 'rej' : ''}"><b>${r.step === 0 ? 'Start' : rej ? 'Rejected' : 'Kept'}</b></td><td class="${rej ? 'rej' : ''}">${esc(note)}</td><td class="n ${rej ? 'rej' : ''}">${rej && !(r.score > 0) ? 'failed gate' : (r.score ?? 0).toFixed(1)}</td></tr>`;
 }).join('');
 
-// 3D scrubber
+// ---- learning curve
+if (learn && learn.curve && learn.curve.length) {
+  const W = 560, H = 340, L = 56, R = 16, T = 24, B = 40;
+  const xs = learn.curve.map((c) => c.steps), ys = learn.curve.map((c) => c.return);
+  const refs = learn.reference;
+  const yLo = Math.min(...ys, refs.random[0]), yHi = Math.max(...ys, refs.autopilot[0]) * 1.08;
+  const xm = Math.max(...xs);
+  const x = (v) => L + v / xm * (W - L - R), y = (v) => T + (1 - (v - yLo) / (yHi - yLo)) * (H - T - B);
+  let h = '';
+  for (let i = 0; i <= 4; i++) { const v = yLo + (yHi - yLo) * i / 4; h += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#d9d9d9"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v.toFixed(0)}</text>`; }
+  for (let i = 0; i <= 4; i++) { const v = xm * i / 4; h += `<text x="${x(v)}" y="${H - 14}" text-anchor="middle">${v >= 1000 ? Math.round(v / 1000) + 'k' : v}</text>`; }
+  h += `<line x1="${L}" x2="${W - R}" y1="${y(refs.autopilot[0])}" y2="${y(refs.autopilot[0])}" stroke="#111" stroke-dasharray="5 4"/><text x="${W - R}" y="${y(refs.autopilot[0]) - 6}" text-anchor="end" style="fill:#111">autopilot ${refs.autopilot[0].toFixed(0)}</text>`;
+  h += `<line x1="${L}" x2="${W - R}" y1="${y(refs.random[0])}" y2="${y(refs.random[0])}" stroke="#ff4a1c" stroke-dasharray="5 4"/><text x="${W - R}" y="${y(refs.random[0]) - 6}" text-anchor="end" style="fill:#ff4a1c">random ${refs.random[0].toFixed(0)}</text>`;
+  h += `<path d="${learn.curve.map((c, i) => (i ? 'L' : 'M') + x(c.steps) + ',' + y(c.return)).join('')}" fill="none" stroke="#111" stroke-width="2.6"/>`;
+  learn.curve.forEach((c) => h += `<circle cx="${x(c.steps)}" cy="${y(c.return)}" r="3.4" fill="#111"/>`);
+  h += `<text x="${(L + W - R) / 2}" y="${H - 1}" text-anchor="middle">training steps</text>`;
+  $('#learn').innerHTML = h;
+  const last = learn.curve[learn.curve.length - 1];
+  $('#learnnote').textContent = `PPO learning to hold an orbit in wind and turbulence, return per 45 s flight on 8 fixed test flights. After ${last.steps.toLocaleString()} steps: ${last.return.toFixed(0)} against the autopilot's ${refs.autopilot[0].toFixed(0)}, and ${Math.round(last.survival * 100)}% of the test flights completed.`;
+} else $('#learn').closest('div').style.display = 'none';
+
+// ---- 3D scrubber, one model per kept step
 const view = $('#view');
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); view.appendChild(renderer.domElement);
 const scene = new THREE.Scene();
-const cam = new THREE.PerspectiveCamera(34, 1, 0.01, 50);
+const cam = new THREE.PerspectiveCamera(34, 1, 0.01, 60);
 scene.add(new THREE.HemisphereLight(0xffffff, 0x9a9a9a, 1.35));
 const sun = new THREE.DirectionalLight(0xffffff, 1.9); sun.position.set(-2, 4, 3); scene.add(sun);
-const grid = new THREE.GridHelper(4, 40, 0xbdbdbd, 0xd2d2d2); scene.add(grid);
+const grid = new THREE.GridHelper(6, 60, 0xbdbdbd, 0xd2d2d2); scene.add(grid);
 const controls = new OrbitControls(cam, renderer.domElement);
 controls.enableDamping = true; controls.enablePan = false; controls.enableZoom = false;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -177,31 +200,44 @@ controls.autoRotate = !reduce; controls.autoRotateSpeed = 0.9;
 controls.addEventListener('start', () => { controls.autoRotate = false; });
 function resize() { const r = view.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); cam.aspect = r.width / r.height; cam.updateProjectionMatrix(); }
 new ResizeObserver(resize).observe(view); resize();
-
-const buf = await (await fetch('demo/data/step/0.glb')).arrayBuffer();
-const root = await new Promise((res, rej) => new GLTFLoader().parse(buf, '', (g) => res(g.scene), rej));
-const meshes = [];
-root.traverse((o) => { if (o.isMesh) { o.userData.pid = o.name || o.parent.name; o.material = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.62, metalness: 0.05, side: THREE.DoubleSide, transparent: true }); meshes.push(o); } });
-scene.add(root);
-const box = new THREE.Box3().setFromObject(root), ctr = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3());
-grid.position.y = box.min.y - 0.02;
-const mx = Math.max(size.x, size.z, 0.5);
-controls.target.copy(ctr); cam.position.copy(ctr).add(new THREE.Vector3(-mx * 0.8, mx * 0.5, mx * 1.0)); controls.update();
 (function loop() { controls.update(); renderer.render(scene, cam); requestAnimationFrame(loop); })();
 
+const loader = new GLTFLoader();
+const models = {};
+function model(n) {
+  if (!models[n]) models[n] = fetch(`demo/data/step/${n}.glb`).then((r) => r.arrayBuffer()).then((b) => new Promise((res, rej) => loader.parse(b, '', (g) => res(g.scene), rej))).catch(() => null);
+  return models[n];
+}
+const idsOf = (root) => { const s = new Set(); root.traverse((o) => { if (o.isMesh) s.add(o.name || o.parent.name); }); return s; };
+const mat = (c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.62, metalness: 0.05, side: THREE.DoubleSide });
+const group = new THREE.Group(); scene.add(group);
+
+const m0 = await model(kept[0]), mLast = await model(kept[kept.length - 1]);
+const box = new THREE.Box3().setFromObject(m0).union(new THREE.Box3().setFromObject(mLast));
+const ctr = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3());
+grid.position.y = box.min.y - 0.02;
+const mx = Math.max(size.x, size.z, 0.5);
+controls.target.copy(ctr); cam.position.copy(ctr).add(new THREE.Vector3(-mx * 0.75, mx * 0.45, mx * 0.95)); controls.update();
+
 const range = $('#range'); range.max = kept.length - 1;
-function show(k) {
-  const n = kept[k], prev = k > 0 ? ids[kept[k - 1]] : null, cur = ids[n];
-  for (const m of meshes) {
-    const id = m.userData.pid, here = cur.has(id), justGone = prev && prev.has(id) && !here;
-    m.visible = here || !!justGone;
-    m.material.color.set(justGone ? '#ff4a1c' : '#555555');
+let token = 0;
+async function show(k) {
+  const my = ++token;
+  const n = kept[k], cur = await model(n), prev = k > 0 ? await model(kept[k - 1]) : null;
+  if (my !== token || !cur) return;
+  group.clear();
+  const have = idsOf(cur);
+  const a = cur.clone(true); a.traverse((o) => { if (o.isMesh) o.material = mat(0x555555); }); group.add(a);
+  if (prev) {
+    const b = prev.clone(true);
+    b.traverse((o) => { if (o.isMesh) { if (have.has(o.name || o.parent.name)) o.visible = false; else o.material = mat(0xff4a1c); } });
+    group.add(b);
   }
   const r = recs.get(n);
   $('#score').innerHTML = `${r.score.toFixed(1)}<small>${unit}</small>`;
-  $('#verdict').textContent = n === 0 ? 'Starting design' : `Kept, ${(r.score - recs.get(kept[k - 1]).score >= 0 ? '+' : '')}${(r.score - recs.get(kept[k - 1]).score).toFixed(1)} ${unit}`;
-  $('#note').textContent = n === 0 ? '' : (r.note || '');
-  $('#lbl').textContent = n === 0 ? 'Start' : `Step ${n} of ${kept[kept.length - 1]}`;
+  $('#verdict').textContent = k === 0 ? 'Starting design' : `Kept, ${r.score - recs.get(kept[k - 1]).score >= 0 ? '+' : ''}${(r.score - recs.get(kept[k - 1]).score).toFixed(1)} ${unit}`;
+  $('#note').textContent = k === 0 ? '' : (r.note || '');
+  $('#lbl').textContent = k === 0 ? 'Start' : `Step ${n} of ${kept[kept.length - 1]}`;
   range.value = k;
 }
 let timer = null;
@@ -210,12 +246,14 @@ function play() {
   if (timer) return stop();
   if (+range.value >= kept.length - 1) show(0);
   $('#play').textContent = 'Pause';
-  timer = setInterval(() => { const k = +range.value + 1; if (k >= kept.length) return stop(); show(k); }, 1300);
+  timer = setInterval(() => { const k = +range.value + 1; if (k >= kept.length) return stop(); show(k); }, 1500);
 }
 $('#play').onclick = play;
 range.oninput = () => { stop(); show(+range.value); };
-show(0);
+kept.forEach((n) => model(n));
+await show(0);
 if (!reduce) new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { o.disconnect(); setTimeout(play, 600); } }, { threshold: 0.5 }).observe($('#stage'));
+$('#foot').textContent = 'About 15% model error. Checked against theory and one manufacturer figure, not flight logs.';
 </script>
 </body>
 </html>

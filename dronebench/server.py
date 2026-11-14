@@ -14,6 +14,7 @@ terminal while this runs in another. Binds to 127.0.0.1 only.
 from __future__ import annotations
 
 import json
+import math
 import mimetypes
 import re
 import threading
@@ -26,6 +27,21 @@ from . import workspace as W
 
 VIEWER = Path(__file__).resolve().parent / "viewer"
 _glb_lock = threading.Lock()
+
+
+def _clean(o):
+    """JSON a browser can parse: NaN and infinity become null (Python writes them as bare NaN, which JSON.parse rejects)."""
+    if isinstance(o, dict):
+        return {k: _clean(v) for k, v in o.items()}
+    if isinstance(o, (list, tuple)):
+        return [_clean(v) for v in o]
+    if isinstance(o, float) and not math.isfinite(o):
+        return None
+    return o
+
+
+def dumps(obj) -> str:
+    return json.dumps(_clean(obj), default=str, allow_nan=False)
 
 
 def _mtime(p: Path) -> int:
@@ -87,7 +103,7 @@ def make_handler(ws: Path):
             self.wfile.write(body)
 
         def _json(self, obj, code=200):
-            self._send(code, json.dumps(obj, default=str).encode(), "application/json")
+            self._send(code, dumps(obj).encode(), "application/json")
 
         def do_GET(self):
             path = urlparse(self.path).path
@@ -154,14 +170,14 @@ def export_site(ws, out, title: str = "DroneBench") -> Path:
         r.pop("design", None)
     st["version"] = "static"
     (out / "data" / "step").mkdir(parents=True, exist_ok=True)
-    (out / "data" / "state.json").write_text(json.dumps(st, default=str))
+    (out / "data" / "state.json").write_text(dumps(st))
     for r in st["runs"]:
         n = r.get("step")
         if not isinstance(n, int):
             continue
         pay = step_payload(ws, n)
         if pay and pay.get("report"):
-            (out / "data" / "step" / f"{n}.json").write_text(json.dumps(pay, default=str))
+            (out / "data" / "step" / f"{n}.json").write_text(dumps(pay))
             glb = step_glb(ws, n)
             if glb:
                 (out / "data" / "step" / f"{n}.glb").write_bytes(glb)

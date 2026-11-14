@@ -1,0 +1,122 @@
+{
+ "task": "orbit",
+ "design": "fixtures/falcon_v2",
+ "reference": {
+  "autopilot": [
+   152.34657105474972,
+   1.0
+  ],
+  "zero": [
+   -894.0370770646217,
+   0.375
+  ],
+  "random": [
+   -207.32623495569567,
+   0.0
+  ]
+ },
+ "curve": [
+  {
+   "steps": 4,
+   "return": -871.5781623218112,
+   "survival": 0.375,
+   "minutes": 0.2
+  },
+  {
+   "steps": 50000,
+   "return": -510.2166555836909,
+   "survival": 1.0,
+   "minutes": 2.4
+  },
+  {
+   "steps": 100000,
+   "return": -554.4538255429541,
+   "survival": 0.75,
+   "minutes": 4.9
+  },
+  {
+   "steps": 150000,
+   "return": -340.6156346459171,
+   "survival": 0.125,
+   "minutes": 7.2
+  },
+  {
+   "steps": 200000,
+   "return": -275.0799061643865,
+   "survival": 0.875,
+   "minutes": 8.2
+  },
+  {
+   "steps": 250000,
+   "return": -250.01308040450198,
+   "survival": 0.75,
+   "minutes": 10.7
+  },
+  {
+   "steps": 300000,
+   "return": -92.4281373955326,
+   "survival": 1.0,
+   "minutes": 12.6
+  },
+  {
+   "steps": 350000,
+   "return": -31.52917332600366,
+   "survival": 1.0,
+   "minutes": 14.7
+  },
+  {
+   "steps": 400000,
+   "return": 35.35072337779931,
+   "survival": 1.0,
+   "minutes": 16.1
+  },
+  {
+   "steps": 450000,
+   "return": 73.19785387621633,
+   "survival": 1.0,
+   "minutes": 17.9
+  },
+  {
+   "steps": 500000,
+   "return": 115.71837559792004,
+   "survival": 1.0,
+   "minutes": 20.3
+  },
+  {
+   "steps": 550000,
+   "return": 132.15276063825627,
+   "survival": 1.0,
+   "minutes": 26.4
+  },
+  {
+   "steps": 600000,
+   "return": 130.62218954674105,
+   "survival": 1.0,
+   "minutes": 27.5
+  },
+  {
+   "steps": 650000,
+   "return": 112.50078894868716,
+   "survival": 1.0,
+   "minutes": 28.3
+  },
+  {
+   "steps": 700000,
+   "return": 132.1641186894155,
+   "survival": 1.0,
+   "minutes": 29.1
+  },
+  {
+   "steps": 750000,
+   "return": 137.1523960532311,
+   "survival": 1.0,
+   "minutes": 30.3
+  },
+  {
+   "steps": 800000,
+   "return": 138.4432417334471,
+   "survival": 1.0,
+   "minutes": 31.2
+  }
+ ]
+}

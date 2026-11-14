@@ -228,7 +228,7 @@ setInterval(() => setLive(S.version !== ''), 5000);
 // ------------------------------------------------------------------ header + chart + log
 function drawHeader() {
   const m = S.meta; if (!m) return;
-  $('#runmeta').innerHTML = `<b>${esc(m.fixture)}</b> · goal: ${esc(m.preset)} · ${m.steps} of ${m.max_steps} steps used`;
+  $('#runmeta').innerHTML = `<b>${esc(m.fixture)}</b> · goal: ${esc(m.preset)} · scored by ${m.fidelity === 'analytic' ? 'closed-form estimate' : 'flying it (6-DOF)'} · ${m.steps} of ${m.max_steps} steps used`;
   if (STATIC) $('#back').hidden = false;
 }
 function opsText(r) {
@@ -344,7 +344,7 @@ function drawSide(n) {
         head = ps.length ? Math.min(...ps) : null;
         vs = `${fx(val, 2)} (${lo === null ? 'max ' + fx(hi, 2) : hi === null ? 'min ' + fx(lo, 2) : fx(lo, 2) + ' to ' + fx(hi, 2)})`;
       } else if (typeof lim === 'number') { head = lim ? (val - lim) / Math.abs(lim) : null; vs = `${fx(val, 2)} (min ${fx(lim, 2)})`; }
-    } else vs = c.pass ? 'ok' : 'missing';
+    } else vs = c.pass ? (c.value === 'flown' ? 'flown' : 'ok') : (c.value === 'failed' ? 'failed' : 'missing');
     const pct = head === null ? (c.pass ? 100 : 6) : Math.max(4, Math.min(100, head * 220));
     const cls = !c.pass ? 'bad' : head !== null && head < 0.12 ? 'tight' : '';
     return `<div class="chk ${c.pass ? '' : 'f'}" title="${esc(c.detail || '')}"><span class="nm">${esc(c.name.replace(/_/g, ' '))}</span><span class="val num">${vs}</span><div class="hb"><i class="${cls}" style="width:${pct}%"></i></div></div>`;

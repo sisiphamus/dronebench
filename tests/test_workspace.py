@@ -76,3 +76,9 @@ def test_dashboard_api(ws):
             urllib.request.urlopen(base + "/vendor/../../pyproject.toml")
     finally:
         httpd.shutdown()
+
+
+def test_dashboard_json_has_no_bare_nan():
+    """Python writes NaN as a bare token that the browser's JSON.parse rejects (it blanked the dashboard once)."""
+    out = server.dumps({"a": float("nan"), "b": [float("inf"), 1.5], "c": {"d": None}})
+    assert json.loads(out) == {"a": None, "b": [None, 1.5], "c": {"d": None}}
