@@ -137,7 +137,7 @@ when a step is a setup for the next one).
 Ops (`ops.json` is a JSON list; frame: x aft, y right, z up, metres):
 
 ```json
-[{{"op": "remove", "id": "ballast_nose"}},
+[{{"op": "remove", "id": "wiring_signal"}},
  {{"op": "swap", "id": "prop_L", "entry": {{"part_number": "APC 12x6E"}}}},
  {{"op": "set", "id": "wing_L1", "path": "material.infill", "value": 0.0}},
  {{"op": "scale", "ids": ["wing_L1", "wing_R1"], "factors": [1.0, 1.05, 1.0], "about": "origin"}},
@@ -155,8 +155,8 @@ Ops (`ops.json` is a JSON list; frame: x aft, y right, z up, metres):
 5. Finish with: starting score, final score, the kept changes and why each helped, and the final gate
    margins (`dronebench status .`).
 
-Be honest about the model: results are analytic estimates (about +-15%), good for ranking designs,
-not a certificate of airworthiness.
+Be honest about the model: scores come from a simulation with generic propeller data and no flight-log calibration,
+good for ranking designs, not a certificate of airworthiness. The ids above are examples; `dronebench parts design --table` lists yours.
 """
 
 UNIT_HINT = {"endurance": "minutes of flight", "range": "km", "speed": "km/h top speed",
@@ -172,7 +172,7 @@ def _build_note(has_params: bool) -> str:
 
 # ---------------------------------------------------------------- init / state
 def init(ws, fixture: str = "falcon_v2", preset: Optional[str] = None, steps: int = 12, force: bool = False,
-         necessity: bool = True, fidelity: str = "flown") -> dict:
+         necessity: bool = True, fidelity: str = "flown", sets: Optional[dict] = None) -> dict:
     ws = Path(ws).resolve()
     src = fixture_path(fixture)
     if ws.exists() and any(ws.iterdir()):
@@ -182,8 +182,19 @@ def init(ws, fixture: str = "falcon_v2", preset: Optional[str] = None, steps: in
     ws.mkdir(parents=True, exist_ok=True)
     shutil.copytree(src, ws / "design")
     has_params = (ws / "design" / "params.yaml").exists()
+    if sets and not has_params:
+        shutil.rmtree(ws)
+        raise WorkspaceError(f"'{src.name}' has no parameters to set (only parametric designs, e.g. falcon_v2, take --set)")
+    builder = src.name
     if has_params:
         shutil.copy2(ws / "design" / "params.yaml", ws / "params.yaml")
+        builder = (yaml.safe_load((ws / "params.yaml").read_text()) or {}).get("builder", src.name)
+    if sets:
+        try:
+            _start_from_numbers(ws, builder, sets)
+        except WorkspaceError:
+            shutil.rmtree(ws)
+            raise
     if preset:  # write the preset into the workspace copy of the mission
         mp = ws / "design" / "mission.yaml"
         m = yaml.safe_load(mp.read_text()) or {}
@@ -201,7 +212,7 @@ def init(ws, fixture: str = "falcon_v2", preset: Optional[str] = None, steps: in
         fixture=src.name, preset=preset, unit_hint=UNIT_HINT.get(preset, ""), baseline=_fmt_score(report),
         payload=payload, ws=ws, steps=steps, build_note=_build_note(has_params)))
     m = {"fixture": src.name, "preset": preset, "created": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
-         "max_steps": steps, "has_params": has_params, "fidelity": fidelity, "steps": 0, "best_step": 0, "current_step": 0,
+         "max_steps": steps, "has_params": has_params, "builder": builder, "start_params": sets or {}, "fidelity": fidelity, "steps": 0, "best_step": 0, "current_step": 0,
          "baseline": score_of(report), "best": score_of(report), "unit": (report.get("score") or {}).get("unit")}
     _write_json(ws / "workspace.json", m)
     from .runs import append_run, record_from_report
@@ -391,6 +402,25 @@ def try_step(ws, ops: list, note: str = "", agent: str = "agent", keep: bool = F
 
 
 # ---- build (parametric designs)
+def _start_from_numbers(ws: Path, builder: str, sets: dict) -> None:
+    """Replace the workspace design by the builder run on the fixture's parameters with `sets` applied."""
+    params = yaml.safe_load((ws / "params.yaml").read_text())
+    for k, v in sets.items():
+        _set_path(params, k, v)
+    new = ws / "_design_new"
+    try:
+        _load_builder(builder).build(params, new, verbose=False)
+    except WorkspaceError:
+        raise
+    except Exception as e:
+        raise WorkspaceError(f"build failed: {type(e).__name__}: {e}")
+    shutil.copy2(ws / "design" / "mission.yaml", new / "mission.yaml")
+    (new / "params.yaml").write_text(yaml.safe_dump(params, sort_keys=False))
+    shutil.rmtree(ws / "design")
+    new.rename(ws / "design")
+    (ws / "params.yaml").write_text(yaml.safe_dump(params, sort_keys=False))
+
+
 def _load_builder(fixture: str):
     path = FIXTURES / f"build_{fixture}.py"
     if not path.exists():
@@ -441,7 +471,7 @@ def build_step(ws, sets: dict, note: str = "", agent: str = "agent", keep: bool 
     try:
         for k, v in sets.items():
             _set_path(params, k, v)
-        mod = _load_builder(m["fixture"])
+        mod = _load_builder(m.get("builder") or m["fixture"])
         mod.build(params, sdir / "design", verbose=False)
         mission = ws / "design" / "mission.yaml"       # keep the locked mission (preset, payload, cruise)
         shutil.copy2(mission, sdir / "design" / "mission.yaml")

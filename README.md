@@ -1,13 +1,17 @@
 # DroneBench
 
-An environment for small electric fixed-wing drones where every design is **flown** in a simulator before it scores. It has two halves that
-share one simulator:
+A test bench for AI agents that design small electric drones. An agent changes an aircraft, DroneBench flies the result in a
+6-degree-of-freedom simulator with wind and turbulence, and says whether the change was kept and why. The score is what the aircraft
+did in flight (minutes of endurance by default), and a design that fails a safety check scores nothing. You bring the agent; the
+bench supplies the aircraft, the physics, the rules and a record of every attempt.
+
+Two halves share one simulator:
 
 - **Design environment.** An agent (an LLM, a black-box optimiser, an RL policy) edits an aircraft. DroneBench builds the
-  aerodynamic model from the geometry, flies the design in a 6-degree-of-freedom simulator with wind and turbulence, and keeps
-  or rejects the edit with the reason. Reward is the change in a mission score that was measured in flight.
+  aerodynamic model from the geometry, flies it, and keeps or rejects the edit with the reason. Reward is the change in a mission score
+  that was measured in flight.
 - **Flight environment.** A Gymnasium environment for learning to fly a given design: continuous control of aileron, elevator,
-  rudder and throttle at 50 Hz, 3,000 to 5,000 steps per second per core (the compiled simulator alone does 60,000).
+  rudder and throttle at 50 Hz.
 
 ```
 edit  ->  geometry  ->  AeroSandbox aero model  ->  6-DOF simulator  ->  autopilot flies climb, orbits, legs
@@ -20,24 +24,60 @@ What it will and will not tell you is in [VALIDATION.md](VALIDATION.md). Short v
 against two independent aerodynamic methods, and against one manufacturer figure (without tuning). It has not been compared with
 measured flight logs, and it only covers conventional wing + tail layouts.
 
-## Quick start
+## Install
+
+Python 3.11 or newer.
 
 ```bash
-uv venv && uv pip install -e .                                   # adds AeroSandbox, numba, gymnasium
-dronebench init runs/demo --fixture falcon_v2 --steps 12         # a workspace: design, brief, step log
-dronebench serve runs/demo --open                                # live dashboard
-dronebench run runs/demo --agent claude                          # in another terminal: Claude Code iterates
+git clone https://github.com/sisiphamus/dronebench && cd dronebench
+uv venv && uv pip install -e .          # or: python -m venv .venv && .venv/bin/pip install -e .
+source .venv/bin/activate
+dronebench score fixtures/trainer --flown --summary      # about 10 s: flies one design, prints the score and gate
 ```
 
-Other agents on the same workspace: `--agent cma` (CMA-ES over the design parameters), `--agent random-params`, `--agent random` (random part edits).
-Or drive it by hand, which is what an agent does:
+## Test your agent
+
+A run happens in a **workspace**: a folder holding the current design, a brief for the agent (`TASK.md`), and a log of every attempt.
+The agent never edits files itself; it calls `dronebench try` or `dronebench build`, and the workspace keeps the change only if the
+design passes the gate and scores at least as well. The step budget is enforced by the workspace.
 
 ```bash
-dronebench status runs/demo
-dronebench try   runs/demo --ops ops.json --note "ballast is dead weight"     # edit parts, fly, accept or reject
-dronebench build runs/demo --set wing.span_mm=2300 --set htail.area_m2=0.09  # change parameters, rebuild, fly
-dronebench score fixtures/falcon_v2 --flown --summary                          # fly one design folder
+dronebench init ws --fixture falcon_v2 --steps 30          # the standard task: improve endurance of the Falcon V2
+dronebench serve ws --open                                 # live dashboard in a browser (optional)
+dronebench run ws --cmd "python my_agent.py" --label my-agent
 ```
+
+`--cmd` takes any command. It is started inside the workspace with `DRONEBENCH_WORKSPACE`, `DRONEBENCH_STEPS` and `DRONEBENCH_AGENT`
+set, and `dronebench` on its PATH. A coding agent reads `TASK.md` (it explains the commands and the goal); a script can call the
+commands directly or use the Python functions:
+
+```python
+from dronebench import workspace as W
+
+o = W.try_step("ws", [{"op": "remove", "id": "wiring_signal"}], note="why", agent="my-agent")   # edit parts
+o = W.build_step("ws", {"wing.span_mm": 2200}, note="why", agent="my-agent")                   # change design numbers
+o["accepted"], o["score"], o["delta"], o["failures"]        # kept?, flown score, change, which checks failed and by how much
+W.status("ws")                                             # score, tightest gate margins, parts the removal test calls unnecessary
+```
+
+Built in: `--agent claude` (Claude Code), `cma` (CMA-ES over the design numbers), `random-params`, `random` (random part edits).
+
+Start from your own numbers rather than the fixture's, or from your own design folder ([DESIGN_FORMAT.md](DESIGN_FORMAT.md)):
+
+```bash
+dronebench init ws --fixture falcon_v2 --set wing.span_mm=1900 --set htail.area_m2=0.06
+dronebench init ws --fixture path/to/my_design
+```
+
+### Score it and share it
+
+```bash
+dronebench result ws --out results/falcon_v2/my-agent.json    # the agent, every step, every score
+dronebench verify results/falcon_v2/my-agent.json             # re-flies the run from the start and compares every score
+```
+
+`verify` does not trust the file: it rebuilds the starting design, replays each accepted step through the same gate and simulator, and
+fails if any score does not reproduce. Results are submitted as pull requests; see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## As a Gymnasium environment
 
@@ -112,7 +152,8 @@ dronebench calibrate fixtures/falcon_v2 --point 15.3:92 --point 18:124      # ai
 
 | Name | What | Parts |
 |---|---|---|
-| `falcon_v2` | Titan Falcon V2 replica, parametric, with seeded dead weight | 80 |
+| `falcon_v2` | Titan Falcon V2 replica, parametric. The standard task | 74 |
+| `falcon_v2_padded` | the same with planted dead weight (ballast, second GPS, armor, fairings): a clean-up task | 80 |
 | `trainer` | small trainer | 42 |
 | `bad_tail` | trainer with an undersized tail (statically unstable; a repair task) | 42 |
 | `step_mix` | trainer with STEP parts mixed in | 42 |

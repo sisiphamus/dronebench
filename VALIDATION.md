@@ -68,18 +68,20 @@ kink, tail-incidence drag, unused control-surface chord, weak tests, stale numbe
 ## One external anchor, and what it is worth
 
 Titan Dynamics states 1.6 Wh/km for the Falcon V2 at 3.5 kg, cruising at 45 to 65 km/h. DroneBench was not tuned to it (`cd0_factor` is 1.0).
-Flown in calm air at 3.43 kg (`validation/falcon_claim.py`):
+Flown in calm air with `validation/falcon_claim.py`. The plain Falcon is 3.15 kg in the model; the manual's 3.5 kg includes glue, paint and fittings the
+parts list does not, so `falcon_v2_padded` (3.43 kg) is the closer match in mass and both are shown:
 
-| km/h | trim estimate Wh/km | flown Wh/km |
+| km/h | plain Falcon, 3.15 kg | padded Falcon, 3.43 kg |
 |---|---|---|
-| 45 | 1.46 | 1.47 |
-| 55 | 1.52 | 1.53 |
-| 65 | 1.78 | 1.79 |
+| 45 | 1.38 (-14%) | 1.47 (-8%) |
+| 50 | 1.39 (-13%) | 1.47 (-8%) |
+| 55 | 1.46 (-9%) | 1.53 (-4%) |
+| 60 | 1.58 (-1%) | 1.64 (+3%) |
+| 65 | 1.75 (+10%) | 1.79 (+12%) |
 
-The mean of the five speeds from 45 to 65 km/h is 1.58. This is a manufacturer claim, not an independent flight test, for one aircraft at one
+Percentages are against 1.6 Wh/km. The mean of the five speeds is 1.51 (-6%) for the plain Falcon and 1.58 (-1%) for the padded one. This is a manufacturer claim, not an independent flight test, for one aircraft at one
 mass. It shows the model is in the right place without tuning. It does not show the model is right for a different airframe, and one modelling
-choice moves it: how much drag a built-in tail incidence costs (here 40% of what a deflected elevator would). Charging none gives about 1.43 at
-55 km/h, charging the full amount about 1.64.
+choice moves it: how much drag a built-in tail incidence costs (here 40% of what a deflected elevator would). On the padded Falcon at 55 km/h, charging none gives about 1.43 and charging the full amount about 1.64.
 
 ## Open problems (read before trusting a result)
 

@@ -152,3 +152,33 @@ def test_runs_append_load(tmp_path):
     assert recs[0]["ops"][0]["id"] == "gps_2" and recs[0]["metrics"]["wh_per_km"] == 1.52
     assert {"timestamp", "design", "preset", "score", "gate_pass", "failures", "mass_g"} <= set(recs[0])
     assert next_step(p, "claude") == 11
+
+
+def test_init_start_numbers_reach_the_workspace(monkeypatch, capsys):
+    from dronebench import workspace as W
+    seen = {}
+
+    def fake_init(ws, fixture, preset, steps, force, necessity, fidelity, sets=None):
+        seen.update(fixture=fixture, sets=sets)
+        return {"fixture": fixture, "preset": "endurance", "baseline": 100.0, "unit": "min", "max_steps": steps}
+
+    monkeypatch.setattr(W, "init", fake_init)
+    assert cli.main(["init", "w", "--set", "wing.span_mm=1900", "--set", "propulsion.prop=APC 12x6E"]) == 0
+    assert seen["sets"] == {"wing.span_mm": 1900, "propulsion.prop": "APC 12x6E"}
+    assert "baseline 100.00" in capsys.readouterr().out
+
+
+def test_run_with_a_command_uses_it_as_the_agent(monkeypatch):
+    from dronebench import agents
+    seen = {}
+    monkeypatch.setattr(agents, "run_command", lambda ws, cmd, label="agent", say=print: seen.update(ws=ws, cmd=cmd, label=label) or 5)
+    assert cli.main(["run", "w", "--cmd", "python my_agent.py", "--label", "mine"]) == 5
+    assert seen == {"ws": "w", "cmd": "python my_agent.py", "label": "mine"}
+
+
+def test_run_label_defaults_to_the_command_name(monkeypatch):
+    from dronebench import agents
+    seen = {}
+    monkeypatch.setattr(agents, "run_command", lambda ws, cmd, label="agent", say=print: seen.update(label=label) or 0)
+    assert cli.main(["run", "w", "--cmd", "python my_agent.py --fast"]) == 0
+    assert seen["label"] == "python"

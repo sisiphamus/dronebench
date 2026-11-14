@@ -1,0 +1,32 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv venv --python 3.12 && uv pip install -e ".[dev]"
+      - run: .venv/bin/python -m pytest -q
+
+  replay-results:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v5
+      - run: uv venv --python 3.12 && uv pip install -e .
+      - name: Replay changed result files
+        run: |
+          files=$(git diff --name-only --diff-filter=AM origin/${{ github.base_ref }}...HEAD -- 'results/**/*.json')
+          for f in $files; do
+            echo "== $f"
+            .venv/bin/dronebench verify "$f"
+          done

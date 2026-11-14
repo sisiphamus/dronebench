@@ -101,13 +101,30 @@ def claude_prompt(ws: Path, steps: int) -> str:
             "End with the summary TASK.md asks for.")
 
 
+def run_command(ws, command: str, label: str = "agent", say: Callable[[str], None] = print) -> int:
+    """Run any command as the agent, inside the workspace. This is how another agent is plugged in.
+
+    The command gets the workspace as its working directory, `dronebench` on PATH, and:
+      DRONEBENCH_WORKSPACE  the workspace folder      DRONEBENCH_AGENT  the label written to the step log
+      DRONEBENCH_STEPS      the step budget           (TASK.md in the folder is the brief)
+    Its exit code is returned. The step budget is enforced by the workspace, not by the command.
+    """
+    ws = Path(ws).resolve()
+    m = W.meta(ws)
+    bindir = str(Path(sys.executable).parent)  # not resolved: a venv python is a symlink to the real one
+    env = dict(os.environ, PATH=bindir + os.pathsep + os.environ.get("PATH", ""), DRONEBENCH_AGENT=label,
+               DRONEBENCH_WORKSPACE=str(ws), DRONEBENCH_STEPS=str(m["max_steps"]))
+    say(f"running `{command}` as '{label}' in {ws} ({m['max_steps']} steps)")
+    return subprocess.run(command, cwd=ws, env=env, shell=True).returncode
+
+
 def run_claude(ws, steps: int = 12, model: Optional[str] = None, say: Callable[[str], None] = print,
                max_turns: int = 80) -> int:
     ws = Path(ws).resolve()
     claude = shutil.which("claude")
     if not claude:
         raise W.WorkspaceError("`claude` (Claude Code) is not on PATH")
-    bindir = str(Path(sys.executable).resolve().parent)
+    bindir = str(Path(sys.executable).parent)  # not resolved: a venv python is a symlink to the real one
     env = dict(os.environ, PATH=bindir + os.pathsep + os.environ.get("PATH", ""), DRONEBENCH_AGENT="claude")
     cmd = [claude, "-p", claude_prompt(ws, steps), "--max-turns", str(max_turns),
            "--allowedTools", "Bash(dronebench:*)", "Bash(ls:*)", "Bash(cat:*)", "Read", "Write", "Glob", "Grep"]

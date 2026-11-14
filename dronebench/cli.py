@@ -207,7 +207,8 @@ def _ws_call(fn, *a, **kw):
 
 def cmd_init(args) -> int:
     from dronebench import workspace as W
-    m = _ws_call(W.init, args.workspace, args.fixture, args.preset, args.steps, args.force, True, args.fidelity)
+    sets = _ws_call(W.parse_sets, args.set)
+    m = _ws_call(W.init, args.workspace, args.fixture, args.preset, args.steps, args.force, True, args.fidelity, sets or None)
     print(f"workspace ready: {Path(args.workspace).resolve()}")
     print(f"  fixture {m['fixture']}  preset {m['preset']}  baseline {m['baseline']:.2f} {m.get('unit') or ''}  budget {m['max_steps']} steps")
     print("  next: cd into it, read TASK.md, then `dronebench serve .` in another terminal")
@@ -282,8 +283,40 @@ def cmd_calibrate(args) -> int:
     return 0
 
 
+def cmd_result(args) -> int:
+    from dronebench import results
+    text = _dumps(_ws_call(results.export_result, args.workspace), pretty=True)
+    if args.out:
+        Path(args.out).write_text(text + "\n")
+        print(args.out)
+    else:
+        print(text)
+    return 0
+
+
+def cmd_verify(args) -> int:
+    from dronebench import results
+    try:
+        r = json.loads(Path(args.result).read_text())
+    except (OSError, json.JSONDecodeError) as e:
+        raise UsageError(f"cannot read {args.result}: {e}")
+    try:
+        v = results.verify_result(r, args.design)
+    except results.ResultError as e:
+        raise UsageError(str(e))
+    print(f"replayed {v['replayed']} accepted steps from {v['baseline']:.2f}: best {v['best']:.2f} (claimed {r.get('best')})")
+    for m in v["mismatches"]:
+        print(f"  mismatch, {m['what']}: claimed {m['claimed']}, replayed {m['replayed']}" + (f" ({m['why']})" if m.get("why") else ""))
+    print("VERIFIED" if v["ok"] else "NOT VERIFIED")
+    return 0 if v["ok"] else 3
+
+
 def cmd_run(args) -> int:
     from dronebench import agents
+    if args.cmd_line:
+        import shlex
+        label = args.label or Path(shlex.split(args.cmd_line)[0]).name
+        return _ws_call(agents.run_command, args.workspace, args.cmd_line, label)
     if args.agent in ("random", "cma", "random-params"):
         fn = {"random": agents.run_random, "cma": agents.run_cma, "random-params": agents.run_random_params}[args.agent]
         r = _ws_call(fn, args.workspace, args.steps, args.seed)
@@ -358,6 +391,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--fidelity", choices=("flown", "analytic"), default="flown",
                    help="flown: every design is flown in the 6-DOF simulator (about 10 s); analytic: closed-form estimate (about 2 s)")
     p.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
+    p.add_argument("--set", action="append", default=[], metavar="PATH=VALUE",
+                   help="start from your own numbers instead of the fixture's (parametric designs; repeatable), e.g. --set wing.span_mm=1900")
     p.set_defaults(func=cmd_init)
 
     p = sub.add_parser("try", help="apply JSON edit ops to a workspace, score, accept or reject")
@@ -405,12 +440,28 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
     p.set_defaults(func=cmd_calibrate)
 
+    p = sub.add_parser("result", help="export a finished run as a result file (agent, scores, every step)")
+    p.add_argument("workspace", nargs="?", default=".")
+    p.add_argument("--out", help="write here instead of printing")
+    p.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
+    p.set_defaults(func=cmd_result)
+
+    p = sub.add_parser("verify", help="re-fly a result file from the starting design and compare every score")
+    p.add_argument("result")
+    p.add_argument("--design", help="starting design folder, for results made on your own design")
+    p.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
+    p.set_defaults(func=cmd_verify)
+
     p = sub.add_parser("run", help="run a built-in agent in a workspace (random baseline or Claude Code)")
     p.add_argument("workspace", nargs="?", default=".")
     p.add_argument("--agent", choices=("random", "random-params", "cma", "claude"), default="random")
     p.add_argument("--steps", type=int, default=12)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--model", default=None)
+    p.add_argument("--cmd", dest="cmd_line", default=None, metavar="COMMAND",
+                   help="run your own agent: any command, started inside the workspace with DRONEBENCH_WORKSPACE, "
+                        "DRONEBENCH_AGENT and DRONEBENCH_STEPS set (overrides --agent)")
+    p.add_argument("--label", default=None, help="name for your agent in the step log (with --cmd; default: the command's name)")
     p.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
     p.set_defaults(func=cmd_run)
     return ap

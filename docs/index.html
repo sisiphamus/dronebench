@@ -74,7 +74,7 @@ footer .sp { flex: 1; }
   <nav>
     <a class="logo" href="./">DroneBench</a>
     <span class="sp"></span>
-    <a class="l" href="demo/">Dashboard</a><a class="l" href="https://github.com/sisiphamus/dronebench/blob/main/VALIDATION.md">What is checked</a><a class="l" href="https://github.com/sisiphamus/dronebench">Source</a>
+    <a class="l" href="demo/">Dashboard</a><a class="l" href="https://github.com/sisiphamus/dronebench/blob/main/VALIDATION.md">What is checked</a><a class="l" href="https://github.com/sisiphamus/dronebench/blob/main/CONTRIBUTING.md">Submit a result</a><a class="l" href="https://github.com/sisiphamus/dronebench">Source</a>
   </nav>
 
   <header class="hero">
@@ -119,12 +119,12 @@ footer .sp { flex: 1; }
   </section>
 
   <section id="run">
-    <h2>Run it</h2>
+    <h2>Test your agent</h2>
 <pre>git clone https://github.com/sisiphamus/dronebench &amp;&amp; cd dronebench
 uv venv &amp;&amp; uv pip install -e .
 dronebench init runs/demo --fixture falcon_v2
 dronebench serve runs/demo --open
-dronebench run runs/demo --agent claude</pre>
+dronebench run runs/demo --cmd "python my_agent.py"   # any command; or --agent claude</pre>
   </section>
 
   <footer><span id="foot"></span><span class="sp"></span><a href="demo/">Dashboard</a><a href="https://github.com/sisiphamus/dronebench">Source</a></footer>
@@ -253,7 +253,7 @@ range.oninput = () => { stop(); show(+range.value); };
 kept.forEach((n) => model(n));
 await show(0);
 if (!reduce) new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { o.disconnect(); setTimeout(play, 600); } }, { threshold: 0.5 }).observe($('#stage'));
-$('#foot').textContent = 'About 15% model error. Checked against theory and one manufacturer figure, not flight logs.';
+$('#foot').textContent = 'Checked against theory, a second aerodynamic method and one manufacturer figure (within 15% across 45 to 65 km/h). Not compared with flight logs.';
 </script>
 </body>
 </html>
