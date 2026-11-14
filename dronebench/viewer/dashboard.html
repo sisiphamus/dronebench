@@ -258,7 +258,7 @@ function drawLog() {
     const what = v === 'rejected' ? failText(r) : '';
     return `<tr data-s="${r.step}" class="${r.step === S.sel ? 'sel' : ''}"><td class="num">${r.step}</td>
       <td class="${cls}"><b>${v === 'baseline' ? 'start' : v === 'improved' ? 'kept' : v}</b></td><td class="num ${cls}">${d}</td>
-      <td>${esc(r.note || opsText(r) || (r.step === 0 ? 'baseline design' : ''))}<span class="ops">${v === 'rejected' ? esc(what) : esc(opsText(r) !== (r.note || '') ? opsText(r) : '')}</span></td></tr>`;
+      <td>${esc(r.note || opsText(r) || (r.step === 0 ? 'baseline design' : ''))}<span class="ops">${v === 'rejected' ? esc(what) : ''}</span></td></tr>`;
   }).join('');
   $('#log').innerHTML = `<thead><tr><th>#</th><th>Result</th><th>Δ</th><th>Change</th></tr></thead><tbody>${rows}</tbody>`;
   $('#log').querySelectorAll('tr[data-s]').forEach((tr) => tr.onclick = () => { S.follow = false; select(+tr.dataset.s); });
@@ -321,9 +321,9 @@ function drawSide(n) {
   const d = score - base;
   const failed = r && r.step > 0 && !r.accepted && (r.score ?? 0) <= 0;
   const nOk = R ? R.gate.checks.filter((c) => c.pass).length : 0, nAll = R ? R.gate.checks.length : 0;
-  $('#sHero').innerHTML = `<div class="hero"><h4><span>Step ${n}${r && r.agent && r.agent !== 'agent' ? ' by ' + esc(r.agent) : ''}</span><span>best so far ${fx(S.meta ? S.meta.best : score, 1)}</span></h4>
+  $('#sHero').innerHTML = `<div class="hero"><h4><span>Step ${n}${r && r.agent && r.agent !== 'agent' ? ' by ' + esc(r.agent) : ''}</span><span></span></h4>
     <div class="big">${failed ? '0' : fx(score, 1)}<small>${esc(unit)}</small></div>
-    <div class="d num ${d < -1e-9 ? 'down' : ''}">${failed ? 'Gate failed, so the score is zero' : (d >= 0 ? '+' : '') + d.toFixed(1) + ' ' + esc(unit)}<small>${!failed && base ? ((d / base) * 100 >= 0 ? '+' : '') + ((d / base) * 100).toFixed(1) + '% against the start' : ''}</small></div>
+    <div class="d num ${d < -1e-9 ? 'down' : ''}">${failed ? 'Gate failed' : (d >= 0 ? '+' : '') + d.toFixed(1) + ' ' + esc(unit)}</div>
     <div class="gatehead ${R && !R.gate.pass ? 'fail' : ''}">${R ? (R.gate.pass ? 'Gate passed' : 'Gate failed') : ''} <span>${R ? nOk + ' of ' + nAll + ' checks' : ''}</span></div></div>`;
   if (!R) { $('#sTiles').style.display = $('#sGate').style.display = 'none'; return; }
   $('#sTiles').style.display = $('#sGate').style.display = '';
@@ -332,7 +332,7 @@ function drawSide(n) {
     const dv = (a[k] ?? null) !== null && (b[k] ?? null) !== null && n !== 0 ? a[k] - b[k] : null;
     return `<li><span class="k">${name}</span><span class="v num">${fx(a[k], nd)} ${u}</span><span class="dd num">${dv === null || Math.abs(dv) < 1e-9 ? '' : (dv > 0 ? '+' : '') + dv.toFixed(nd)}</span></li>`;
   }).join('') + '</ul>';
-  $('#sGate').innerHTML = '<h4><span>Checks</span><span>closer to the limit = shorter bar</span></h4>' + R.gate.checks.map((c) => {
+  $('#sGate').innerHTML = '<h4><span>Checks</span><span></span></h4>' + R.gate.checks.map((c) => {
     const lim = c.limit, val = c.value; let head = null, vs = '';
     if (typeof val === 'number') {
       if (Array.isArray(lim)) {
@@ -372,8 +372,8 @@ function drawDetail(R) {
   const tested = R.parts.some((q) => q.necessity && q.necessity !== 'not_tested');
   el.innerHTML = `<h4><span>${tested ? 'Parts that can still go' : 'Parts'}</span><span>${tested ? un.length : R.parts.length}</span></h4>` +
     (tested ? (un.slice(0, 9).map((q) => `<div class="rm" data-p="${esc(q.id)}"><span>${esc(q.id)}</span><span class="g num">${q.score_delta_if_removed ? '+' + fx(q.score_delta_if_removed, 1) : ''}</span></div>`).join('') || '<div style="color:var(--muted)">Nothing left to remove.</div>')
-      : '<div style="color:var(--muted)">This attempt was rejected, so the part-by-part removal test was not run.</div>') +
-    '<div style="color:var(--muted);font-size:13px;margin-top:12px">Click any part in the 3D view to read its report.</div>';
+      : '<div style="color:var(--muted)">Not tested: this attempt was rejected.</div>') +
+    '';
   el.querySelectorAll('.rm').forEach((d) => d.onclick = () => pickPart(d.dataset.p));
 }
 

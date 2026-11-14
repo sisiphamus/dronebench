@@ -88,22 +88,21 @@ footer .sp { flex: 1; }
   <nav>
     <a class="logo" href="./">DroneBench</a>
     <span class="sp"></span>
-    <a class="l hide" href="#attempts">Attempts</a><a class="l hide" href="#run">Run it</a>
     <a class="l" href="demo/">Dashboard</a><a class="l" href="https://github.com/sisiphamus/dronebench">Source</a>
   </nav>
 
   <header class="hero">
-    <h1 class="disp">An agent added <b>38 minutes</b> of flight to this drone. Every cut was checked.</h1>
+    <h1 class="disp">An agent added <b>38 minutes</b> of flight to this drone.</h1>
     <div class="side">
-      <p>DroneBench is a test bench for small electric fixed-wing aircraft. It analyses a design, runs 16 pass or fail checks, and scores it. An agent edits the design with a command, and each edit is kept or rejected with the reason.</p>
-      <div class="btns"><a class="btn" href="demo/">Open the dashboard</a><a class="t" href="#run">Run it yourself</a></div>
+      <p>DroneBench checks every change an agent makes to a drone design, and keeps it only if the drone still flies and scores higher.</p>
+      <div class="btns"><a class="btn" href="demo/">Open the dashboard</a></div>
     </div>
   </header>
 
   <div class="stage" id="stage">
     <div class="readout">
       <div class="score" id="score">139.2<small>min</small></div>
-      <div class="cap"><div class="v" id="verdict">Starting design</div><p id="note">A Titan Falcon V2 replica, 80 parts, scored on flight time.</p></div>
+      <div class="cap"><div class="v" id="verdict">Starting design</div><p id="note"></p></div>
     </div>
     <div id="view" role="img" aria-label="3D model of the drone. Parts the agent removed turn orange for one step, then disappear."></div>
     <div class="scrub">
@@ -111,56 +110,23 @@ footer .sp { flex: 1; }
       <input id="range" type="range" min="0" max="9" step="1" value="0" aria-label="Step through the agent's accepted changes">
       <span class="lbl" id="lbl">Start</span>
     </div>
-    <div class="key"><span><i style="background:#555"></i>Part kept</span><span><i style="background:var(--hot);border-color:var(--hot)"></i>Part removed at this step</span><span>Drag the drone to turn it.</span></div>
-  </div>
+      </div>
 
   <section id="attempts">
-    <h2>What the agent tried</h2>
-    <p class="lead">One Claude Code run, 12 attempts allowed, 11 used. It read a report of which parts were dead weight, removed them one at a time, and tried new propellers twice. DroneBench rejected both propeller swaps because the score went down.</p>
     <table id="tbl"><thead><tr><th>Step</th><th>Result</th><th>Change</th><th class="n">Flight time</th></tr></thead><tbody></tbody></table>
   </section>
 
-  <section>
-    <div class="two">
-      <div>
-        <h2>What it will not allow</h2>
-      </div>
-      <div class="rules">
-        <p><b>Deleting the wiring.</b> The harness check needs a minimum wire mass for the speed controllers, servos and flight controller.</p>
-        <p><b>Deleting the rudder.</b> The control check needs a surface for roll, pitch and yaw.</p>
-        <p><b>Deleting a motor mount.</b> Every part must stay attached to one airframe, so a motor left floating fails.</p>
-        <p><b>Inventing a 400 Wh/kg battery.</b> Specs an agent types in are clamped to what real parts do, and flagged.</p>
-        <p><b>Removing real dead weight.</b> This is allowed. Armor plating, a fuselage section and ballast made up 27 of the 38 minutes.</p>
-      </div>
-    </div>
-  </section>
 
   <section id="run">
-    <h2>Run it</h2>
-    <p class="lead">Python 3.11 or newer. Claude Code is optional, any script can use the same commands.</p>
-<pre><span class="c"># install</span>
-git clone https://github.com/sisiphamus/dronebench &amp;&amp; cd dronebench
+<pre>git clone https://github.com/sisiphamus/dronebench &amp;&amp; cd dronebench
 uv venv &amp;&amp; uv pip install -e .
-
-<span class="c"># make a workspace and open the live dashboard</span>
-dronebench init runs/demo --fixture falcon_v2 --steps 12
+dronebench init runs/demo --fixture falcon_v2
 dronebench serve runs/demo --open
-
-<span class="c"># in a second terminal, let an agent iterate</span>
-dronebench run runs/demo --agent claude
-dronebench run runs/demo --agent random      <span class="c"># the baseline to beat</span>
-
-<span class="c"># or do what the agent does</span>
-dronebench try runs/demo --ops ops.json --note "ballast is dead weight"
-dronebench build runs/demo --set wing.span_mm=2200</pre>
+dronebench run runs/demo --agent claude</pre>
   </section>
 
-  <section>
-    <h2>How far to trust it</h2>
-    <p class="lead">The physics is analytic. It uses lift and drag estimates, a motor, propeller and battery model, a cantilever spar and neutral point stability. Expect about 15% error. That is enough to rank designs against each other. It does not show that an aircraft is safe to fly, and the Falcon V2 wing shape is an assumption written down in the repo.</p>
-  </section>
 
-  <footer><span>DroneBench, started at the AITX hackathon.</span><span class="sp"></span><a href="demo/">Dashboard</a><a href="https://github.com/sisiphamus/dronebench">Source</a></footer>
+  <footer><span>Analytic physics, about 15% error: it ranks designs, it does not certify them.</span><span class="sp"></span><a href="https://github.com/sisiphamus/dronebench">Source</a></footer>
 </div>
 
 <script type="module">
@@ -188,7 +154,7 @@ $('#tbl tbody').innerHTML = all.map((r) => {
   const res = r.step === 0 ? 'Start' : rej ? 'Rejected' : 'Kept';
   const detail = rej ? (r.reason && r.reason.startsWith('regression') ? 'scored lower than the best so far' : (r.reason || '')) : '';
   if (r.accepted) best = Math.max(best, r.score);
-  return `<tr><td>${r.step}</td><td class="${rej ? 'rej' : ''}"><b>${res}</b></td><td class="${rej ? 'rej' : ''}">${esc(note)}${detail ? `<br><span style="font-size:14px">${esc(detail)}</span>` : ''}</td><td class="n ${rej ? 'rej' : ''}">${(r.score ?? 0).toFixed(1)} ${unit}</td></tr>`;
+  return `<tr><td>${r.step}</td><td class="${rej ? 'rej' : ''}"><b>${res}</b></td><td class="${rej ? 'rej' : ''}">${esc(note)}</td><td class="n ${rej ? 'rej' : ''}">${(r.score ?? 0).toFixed(1)} ${unit}</td></tr>`;
 }).join('');
 
 // 3D scrubber
@@ -230,7 +196,7 @@ function show(k) {
   const r = recs.get(n);
   $('#score').innerHTML = `${r.score.toFixed(1)}<small>${unit}</small>`;
   $('#verdict').textContent = n === 0 ? 'Starting design' : `Kept, ${(r.score - recs.get(kept[k - 1]).score >= 0 ? '+' : '')}${(r.score - recs.get(kept[k - 1]).score).toFixed(1)} ${unit}`;
-  $('#note').textContent = n === 0 ? 'A Titan Falcon V2 replica, 80 parts, scored on flight time.' : (r.note || '');
+  $('#note').textContent = n === 0 ? '' : (r.note || '');
   $('#lbl').textContent = n === 0 ? 'Start' : `Step ${n} of ${kept[kept.length - 1]}`;
   range.value = k;
 }
