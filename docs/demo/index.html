@@ -9,8 +9,8 @@
 <title>DroneBench</title>
 <style>
 :root {
-  --bg: #efefef; --panel: #ffffff; --ink: #111111; --muted: #5c5c5c; --faint: #8f8f8f; --line: #d4d4d4; --line2: #111111;
-  --hot: #ff4a1c;
+  --bg: #f4f4f5; --panel: #ffffff; --ink: #0a0b1a; --muted: #5c5c5c; --faint: #8f8f8f; --line: #d4d4d4; --line2: #111111;
+  --hot: #2a3cff;
   --display: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
   --text: "Public Sans", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
   color-scheme: light;
@@ -166,7 +166,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const NEC = { required: '#555555', helpful: '#a8a8a8', unnecessary: '#ff4a1c', not_tested: '#b9b9b9' };
+const NEC = { required: '#555555', helpful: '#a8a8a8', unnecessary: '#2a3cff', not_tested: '#b9b9b9' };
 const FUNC = { lift: '#4e79a7', stability: '#76b7b2', control: '#59a14f', propulsion: '#e15759', power: '#f28e2b',
   avionics: '#b07aa1', structure: '#9c755f', fastening: '#8c8c8c', payload: '#edc948', aerodynamic_fairing: '#ff9da7',
   ballast: '#8a8a8a', cosmetic: '#d4a6c8', unknown: '#7b8494' };
@@ -293,13 +293,13 @@ function drawChart() {
     const v = verdict(r); const cx = x(r.step), sel = r.step === S.sel;
     let cy = y(r.score ?? 0), el;
     if (v === 'rejected' && (r.score ?? 0) <= 0) {
-      cy = gateY; el = `<path d="M${cx - 4.5},${cy - 4.5}l9,9m0,-9l-9,9" stroke="#ff4a1c" stroke-width="2.4"/>`;
-    } else if (v === 'rejected') el = `<circle cx="${cx}" cy="${cy}" r="5" fill="#fff" stroke="#ff4a1c" stroke-width="2.4"/>`;
+      cy = gateY; el = `<path d="M${cx - 4.5},${cy - 4.5}l9,9m0,-9l-9,9" stroke="#2a3cff" stroke-width="2.4"/>`;
+    } else if (v === 'rejected') el = `<circle cx="${cx}" cy="${cy}" r="5" fill="#fff" stroke="#2a3cff" stroke-width="2.4"/>`;
     else if (v === 'baseline') el = `<circle cx="${cx}" cy="${cy}" r="5" fill="#fff" stroke="#111" stroke-width="2.4"/>`;
     else el = `<circle cx="${cx}" cy="${cy}" r="5" fill="#111"/>`;
     h += `<g data-s="${r.step}" style="cursor:pointer">${sel ? `<rect x="${cx - 10}" y="${cy - 10}" width="20" height="20" fill="none" stroke="#111" stroke-width="1.5"/>` : ''}<rect x="${cx - 12}" y="${cy - 12}" width="24" height="24" fill="transparent"/>${el}</g>`;
   }
-  h += `<g font-size="12" fill="#111"><circle cx="${W - R - 232}" cy="22" r="4.5" fill="#111"/><text x="${W - R - 223}" y="26">kept</text><circle cx="${W - R - 178}" cy="22" r="4.5" fill="#fff" stroke="#ff4a1c" stroke-width="2.2"/><text x="${W - R - 169}" y="26">scored lower</text><path d="M${W - R - 84},18l8,8m0,-8l-8,8" stroke="#ff4a1c" stroke-width="2.2"/><text x="${W - R - 71}" y="26">failed gate</text></g>`;
+  h += `<g font-size="12" fill="#111"><circle cx="${W - R - 232}" cy="22" r="4.5" fill="#111"/><text x="${W - R - 223}" y="26">kept</text><circle cx="${W - R - 178}" cy="22" r="4.5" fill="#fff" stroke="#2a3cff" stroke-width="2.2"/><text x="${W - R - 169}" y="26">scored lower</text><path d="M${W - R - 84},18l8,8m0,-8l-8,8" stroke="#2a3cff" stroke-width="2.2"/><text x="${W - R - 71}" y="26">failed gate</text></g>`;
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.innerHTML = h;
   svg.querySelectorAll('g[data-s]').forEach((g) => {
     g.onclick = () => { S.follow = false; select(+g.dataset.s); };
@@ -464,7 +464,7 @@ function recolor() {
     const gone = changes.get(m.userData.pid) === 'removed';
     const show = S.ghost || (S.mode === 'changes' && (gone || changes.get(m.userData.pid) === 'changed'));
     m.visible = show && (S.mode !== 'changes' || S.ghost || gone || changes.get(m.userData.pid) === 'changed');
-    if (gone) { m.material.color.set('#ff4a1c'); m.material.opacity = 0.55; m.material.transparent = true; }
+    if (gone) { m.material.color.set('#2a3cff'); m.material.opacity = 0.55; m.material.transparent = true; }
     else { m.material.color.set('#444444'); m.material.opacity = S.mode === 'changes' ? 0.16 : 0.1; }
   }
   legend();

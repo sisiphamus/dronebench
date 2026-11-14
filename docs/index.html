@@ -4,131 +4,252 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DroneBench</title>
-<meta name="description" content="A bench where AI agents design small electric drones and every design is flown in a 6-DOF simulator before it counts.">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Public+Sans:wght@400;500;600;700&display=swap">
+<meta name="description" content="A test bench where AI agents design small electric drones and every design is flown in a simulator before it scores.">
+<meta name="theme-color" content="#2a3cff">
+<link rel="preload" href="fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+@font-face { font-family: "Archivo"; src: url(fonts/archivo-latin.woff2) format("woff2"); font-weight: 300 900; font-stretch: 62% 125%; font-display: swap; }
 :root {
-  --bg: #efefef; --panel: #ffffff; --ink: #111111; --muted: #565656; --line: #cfcfcf; --hot: #ff4a1c;
-  --display: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
-  --text: "Public Sans", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  --blue: #2a3cff; --blue-deep: #1a27d4; --ink: #0a0b1a; --paper: #f4f4f5; --white: #ffffff;
+  --muted: #5a5c6e; --line: #d6d7de; --on-blue: rgba(255,255,255,.78);
+  --font: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --ease: cubic-bezier(.16,1,.3,1);
   color-scheme: light;
 }
-* { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.55 var(--text); }
-a { color: var(--ink); text-underline-offset: 4px; }
-:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
-.wrap { max-width: 1240px; margin: 0 auto; padding: 0 32px; }
-nav { display: flex; align-items: baseline; gap: 28px; padding: 18px 0; border-bottom: 2px solid var(--ink); }
-nav .logo { font-family: var(--display); font-stretch: 62%; font-weight: 800; font-size: 30px; text-decoration: none; letter-spacing: -.01em; }
-nav .sp { flex: 1; }
-nav a.l { font-size: 15px; font-weight: 600; text-decoration: none; }
-nav a.l:hover { text-decoration: underline; }
-.hero { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 56px; padding: 64px 0 48px; align-items: end; }
-h1 { font-family: var(--display); font-stretch: 62%; font-weight: 800; letter-spacing: -.015em; line-height: .92; font-size: clamp(50px, 7.6vw, 112px); margin: 0; }
-h1 b { color: var(--hot); font-weight: 800; }
-.hero p { margin: 0 0 22px; max-width: 30em; }
-.btn { display: inline-block; background: var(--ink); color: #fff; padding: 13px 22px; font-weight: 600; font-size: 16px; text-decoration: none; border-radius: 2px; }
-.btn:hover { background: var(--hot); }
-.stage { background: var(--panel); border: 2px solid var(--ink); }
-.readout { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 18px 24px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
-.score { font-family: var(--display); font-stretch: 62%; font-weight: 800; font-size: clamp(72px, 9vw, 128px); line-height: .85; letter-spacing: -.02em; }
-.score small { font-size: .3em; font-weight: 700; color: var(--muted); margin-left: 10px; letter-spacing: 0; }
-.cap { max-width: 34em; text-align: right; }
-.cap .v { font-family: var(--display); font-stretch: 62%; font-weight: 800; font-size: 30px; line-height: 1; }
-.cap p { margin: 6px 0 0; font-size: 16px; min-height: 3em; }
-#view { height: min(66vh, 620px); min-height: 380px; background: #e5e5e5; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 18px/1.55 var(--font); font-stretch: 100%; -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-underline-offset: 4px; text-decoration-thickness: 1px; }
+:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; border-radius: 2px; }
+.wrap { max-width: 1320px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 56px); }
+h1, h2, h3, .num { font-family: var(--font); font-stretch: 62%; font-weight: 900; letter-spacing: -.012em; word-spacing: .12em; margin: 0; }
+
+/* hero: the colour is the page */
+.hero { background: var(--blue); color: var(--white); overflow: hidden; }
+.hero a:focus-visible, .hero button:focus-visible { outline-color: var(--white); }
+.bar { display: flex; align-items: baseline; gap: 28px; padding: 22px 0; flex-wrap: wrap; }
+.logo { font-family: var(--font); font-stretch: 62%; font-weight: 900; font-size: 30px; text-decoration: none; letter-spacing: -.01em; margin-right: auto; }
+.bar a.l { font-weight: 600; font-size: 15px; text-decoration: none; white-space: nowrap; }
+.bar a.l:hover { text-decoration: underline; }
+.heroGrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 24px; align-items: center; padding: 40px 0 72px; }
+.hero h1 { font-size: clamp(3.4rem, 7.4vw, 6rem); line-height: .9; }
+.hero h1 b { font-weight: 900; box-shadow: inset 0 -0.14em 0 var(--ink); }
+.hero p { color: var(--on-blue); max-width: 34ch; margin: 28px 0 36px; font-size: 19px; }
+.btns { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn { display: inline-flex; align-items: center; min-height: 48px; padding: 0 26px; border-radius: 999px; font: 700 16px var(--font); text-decoration: none; border: 2px solid var(--white); cursor: pointer; transition: background .25s var(--ease), color .25s var(--ease), transform .12s; }
+.btn.solid { background: var(--white); color: var(--blue); }
+.btn.solid:hover { background: var(--ink); border-color: var(--ink); color: var(--white); }
+.btn.line { background: transparent; color: var(--white); }
+.btn.line:hover { background: var(--white); color: var(--blue); }
+.btn:active { transform: translateY(1px); }
+#hero3d { width: 100%; aspect-ratio: 1.25; min-height: 280px; cursor: grab; touch-action: pan-y; }
+#hero3d:active { cursor: grabbing; }
+#hero3d canvas { display: block; width: 100%; height: 100%; }
+
+section { padding: 112px 0; }
+section h2 { font-size: clamp(2.6rem, 5.4vw, 4.5rem); line-height: .92; max-width: 16ch; }
+.lede { color: var(--muted); max-width: 46ch; margin: 22px 0 0; }
+
+/* the design history: scroll drives a real model */
+.story { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(24px, 5vw, 80px); margin-top: 56px; align-items: start; }
+.stage { position: sticky; top: 20px; order: 2; background: var(--blue); color: var(--white); border-radius: 22px; overflow: hidden; }
+.readout { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 22px 26px 0; }
+.score { font-family: var(--font); font-stretch: 62%; font-weight: 900; font-size: clamp(4rem, 8vw, 7rem); line-height: .9; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.score small { font-size: .3em; font-weight: 700; margin-left: 8px; letter-spacing: 0; }
+.delta { font-weight: 700; font-size: 18px; text-align: right; }
+#view { width: 100%; aspect-ratio: 1.3; }
 #view canvas { display: block; width: 100%; height: 100%; }
-.scrub { display: flex; align-items: center; gap: 20px; padding: 14px 24px 16px; border-top: 1px solid var(--line); }
-.scrub button { background: var(--ink); color: #fff; border: 0; border-radius: 2px; padding: 9px 18px; font: 600 15px var(--text); cursor: pointer; min-width: 84px; }
-.scrub button:hover { background: var(--hot); }
-.scrub input { flex: 1; accent-color: var(--ink); height: 28px; }
-.scrub .lbl { font-size: 14px; color: var(--muted); min-width: 9em; text-align: right; font-variant-numeric: tabular-nums; }
-section { padding: 88px 0 0; }
-h2 { font-family: var(--display); font-stretch: 62%; font-weight: 800; font-size: clamp(36px, 4.6vw, 64px); line-height: .94; letter-spacing: -.015em; margin: 0 0 22px; }
-table { width: 100%; border-collapse: collapse; font-size: 16px; }
-th { text-align: left; font-weight: 500; color: var(--muted); font-size: 14px; padding: 6px 12px 8px 0; border-bottom: 2px solid var(--ink); }
-td { padding: 11px 12px 11px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
-td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; padding-right: 0; white-space: nowrap; }
-td.rej, td.rej * { color: var(--hot); }
-tr.top td { font-weight: 700; }
-.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: start; }
-.note { color: var(--muted); font-size: 15px; margin: 14px 0 0; max-width: 40em; }
-svg.chart { width: 100%; height: auto; display: block; background: var(--panel); border: 2px solid var(--ink); }
-svg.chart text { font: 12px var(--text); fill: var(--muted); }
-pre { margin: 0; background: var(--panel); border: 2px solid var(--ink); padding: 22px 24px; overflow-x: auto; font: 14.5px/1.7 ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace; }
-footer { margin: 96px 0 0; padding: 22px 0 56px; border-top: 2px solid var(--ink); font-size: 15px; display: flex; gap: 24px; flex-wrap: wrap; }
+.scrub { display: flex; align-items: center; gap: 16px; padding: 0 26px 22px; }
+.scrub .lbl { font-weight: 600; font-size: 15px; min-width: 7.5em; font-variant-numeric: tabular-nums; }
+.scrub input { flex: 1; accent-color: var(--white); height: 28px; cursor: pointer; }
+.legend { display: flex; gap: 20px; padding: 0 26px 18px; color: var(--on-blue); font-size: 14px; flex-wrap: wrap; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; vertical-align: -1px; }
+.steps { order: 1; }
+.step { padding: 120px 0 120px; border-top: 1px solid var(--line); color: #6b6d80; transition: color .4s var(--ease); }
+.step.on { color: var(--ink); }
+.step:first-child { border-top: 0; padding-top: 0; }
+.step h3 { font-size: clamp(2.4rem, 4.2vw, 3.6rem); line-height: .95; }
+.step p { margin: 14px 0 0; max-width: 40ch; }
+.step .meta { font-size: 15px; margin-top: 10px; }
+.step.rej { padding: 28px 0; }
+.step.rej p { margin: 0; font-size: 16px; }
+.step.rej b { color: var(--ink); }
+
+/* four agents */
+.race { background: var(--white); }
+#chart { width: 100%; height: auto; display: block; margin-top: 48px; overflow: visible; }
+#chart text { font: 600 15px var(--font); fill: var(--muted); }
+#chart .end { font-weight: 800; font-size: 17px; }
+#chart path.ln { fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.fine { color: var(--muted); font-size: 15px; margin: 22px 0 0; max-width: 60ch; }
+
+/* two environments */
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 6vw, 96px); align-items: end; margin-top: 8px; }
+#learn { width: 100%; height: auto; display: block; overflow: visible; }
+#learn text { font: 600 14px var(--font); fill: var(--muted); }
+.two p { max-width: 44ch; }
+
+/* run it */
+.run { background: var(--blue); color: var(--white); }
+.run h2 { max-width: 12ch; }
+.run .lede { color: var(--on-blue); }
+.runGrid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(24px, 5vw, 80px); align-items: start; }
+.term { background: var(--ink); border-radius: 16px; padding: 22px 24px; overflow-x: auto; }
+.term pre { margin: 0; font: 500 15px/1.75 ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace; color: #e8e9ff; white-space: pre; }
+.term .cm { color: #8c90b8; }
+.copy { display: block; margin: -6px -8px 14px auto; min-height: 44px; padding: 0 18px; border-radius: 999px; background: var(--white); color: var(--ink); border: 0; font: 700 14px var(--font); cursor: pointer; transition: background .2s var(--ease), color .2s var(--ease); }
+.copy:hover { background: var(--blue); color: var(--white); }
+.copy:focus-visible { outline: 3px solid var(--white); }
+.copy[data-state="done"] { background: #d7ffe0; color: var(--ink); }
+.run .links { margin-top: 28px; display: flex; gap: 12px; flex-wrap: wrap; }
+.run a:focus-visible { outline-color: var(--white); }
+
+/* limits */
+.limits { background: var(--ink); color: var(--white); }
+.limits dl { margin: 48px 0 0; display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: 0 clamp(24px, 5vw, 80px); }
+.limits dt { font-family: var(--font); font-stretch: 62%; font-weight: 900; font-size: clamp(1.7rem, 2.8vw, 2.4rem); line-height: 1; padding: 28px 0; border-top: 2px solid var(--white); }
+.limits dd { margin: 0; padding: 28px 0; border-top: 2px solid var(--white); max-width: 56ch; color: rgba(255,255,255,.82); }
+.limits .more { margin-top: 32px; display: inline-block; font-weight: 700; }
+.limits a:focus-visible { outline-color: var(--white); }
+
+footer { padding: 28px 0 40px; background: var(--ink); color: rgba(255,255,255,.7); font-size: 15px; }
+footer .wrap { display: flex; gap: 24px; flex-wrap: wrap; align-items: baseline; }
 footer .sp { flex: 1; }
-@media (max-width: 860px) {
-  .wrap { padding: 0 18px; } .hero { grid-template-columns: 1fr; gap: 28px; padding-top: 36px; }
-  .two { grid-template-columns: 1fr; gap: 32px; } .cap { text-align: left; } nav { gap: 6px 16px; flex-wrap: wrap; } nav a.l { white-space: nowrap; }
-  .scrub .lbl { display: none; } section { padding-top: 64px; }
+footer a { color: var(--white); font-weight: 600; text-decoration: none; }
+
+@media (max-width: 900px) {
+  .term pre { white-space: pre-wrap; word-break: break-word; }
+  #learn text { font-size: 21px; }
+  .heroGrid { grid-template-columns: 1fr; padding-bottom: 40px; }
+  .story { grid-template-columns: 1fr; margin-top: 40px; }
+  .stage { order: 0; top: 0; border-radius: 0 0 18px 18px; margin: 0 calc(-1 * clamp(20px, 4vw, 56px)); z-index: 3; }
+  .readout { padding: 14px 18px 0; } .scrub { padding: 0 18px 14px; } .legend { display: none; }
+  #hero3d { order: 0; }
+  #view { aspect-ratio: 1.9; }
+  .score { font-size: 3.4rem; }
+  .step { padding: 64px 0; }
+  .two, .runGrid, .limits dl { grid-template-columns: 1fr; }
+  .limits dt { padding-bottom: 8px; border-bottom: 0; } .limits dd { border-top: 0; padding-top: 0; }
+  section { padding: 72px 0; }
 }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .step, .btn, .copy { transition: none; } }
 </style>
 <script type="importmap">{ "imports": { "three": "./demo/vendor/three.module.js", "three/addons/": "./demo/vendor/addons/" } }</script>
 </head>
 <body>
-<div class="wrap">
-  <nav>
-    <a class="logo" href="./">DroneBench</a>
-    <span class="sp"></span>
-    <a class="l" href="demo/">Dashboard</a><a class="l" href="https://github.com/sisiphamus/dronebench/blob/main/VALIDATION.md">What is checked</a><a class="l" href="https://github.com/sisiphamus/dronebench/blob/main/CONTRIBUTING.md">Submit a result</a><a class="l" href="https://github.com/sisiphamus/dronebench">Source</a>
-  </nav>
 
-  <header class="hero">
-    <h1 id="h1">Every design is flown before it counts.</h1>
-    <div>
-      <p>DroneBench builds an aerodynamic model of a small electric drone from its geometry and flies it in a 6-degree-of-freedom simulator, in calm air, wind and turbulence. Agents edit the design; only what flies scores.</p>
-      <a class="btn" href="demo/">Open the dashboard</a>
-    </div>
-  </header>
-
-  <div class="stage" id="stage">
-    <div class="readout">
-      <div class="score" id="score">&nbsp;</div>
-      <div class="cap"><div class="v" id="verdict"></div><p id="note"></p></div>
-    </div>
-    <div id="view" role="img" aria-label="3D model of the drone as the agent changes it step by step. Parts removed at a step turn orange."></div>
-    <div class="scrub">
-      <button id="play" type="button">Play</button>
-      <input id="range" type="range" min="0" max="1" step="1" value="0" aria-label="Step through the agent's accepted changes">
-      <span class="lbl" id="lbl"></span>
+<div class="hero">
+  <div class="wrap">
+    <nav class="bar" aria-label="Main">
+      <a class="logo" href="./">DroneBench</a>
+      <a class="l" href="demo/">Dashboard</a>
+      <a class="l" href="https://github.com/sisiphamus/dronebench">Source</a>
+    </nav>
+    <div class="heroGrid">
+      <div>
+        <h1 id="h1">An agent designs a drone. A simulator flies it.</h1>
+        <p>Every design is flown in calm air, wind and turbulence before it scores.</p>
+        <div class="btns">
+          <a class="btn solid" href="#run">Test your agent</a>
+          <a class="btn line" href="#story">Watch it design</a>
+        </div>
+      </div>
+      <div id="hero3d" role="img" aria-label="3D model of the drone the agent designed. Drag to turn it."></div>
     </div>
   </div>
+</div>
 
-  <section>
-    <h2>Agents on the same drone</h2>
-    <table id="board"><thead><tr><th>Agent</th><th class="n">Start</th><th class="n">Best</th><th class="n">Attempts</th><th class="n">Failed the gate</th><th class="n">Scored lower</th></tr></thead><tbody></tbody></table>
-    <p class="note" id="boardnote"></p>
-  </section>
+<section id="story">
+  <div class="wrap">
+    <h2>Every change Claude tried</h2>
+    <p class="lede" id="storyLede">The drone is rebuilt after every kept change. Parts that changed are black.</p>
+    <div class="story">
+      <div class="stage" id="stage">
+        <div class="readout">
+          <div class="score" id="score">&nbsp;</div>
+        </div>
+        <div id="view" role="img" aria-label="3D model of the drone after the selected change. Parts that changed since the last kept step are black; removed parts are faint."></div>
+        <div class="legend"><span><i style="background:#0a0b1a"></i>Changed</span><span><i style="background:rgba(255,255,255,.28)"></i>Removed</span></div>
+        <div class="scrub">
+          <span class="lbl" id="lbl"></span>
+          <input id="range" type="range" min="0" max="1" step="1" value="0" aria-label="Choose a kept step of the run">
+        </div>
+      </div>
+      <div class="steps" id="steps"></div>
+    </div>
+  </div>
+</section>
 
-  <section>
+<section class="race">
+  <div class="wrap">
+    <h2>Same drone, four agents</h2>
+    <p class="lede" id="raceLede"></p>
+    <svg id="chart" viewBox="0 0 1200 470" role="img" aria-label="Best flight time reached so far, by attempt, for four agents"></svg>
+    <p class="fine" id="raceNote"></p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
     <div class="two">
       <div>
-        <h2>What Claude tried</h2>
-        <table id="tbl"><thead><tr><th>Step</th><th>Result</th><th>Change</th><th class="n">Minutes</th></tr></thead><tbody></tbody></table>
+        <h2>A policy that learns to fly it</h2>
+        <p class="lede" id="learnText"></p>
       </div>
       <div>
-        <h2>A learned controller</h2>
-        <svg class="chart" id="learn" viewBox="0 0 560 340" role="img" aria-label="Learning curve of a PPO flight controller"></svg>
-        <p class="note" id="learnnote"></p>
+        <svg id="learn" viewBox="0 0 560 360" role="img" aria-label="Learning curve of a flight controller trained with PPO"></svg>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section id="run">
-    <h2>Test your agent</h2>
-<pre>git clone https://github.com/sisiphamus/dronebench &amp;&amp; cd dronebench
+<section class="run" id="run">
+  <div class="wrap">
+    <div class="runGrid">
+      <div>
+        <h2>Bring your agent</h2>
+        <p class="lede">Any command can be the agent. The bench enforces the step budget, replays your result from scratch and checks it against the safety rules.</p>
+        <div class="links">
+          <a class="btn solid" href="https://github.com/sisiphamus/dronebench/blob/main/CONTRIBUTING.md">Submit a result</a>
+        </div>
+      </div>
+      <div class="term">
+        <button class="copy" id="copy" type="button">Copy</button>
+        <pre id="cmds"><span class="cm"># Python 3.11 or newer</span>
+git clone https://github.com/sisiphamus/dronebench &amp;&amp; cd dronebench
 uv venv &amp;&amp; uv pip install -e .
-dronebench init runs/demo --fixture falcon_v2
-dronebench serve runs/demo --open
-dronebench run runs/demo --cmd "python my_agent.py"   # any command; or --agent claude</pre>
-  </section>
+source .venv/bin/activate
 
-  <footer><span id="foot"></span><span class="sp"></span><a href="demo/">Dashboard</a><a href="https://github.com/sisiphamus/dronebench">Source</a></footer>
-</div>
+dronebench init ws --fixture falcon_v2 --steps 30
+dronebench run ws --cmd "python my_agent.py"
+dronebench result ws --out results/falcon_v2/my-agent.json
+dronebench verify --standard results/falcon_v2/my-agent.json</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="limits">
+  <div class="wrap">
+    <h2>What it does not know yet</h2>
+    <dl>
+      <dt>No flight logs</dt>
+      <dd>The physics matches theory, a second aerodynamic method and one manufacturer figure, within 15% from 45 to 65 km/h. It has not been compared with measured flights.</dd>
+      <dt>One kind of aircraft</dt>
+      <dd>A wing, a tail and one or two motors. V-tails and flying wings fail with a message.</dd>
+      <dt>Starts in the air</dt>
+      <dd>Takeoff and landing are not modelled, and the propeller data is a generic fit.</dd>
+    </dl>
+    <a class="more" href="https://github.com/sisiphamus/dronebench/blob/main/VALIDATION.md">Read what was checked and what is open</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <a href="https://github.com/sisiphamus/dronebench">DroneBench on GitHub</a>
+    <span class="sp"></span>
+    <span>MIT license</span>
+  </div>
+</footer>
 
 <script type="module">
 import * as THREE from 'three';
@@ -138,122 +259,256 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const j = (u) => fetch(u).then((r) => { if (!r.ok) throw new Error(u); return r.json(); }).catch(() => null);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const easeOut = (t) => (t >= 1 ? 1 : 1 - Math.pow(2, -10 * t));
+const BLUE = '#2a3cff', INK = '#0a0b1a';
 
 const [state, board, learn] = await Promise.all([j('demo/data/state.json'), j('data/leaderboard.json'), j('data/learning.json')]);
-const unit = (state.meta.unit || 'min');
-const recs = new Map(state.runs.map((r) => [r.step, r]));
-const all = [...recs.values()].sort((a, b) => a.step - b.step);
-const kept = all.filter((r) => r.accepted).map((r) => r.step);
-const base = all[0].score;
-const bestScore = Math.max(...all.filter((r) => r.accepted).map((r) => r.score));
 
-$('#h1').innerHTML = `An agent took this drone from ${Math.round(base)} to <b>${Math.round(bestScore)}</b> minutes of flight.`;
+const PLAIN = { battery_current: 'battery current limit', esc_current: 'speed controller current limit', motor_current: 'motor current limit',
+  static_margin: 'balance', stall_margin: 'stall speed margin', spar: 'wing strength', clearance: 'parts colliding', shell_structure: 'printed shell too thin',
+  battery_fit: 'battery does not fit', flight_model: 'could not be flown', climb: 'climb rate', mtow: 'over the weight limit', control_chain: 'controls incomplete',
+  harness: 'wiring', airframe_connected: 'parts not connected', fuselage_continuous: 'fuselage broken', tail_volume: 'tail size', servo_torque: 'servo too weak',
+  power_chain: 'power chain incomplete', payload: 'payload removed', lifting_surfaces: 'wing or tail missing' };
+function whyRejected(r) {
+  const names = (r.fail_detail || []).filter((d) => !d.includes('physics could not run')).map((d) => d.split(':')[0]);
+  const list = [...new Set(names.length ? names : ['flight_model'])].slice(0, 2).map((n) => PLAIN[n] || n.replace(/_/g, ' '));
+  return list.join(' and ');
+}
 
-// ---- leaderboard
-if (board) {
-  const rows = board.slice().sort((a, b) => b.best - a.best);
-  $('#board tbody').innerHTML = rows.map((r, i) => `<tr class="${i === 0 ? 'top' : ''}"><td>${esc(r.label)}</td><td class="n">${r.baseline.toFixed(0)} ${unit}</td><td class="n">${r.best.toFixed(0)} ${unit} (${r.gain_pct >= 0 ? '+' : ''}${r.gain_pct.toFixed(0)}%)</td><td class="n">${r.attempts}</td><td class="n ${r.gate_failures ? 'rej' : ''}">${r.gate_failures}</td><td class="n">${r.worse}</td></tr>`).join('');
-  $('#boardnote').textContent = 'One run each, same Falcon V2 replica, same weather, same gate. A failed gate means the aircraft could not be flown or broke a limit, and the reply says which.';
-} else $('#board').closest('section').style.display = 'none';
+// ---------------------------------------------------------------- numbers from the run
+let recs = [], kept = [], unit = 'min', base = 0, best = 0;
+if (state) {
+  unit = state.meta.unit || 'min';
+  recs = state.runs.slice().sort((a, b) => a.step - b.step);
+  kept = recs.filter((r) => r.accepted).map((r) => r.step);
+  base = recs[0].score;
+  best = Math.max(...recs.filter((r) => r.accepted).map((r) => r.score));
+  $('#h1').innerHTML = `An agent took this drone from ${Math.round(base)} to <b>${Math.round(best)}</b> ${unit === 'min' ? 'minutes of flight' : unit}.`;
+}
 
-// ---- attempts of the agent run
-$('#tbl tbody').innerHTML = all.map((r) => {
-  const rej = r.step > 0 && !r.accepted;
-  const note = r.step === 0 ? 'Starting design' : (r.note || '');
-  return `<tr><td>${r.step}</td><td class="${rej ? 'rej' : ''}"><b>${r.step === 0 ? 'Start' : rej ? 'Rejected' : 'Kept'}</b></td><td class="${rej ? 'rej' : ''}">${esc(note)}</td><td class="n ${rej ? 'rej' : ''}">${rej && !(r.score > 0) ? 'failed gate' : (r.score ?? 0).toFixed(1)}</td></tr>`;
-}).join('');
+// ---------------------------------------------------------------- 3D helpers
+const loader = new GLTFLoader();
+const modelCache = {};
+function model(n) {
+  if (!modelCache[n]) modelCache[n] = fetch(`demo/data/step/${n}.glb`).then((r) => { if (!r.ok) throw 0; return r.arrayBuffer(); })
+    .then((b) => new Promise((res, rej) => loader.parse(b, '', (g) => res(g.scene), rej))).catch(() => null);
+  return modelCache[n];
+}
+const nameOf = (o) => o.name || (o.parent && o.parent.name) || '';
+function boxes(root) {
+  root.updateMatrixWorld(true);
+  const m = new Map();
+  root.traverse((o) => { if (o.isMesh) m.set(nameOf(o), new THREE.Box3().setFromObject(o)); });
+  return m;
+}
+const same = (a, b) => a.min.distanceTo(b.min) < 0.003 && a.max.distanceTo(b.max) < 0.003;
+const mat = (color, opacity = 1) => new THREE.MeshStandardMaterial({ color, roughness: 0.55, metalness: 0.04, side: THREE.DoubleSide, transparent: true, opacity });
 
-// ---- learning curve
+function makeScene(el, { fov = 30 } = {}) {
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  el.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  const cam = new THREE.PerspectiveCamera(fov, 1, 0.01, 60);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x6a74ff, 1.5));
+  const sun = new THREE.DirectionalLight(0xffffff, 2.0); sun.position.set(-2, 4, 3); scene.add(sun);
+  const controls = new OrbitControls(cam, renderer.domElement);
+  controls.enableDamping = true; controls.enablePan = false; controls.enableZoom = false;
+  const resize = () => { const r = el.getBoundingClientRect(); if (!r.width) return; renderer.setSize(r.width, r.height, false); cam.aspect = r.width / r.height; cam.updateProjectionMatrix(); };
+  new ResizeObserver(resize).observe(el); resize();
+  const api = { renderer, scene, cam, controls, visible: true };
+  new IntersectionObserver((es) => { api.visible = es[0].isIntersecting; }).observe(el);   // no drawing while it is off screen
+  return api;
+}
+function frame({ cam, controls }, box, dir = new THREE.Vector3(-0.75, 0.42, 0.95), k = 0.72) {
+  const sph = box.getBoundingSphere(new THREE.Sphere());
+  const half = Math.atan(Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2) * Math.min(1, cam.aspect));
+  controls.target.copy(sph.center);
+  cam.position.copy(sph.center).add(dir.clone().normalize().multiplyScalar(sph.radius / Math.sin(half) * k));
+  controls.update();
+}
+
+const gl = (() => { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch { return false; } })();
+if (!gl) { $('#hero3d').style.display = 'none'; $('#stage').style.display = 'none'; $('.story').style.display = 'block'; }
+// ---------------------------------------------------------------- hero: the final design, turning
+if (state && kept.length && gl) {
+  const H = makeScene($('#hero3d'), { fov: 28 });
+  const group = new THREE.Group(); H.scene.add(group);
+  H.controls.autoRotate = !reduce; H.controls.autoRotateSpeed = 1.1;
+  model(kept[kept.length - 1]).then((m) => {
+    if (!m) { $('#hero3d').style.display = 'none'; return; }
+    const c = m.clone(true); c.traverse((o) => { if (o.isMesh) o.material = mat(0xffffff); }); group.add(c);
+    frame(H, new THREE.Box3().setFromObject(c), new THREE.Vector3(-0.55, 0.5, 1.0), 0.62);
+  });
+  (function loop() { if (H.visible) { H.controls.update(); H.renderer.render(H.scene, H.cam); } requestAnimationFrame(loop); })();
+} else $('#hero3d').style.display = 'none';
+
+// ---------------------------------------------------------------- the design history
+const story = state && kept.length;
+if (story) {
+  const steps = $('#steps');
+  const out = []; let run = [];
+  const flush = () => {
+    if (!run.length) return;
+    const why = [...new Set(run.flatMap((r) => whyRejected(r).split(' and ')))].slice(0, 3).join(', ');
+    out.push(`<article class="step rej"><p><b>${run.length} ${run.length === 1 ? 'attempt' : 'attempts'} rejected.</b> Failed: ${esc(why)}.</p></article>`);
+    run = [];
+  };
+  recs.forEach((r) => {
+    if (r.step === 0) { out.push(`<article class="step on" data-step="0"><h3>Starting design</h3><p>${base.toFixed(1)} ${unit}</p><p class="meta">The Falcon V2 as shipped.</p></article>`); return; }
+    if (!r.accepted) { run.push(r); return; }
+    flush();
+    const prev = recs.filter((q) => q.accepted && q.step < r.step).pop();
+    const d = r.score - prev.score;
+    out.push(`<article class="step" data-step="${r.step}" data-kept="1"><h3>${d >= 0 ? '+' : ''}${d.toFixed(1)} ${unit}</h3><p>${esc(r.note.replace(/->/g, 'to'))}</p></article>`);
+  });
+  flush();
+  steps.innerHTML = out.join('');
+
+  const S = makeScene($('#view'), { fov: 30 });
+  const group = new THREE.Group(); S.scene.add(group);
+  S.controls.autoRotate = !reduce; S.controls.autoRotateSpeed = 0.7;
+  S.controls.addEventListener('start', () => { S.controls.autoRotate = false; });
+  let fade = null; // { t0, mats }
+  (function loop(now) {
+    if (fade) { const o = easeOut((now - fade.t0) / 420); fade.mats.forEach(([m, to]) => { m.opacity = to * o; }); if (o >= 1) fade = null; }
+    if (S.visible) { S.controls.update(); S.renderer.render(S.scene, S.cam); }
+    requestAnimationFrame(loop);
+  })(0);
+
+  const range = $('#range'); range.max = kept.length - 1;
+  const scoreEl = $('#score'), lbl = $('#lbl');
+  let shown = base, tween = null, token = 0, current = -1;
+  function setScore(to) {
+    if (reduce) { shown = to; scoreEl.innerHTML = `${to.toFixed(1)}<small>${unit}</small>`; return; }
+    const from = shown, t0 = performance.now();
+    cancelAnimationFrame(tween);
+    const tick = (t) => { const k = easeOut((t - t0) / 700); shown = from + (to - from) * k; scoreEl.innerHTML = `${shown.toFixed(1)}<small>${unit}</small>`; if (k < 1) tween = requestAnimationFrame(tick); };
+    tween = requestAnimationFrame(tick);
+  }
+  async function show(k, instant) {
+    if (k === current) return;
+    current = k;
+    const my = ++token, n = kept[k], r = recs.find((q) => q.step === n);
+    const cur = await model(n), prev = k > 0 ? await model(kept[k - 1]) : null;
+    if (my !== token) return;
+    setScore(r.score);
+    if (!cur) { group.clear(); return; }
+    const pr = k > 0 ? r.score - recs.find((q) => q.step === kept[k - 1]).score : 0;
+    lbl.textContent = k === 0 ? 'Start' : `Kept ${k} of ${kept.length - 1}`;
+    if (document.activeElement !== range) range.value = k;
+    range.setAttribute('aria-valuetext', `${k === 0 ? 'Start' : 'Kept ' + k + ' of ' + (kept.length - 1)}, ${r.score.toFixed(1)} ${unit}`);
+    group.clear();
+    const mats = [];
+    const old = prev ? boxes(prev) : null, now = boxes(cur);
+    const a = cur.clone(true);
+    a.traverse((o) => { if (!o.isMesh) return; const ch = old && !(old.has(nameOf(o)) && same(old.get(nameOf(o)), now.get(nameOf(o)))); const m = mat(ch ? 0x0a0b1a : 0xffffff); if (ch) { m.depthTest = false; o.renderOrder = 10; } mats.push([m, ch ? 1 : 0.9]); o.material = m; });
+    group.add(a);
+    if (prev) {
+      const have = new Set(now.keys());
+      const b = prev.clone(true);
+      b.traverse((o) => { if (!o.isMesh) return; if (have.has(nameOf(o))) o.visible = false; else { const m = mat(0xffffff, 0); mats.push([m, 0.28]); o.material = m; } });
+      group.add(b);
+    }
+    fade = instant || reduce ? null : { t0: performance.now(), mats };
+    if (instant || reduce) mats.forEach(([m, to]) => { m.opacity = to; }); else mats.forEach(([m]) => { m.opacity = 0; });
+  }
+  const m0 = await model(kept[0]), mL = await model(kept[kept.length - 1]);
+  if (m0 && mL) {
+    const box = new THREE.Box3().setFromObject(m0).union(new THREE.Box3().setFromObject(mL));
+    frame(S, box);
+  }
+  scoreEl.innerHTML = `${base.toFixed(1)}<small>${unit}</small>`;
+  await show(0, true);
+
+  // scroll drives the model: the step crossing the middle of the screen decides
+  const els = [...steps.querySelectorAll('.step')];
+  const io = new IntersectionObserver((es) => es.forEach((e) => {
+    const el = e.target;
+    el.classList.toggle('on', e.isIntersecting);
+    if (e.isIntersecting && el.dataset.kept) show(kept.indexOf(+el.dataset.step));
+    else if (e.isIntersecting && el.dataset.step === '0') show(0);
+  }), { rootMargin: '-42% 0px -42% 0px' });
+  els.forEach((el) => io.observe(el));
+  range.oninput = () => { const k = +range.value; const el = steps.querySelector(`[data-step="${kept[k]}"]`); el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); };
+  kept.forEach((n) => model(n));
+} else {
+  $('#story').style.display = 'none';
+}
+
+// ---------------------------------------------------------------- four agents
+if (board && board.length) {
+  const chart = $('#chart');
+  const top = Math.max(...board.map((q) => q.best));
+  const lead = board.slice().sort((a, b) => b.best - a.best)[0];
+  const short = (l) => l.replace(/ \(design parameters\)/, '').replace('Random search', 'Random numbers');
+  const draw = () => {
+    const narrow = matchMedia('(max-width: 900px)').matches;
+    const W = narrow ? 410 : 1200, H = narrow ? 430 : 470, L = narrow ? 38 : 64, R = narrow ? 168 : 250, T = 18, B = narrow ? 52 : 44;
+    const fs = narrow ? 14 : 15, fe = narrow ? 14 : 17;
+    chart.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    chart.style.setProperty('--fs', fs + 'px');
+    const all = board.flatMap((r) => r.best_so_far);
+    const lo = Math.floor(Math.min(...all) / 50) * 50, hi = Math.ceil(Math.max(...all) / 50) * 50;
+    const n = Math.max(...board.map((r) => r.best_so_far.length - 1));
+    const x = (i) => L + i / n * (W - L - R), y = (v) => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
+    let h = '';
+    for (let v = lo; v <= hi; v += 50) h += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#d6d7de"/><text x="${L - 8}" y="${y(v) + 5}" text-anchor="end" style="font-size:${fs}px">${v}</text>`;
+    for (let i = 0; i <= n; i += 10) h += `<text x="${x(i)}" y="${H - B + 24}" text-anchor="middle" style="font-size:${fs}px">${i}</text>`;
+    h += `<text x="${(L + W - R) / 2}" y="${H - 4}" text-anchor="middle" style="font-size:${fs}px">attempts</text><text x="${L}" y="${T - 6}" style="font-size:${fs}px">minutes of flight</text>`;
+    const ends = [];
+    board.slice().sort((a, b) => a.best - b.best).forEach((r) => {     // the leader is drawn last, on top
+      const isLead = r.best === top;
+      let d = ''; r.best_so_far.forEach((v, i) => { d += i ? `H${x(i).toFixed(1)}V${y(v).toFixed(1)}` : `M${x(i).toFixed(1)},${y(v).toFixed(1)}`; });   // stepped: hold until the next improvement
+      h += `<path class="ln" d="${d}" stroke="${isLead ? BLUE : '#8d8fa3'}" stroke-width="${isLead ? (narrow ? 5 : 6) : (narrow ? 2.5 : 3)}"/>`;
+      ends.push({ y: y(r.best_so_far[r.best_so_far.length - 1]), isLead, label: short(r.label), best: r.best });
+    });
+    ends.sort((a, b) => a.y - b.y);
+    const gap = fe + 9;
+    for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < gap) ends[i].y = ends[i - 1].y + gap;
+    ends.forEach((e) => { h += `<text class="end" x="${W - R + 12}" y="${e.y + 5}" style="font-size:${fe}px;fill:${e.isLead ? BLUE : '#3b3d52'}">${esc(e.label)} ${e.best.toFixed(0)}</text>`; });
+    chart.innerHTML = h;
+    if (!reduce && !drawn) {
+      const paths = [...chart.querySelectorAll('path.ln')];
+      paths.forEach((p) => { const len = p.getTotalLength(); p.style.strokeDasharray = len; p.style.strokeDashoffset = len; });
+      new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { o.disconnect(); drawn = true; paths.forEach((p, i) => { p.style.transition = `stroke-dashoffset 1.6s cubic-bezier(.16,1,.3,1) ${i * 0.12}s`; p.style.strokeDashoffset = 0; }); } }, { threshold: 0.35 }).observe(chart);
+    }
+  };
+  let drawn = false;
+  draw();
+  matchMedia('(max-width: 900px)').addEventListener('change', () => { drawn = true; draw(); });
+  const others = board.filter((r) => r !== lead).map((r) => r.best);
+  $('#raceLede').textContent = `${lead.label} reached ${lead.best.toFixed(0)} ${unit}, ${lead.gain_pct.toFixed(0)}% more than the starting design. The three automatic searches stopped between ${Math.min(...others).toFixed(0)} and ${Math.max(...others).toFixed(0)}.`;
+  $('#raceNote').textContent = `30 attempts each from the same Falcon V2, in the same weather, with the same safety checks. Attempts that failed a safety check: ${board.map((r) => `${short(r.label)} ${r.gate_failures}`).join(', ')}. One run each, so treat it as a sample.`;
+} else $('.race').style.display = 'none';
+
+// ---------------------------------------------------------------- learned controller
 if (learn && learn.curve && learn.curve.length) {
   const W = 560, H = 340, L = 56, R = 16, T = 24, B = 40;
-  const xs = learn.curve.map((c) => c.steps), ys = learn.curve.map((c) => c.return);
-  const refs = learn.reference;
-  const yLo = Math.min(...ys, refs.random[0]), yHi = Math.max(...ys, refs.autopilot[0]) * 1.08;
-  const xm = Math.max(...xs);
+  const xs = learn.curve.map((c) => c.steps), ys = learn.curve.map((c) => c.return), refs = learn.reference;
+  const yLo = Math.min(...ys, refs.random[0]), yHi = Math.max(...ys, refs.autopilot[0]) * 1.08, xm = Math.max(...xs);
   const x = (v) => L + v / xm * (W - L - R), y = (v) => T + (1 - (v - yLo) / (yHi - yLo)) * (H - T - B);
   let h = '';
-  for (let i = 0; i <= 4; i++) { const v = yLo + (yHi - yLo) * i / 4; h += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#d9d9d9"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v.toFixed(0)}</text>`; }
+  for (let v = Math.ceil(yLo / 200) * 200; v <= yHi; v += 200) h += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#d6d7de"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
   for (let i = 0; i <= 4; i++) { const v = xm * i / 4; h += `<text x="${x(v)}" y="${H - 14}" text-anchor="middle">${v >= 1000 ? Math.round(v / 1000) + 'k' : v}</text>`; }
-  h += `<line x1="${L}" x2="${W - R}" y1="${y(refs.autopilot[0])}" y2="${y(refs.autopilot[0])}" stroke="#111" stroke-dasharray="5 4"/><text x="${W - R}" y="${y(refs.autopilot[0]) - 6}" text-anchor="end" style="fill:#111">autopilot ${refs.autopilot[0].toFixed(0)}</text>`;
-  h += `<line x1="${L}" x2="${W - R}" y1="${y(refs.random[0])}" y2="${y(refs.random[0])}" stroke="#ff4a1c" stroke-dasharray="5 4"/><text x="${W - R}" y="${y(refs.random[0]) - 6}" text-anchor="end" style="fill:#ff4a1c">random ${refs.random[0].toFixed(0)}</text>`;
-  h += `<path d="${learn.curve.map((c, i) => (i ? 'L' : 'M') + x(c.steps) + ',' + y(c.return)).join('')}" fill="none" stroke="#111" stroke-width="2.6"/>`;
-  learn.curve.forEach((c) => h += `<circle cx="${x(c.steps)}" cy="${y(c.return)}" r="3.4" fill="#111"/>`);
-  h += `<text x="${(L + W - R) / 2}" y="${H - 1}" text-anchor="middle">training steps</text>`;
+  h += `<line x1="${L}" x2="${W - R}" y1="${y(refs.autopilot[0])}" y2="${y(refs.autopilot[0])}" stroke="${INK}" stroke-dasharray="6 5" stroke-width="2"/><text x="${W - R}" y="${y(refs.autopilot[0]) - 8}" text-anchor="end" style="fill:${INK};font-weight:800">autopilot ${refs.autopilot[0].toFixed(0)}</text>`;
+  h += `<line x1="${L}" x2="${W - R}" y1="${y(refs.random[0])}" y2="${y(refs.random[0])}" stroke="#8d8fa3" stroke-dasharray="6 5"/><text x="${W - R}" y="${y(refs.random[0]) - 8}" text-anchor="end">random actions ${refs.random[0].toFixed(0)}</text>`;
+  h += `<path d="${learn.curve.map((c, i) => (i ? 'L' : 'M') + x(c.steps) + ',' + y(c.return)).join('')}" fill="none" stroke="${BLUE}" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  h += `<text x="${(L + W - R) / 2}" y="${H + 20}" text-anchor="middle">training steps</text>`;
   $('#learn').innerHTML = h;
   const last = learn.curve[learn.curve.length - 1];
-  $('#learnnote').textContent = `PPO learning to hold an orbit in wind and turbulence on the 3.4 kg padded Falcon V2, return per 45 s flight on 8 fixed test flights. After ${last.steps.toLocaleString()} steps: ${last.return.toFixed(0)} against the autopilot's ${refs.autopilot[0].toFixed(0)}, and ${Math.round(last.survival * 100)}% of the test flights completed.`;
-} else $('#learn').closest('div').style.display = 'none';
+  $('#learnText').textContent = `FlightEnv lets a policy learn to fly any design. After ${last.steps.toLocaleString()} steps a PPO policy holds an orbit in wind and turbulence almost as well as the stock autopilot (${last.return.toFixed(0)} against ${refs.autopilot[0].toFixed(0)}) and finished ${Math.round(last.survival * 100)}% of its 8 test flights. Trained on the Falcon with planted weight.`;
+} else $('#learn').closest('section').style.display = 'none';
 
-// ---- 3D scrubber, one model per kept step
-const view = $('#view');
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); view.appendChild(renderer.domElement);
-const scene = new THREE.Scene();
-const cam = new THREE.PerspectiveCamera(34, 1, 0.01, 60);
-scene.add(new THREE.HemisphereLight(0xffffff, 0x9a9a9a, 1.35));
-const sun = new THREE.DirectionalLight(0xffffff, 1.9); sun.position.set(-2, 4, 3); scene.add(sun);
-const grid = new THREE.GridHelper(6, 60, 0xbdbdbd, 0xd2d2d2); scene.add(grid);
-const controls = new OrbitControls(cam, renderer.domElement);
-controls.enableDamping = true; controls.enablePan = false; controls.enableZoom = false;
-const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-controls.autoRotate = !reduce; controls.autoRotateSpeed = 0.9;
-controls.addEventListener('start', () => { controls.autoRotate = false; });
-function resize() { const r = view.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); cam.aspect = r.width / r.height; cam.updateProjectionMatrix(); }
-new ResizeObserver(resize).observe(view); resize();
-(function loop() { controls.update(); renderer.render(scene, cam); requestAnimationFrame(loop); })();
-
-const loader = new GLTFLoader();
-const models = {};
-function model(n) {
-  if (!models[n]) models[n] = fetch(`demo/data/step/${n}.glb`).then((r) => r.arrayBuffer()).then((b) => new Promise((res, rej) => loader.parse(b, '', (g) => res(g.scene), rej))).catch(() => null);
-  return models[n];
-}
-const idsOf = (root) => { const s = new Set(); root.traverse((o) => { if (o.isMesh) s.add(o.name || o.parent.name); }); return s; };
-const mat = (c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.62, metalness: 0.05, side: THREE.DoubleSide });
-const group = new THREE.Group(); scene.add(group);
-
-const m0 = await model(kept[0]), mLast = await model(kept[kept.length - 1]);
-const box = new THREE.Box3().setFromObject(m0).union(new THREE.Box3().setFromObject(mLast));
-const ctr = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3());
-grid.position.y = box.min.y - 0.02;
-const mx = Math.max(size.x, size.z, 0.5);
-controls.target.copy(ctr); cam.position.copy(ctr).add(new THREE.Vector3(-mx * 0.75, mx * 0.45, mx * 0.95)); controls.update();
-
-const range = $('#range'); range.max = kept.length - 1;
-let token = 0;
-async function show(k) {
-  const my = ++token;
-  const n = kept[k], cur = await model(n), prev = k > 0 ? await model(kept[k - 1]) : null;
-  if (my !== token || !cur) return;
-  group.clear();
-  const have = idsOf(cur);
-  const a = cur.clone(true); a.traverse((o) => { if (o.isMesh) o.material = mat(0x555555); }); group.add(a);
-  if (prev) {
-    const b = prev.clone(true);
-    b.traverse((o) => { if (o.isMesh) { if (have.has(o.name || o.parent.name)) o.visible = false; else o.material = mat(0xff4a1c); } });
-    group.add(b);
-  }
-  const r = recs.get(n);
-  $('#score').innerHTML = `${r.score.toFixed(1)}<small>${unit}</small>`;
-  $('#verdict').textContent = k === 0 ? 'Starting design' : `Kept, ${r.score - recs.get(kept[k - 1]).score >= 0 ? '+' : ''}${(r.score - recs.get(kept[k - 1]).score).toFixed(1)} ${unit}`;
-  $('#note').textContent = k === 0 ? '' : (r.note || '');
-  $('#lbl').textContent = k === 0 ? 'Start' : `Step ${n} of ${kept[kept.length - 1]}`;
-  range.value = k;
-}
-let timer = null;
-function stop() { clearInterval(timer); timer = null; $('#play').textContent = 'Play'; }
-function play() {
-  if (timer) return stop();
-  if (+range.value >= kept.length - 1) show(0);
-  $('#play').textContent = 'Pause';
-  timer = setInterval(() => { const k = +range.value + 1; if (k >= kept.length) return stop(); show(k); }, 1500);
-}
-$('#play').onclick = play;
-range.oninput = () => { stop(); show(+range.value); };
-kept.forEach((n) => model(n));
-await show(0);
-if (!reduce) new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { o.disconnect(); setTimeout(play, 600); } }, { threshold: 0.5 }).observe($('#stage'));
-$('#foot').textContent = 'Checked against theory, a second aerodynamic method and one manufacturer figure (within 15% across 45 to 65 km/h). Not compared with flight logs.';
+// ---------------------------------------------------------------- copy button
+const copy = $('#copy');
+copy.onclick = async () => {
+  const text = $('#cmds').innerText.split('\n').filter((l) => !l.startsWith('#')).join('\n').replace(/\n{2,}/g, '\n').trim();
+  try { await navigator.clipboard.writeText(text); copy.textContent = 'Copied'; copy.dataset.state = 'done'; }
+  catch { const r = document.createRange(); r.selectNodeContents($('#cmds')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); copy.textContent = 'Press Ctrl+C'; }
+  setTimeout(() => { copy.textContent = 'Copy'; delete copy.dataset.state; }, 2200);
+};
 </script>
 </body>
 </html>
