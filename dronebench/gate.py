@@ -230,6 +230,8 @@ def check_control_chain(design, links) -> Check:
         probs.append("no flight controller")
     if not design.of_type("rx"):
         probs.append("no receiver")
+    if not design.of_type("gps"):
+        probs.append("no GPS (every mission is navigated; the simulator would fly without one, a real aircraft would not)")
     surfaces = [p for p in design.parts.values() if p.role in CONTROL_ROLES and p.type != "servo"]
     driven = {}
     for s in design.of_type("servo"):
@@ -242,7 +244,11 @@ def check_control_chain(design, links) -> Check:
         if not roles & set(need):
             probs.append(f"no {axis} control surface ({' / '.join(need)})")
     ok_count = 0
+    hinges = design.of_type("hinge")
     for surf in surfaces:
+        if not any(h.parent == surf.id or surf.id in h.connects for h in hinges):
+            probs.append(f"{surf.id} has no hinge (nothing holds it on)")
+            continue
         servos = driven.get(surf.id, [])
         if not servos:
             probs.append(f"{surf.id} ({surf.role}) has no servo")
@@ -364,7 +370,7 @@ def check_clearance(design, G, links) -> Check:
 
 def check_harness(design: Design, G) -> Check:
     """Every ESC needs a power lead from the battery, and the wiring must weigh at least a minimum for the
-    ESCs, servos and FC it serves (10 g/ESC, 4 g/servo, 5 g FC). Deleting the wire parts to save their mass is
+    ESCs, servos and FC it serves (10 g/ESC, 7 g/servo lead, 5 g FC). Deleting the wire parts to save their mass is
     not a design improvement."""
     if G is None:
         return Check("harness", 0, [None, 0], True, "no part graph given; not checked")
@@ -383,7 +389,7 @@ def check_harness(design: Design, G) -> Check:
             probs.append(f"{e.id}: no power wiring to the battery")
     wires = design.of_type("wire")
     have = sum(float(w.mass_g or 0) for w in wires)
-    need = 10.0 * len(design.of_type("esc")) + 4.0 * len(design.of_type("servo")) + (5.0 if fcs else 0.0)
+    need = 10.0 * len(design.of_type("esc")) + 7.0 * len(design.of_type("servo")) + (5.0 if fcs else 0.0)
     if have + 1e-9 < need:
         probs.append(f"harness mass {have:.0f} g < {need:.0f} g minimum for {len(design.of_type('esc'))} ESC(s), "
                      f"{len(design.of_type('servo'))} servo(s)")

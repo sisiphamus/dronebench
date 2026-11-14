@@ -297,7 +297,7 @@ def build(name: str, out: Path, verbose=True):
     A.add("servo_screws", "fastener", group="servo_mount", qty=8, part_number="M2x8 steel screw",
           specs={"size": "M2x8", "mass_g": 0.25, "cg_mm": mm3((0.30, 0, top))},
           connects=["servo_aileron_L", "servo_aileron_R", "servo_elevator", "servo_rudder"])
-    A.add("wiring", "wire", part_number="silicone wiring + XT60", specs={"mass_g": 35, "cg_mm": mm3((0.15, 0, top + 0.01))},
+    A.add("wiring", "wire", part_number="silicone wiring + XT60", specs={"mass_g": 50, "cg_mm": mm3((0.15, 0, top + 0.01))},
           connects=["battery", "esc"])
 
     # battery on the tray between ESC and FC, placed for the target CG

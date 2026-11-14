@@ -37,7 +37,8 @@ def test_trim_is_steady(veh):
     o = run(sim, tr, 6)
     assert abs(o[-1]["alt"] - 300) < 3.0
     assert abs(o[-1]["airspeed"] - 15.0) < 0.6
-    assert abs(o[-1]["phi"]) < 1e-6 and abs(o[-1]["beta"]) < 1e-6
+    # the parts list is mirrored to 4 mm (push-rod links), so a trimmed aircraft rolls a few thousandths of a degree in 6 s
+    assert abs(o[-1]["phi"]) < 1e-3 and abs(o[-1]["beta"]) < 1e-3
 
 
 def test_control_signs(veh):
@@ -59,8 +60,8 @@ def test_sideslip_weathercock(veh):
     """A positive sideslip (velocity to the right of the nose) must swing the nose to the right (Cn_beta > 0)."""
     sim, tr = trimmed_sim(veh)
     sim.x[3:6] = np.array([15.0 * math.cos(0.08), 15.0 * math.sin(0.08), sim.x[5]])      # beta ~ +4.6 degrees
-    o = run(sim, tr, 0.8)
-    assert o[0]["beta"] > 0.05 and o[-1]["r"] > 0.0 and o[-1]["psi"] > 0.0
+    o = run(sim, tr, 0.4)     # the first half of the yaw oscillation; the rate crosses zero near 0.8 s, so that is no place to test a sign
+    assert o[0]["beta"] > 0.05 and o[-1]["r"] > 0.1 and o[-1]["psi"] > 0.03
 
 
 def test_force_assembly_matches_an_independent_implementation(veh):

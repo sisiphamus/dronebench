@@ -32,7 +32,7 @@ Python 3.11 or newer.
 git clone https://github.com/sisiphamus/dronebench && cd dronebench
 uv venv && uv pip install -e .          # or: python -m venv .venv && .venv/bin/pip install -e .
 source .venv/bin/activate
-dronebench score fixtures/trainer --flown --summary      # about 10 s: flies one design, prints the score and gate
+dronebench score fixtures/trainer --flown --summary      # flies one design and prints the score and gate (a minute the first time, while aerodynamic tables are computed and cached)
 ```
 
 ## Test your agent

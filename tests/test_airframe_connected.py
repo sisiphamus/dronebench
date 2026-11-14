@@ -21,6 +21,16 @@ def test_cannot_delete_the_harness(tmp_path):
     assert "harness" in failed
 
 
+def test_cannot_shave_the_servo_leads(tmp_path):
+    failed = _gate_names_failed(tmp_path, [{"op": "remove", "id": "wiring_signal"}])
+    assert "harness" in failed
+
+
+def test_cannot_drop_the_gps_or_a_hinge(tmp_path):
+    assert "control_chain" in _gate_names_failed(tmp_path / "a", [{"op": "remove", "id": "gps"}])
+    assert "control_chain" in _gate_names_failed(tmp_path / "b", [{"op": "remove", "id": "hinge_aileron_L"}])
+
+
 def test_cannot_delete_the_rudder(tmp_path):
     ids = ["rudder", "servo_rudder", "horn_rudder", "link_rudder", "hinge_rudder"]
     failed = _gate_names_failed(tmp_path, [{"op": "remove", "id": i} for i in ids])
