@@ -26,22 +26,23 @@ frame: {units: mm, forward: "-x", up: "+z"}
 
 ```yaml
 parts:
-  - id: wing_L1              # unique
-    type: wing               # motor prop esc battery servo fc rx gps camera spar wing fuselage tail surface
-                             # hinge linkage horn fastener wire ballast fairing payload other (full list: dronebench/model.py)
-    role: wing               # wing htail vtail aileron flap elevator rudder fuselage nacelle; spars: main_spar, rear_spar
-    cad: wing_L1.stl         # file in cad/; omit for wires and small electronics (give mass_g and cg_mm in specs)
-    part_number: any text    # matched against the component catalog where it can be
-    material: {name: LW-PLA, infill: 0.0, walls: 1, orientation: vase}
-    specs: {}                # numbers the physics reads, e.g. motor: kv, rm_ohm, i0_a, imax_a, mass_g
-    connects: [esc_L, prop_L]
-    group: motor_L_mount     # fasteners with the same group are removed as one unit
-    qty: 1
-    locked: false
+- id: wing_L1              # unique
+  type: wing               # motor prop esc battery servo fc rx gps camera spar wing fuselage tail surface
+                           # hinge linkage horn fastener wire ballast fairing payload other (full list: dronebench/model.py)
+  role: wing               # wing htail vtail aileron flap elevator rudder fuselage nacelle; spars: main_spar, rear_spar
+  cad: wing_L1.stl         # file in cad/; omit for wires and small electronics (give mass_g and cg_mm in specs)
+  part_number: any text    # matched against the component catalog where it can be
+  material: {name: LW-PLA, infill: 0.0, walls: 1, orientation: vase}
+  specs: {}                # numbers the physics reads, e.g. motor: kv, rm_ohm, i0_a, imax_a, mass_g
+  connects: [esc_L, prop_L]
+  group: motor_L_mount     # fasteners with the same group are removed as one unit
+  qty: 1
+  locked: false
 ```
 
 What the flown evaluation needs to find in the parts list: a main wing, a horizontal tail, a vertical tail (parts with those roles), at
-least one motor with a prop and a battery with an ESC, and every part attached to the airframe (by touching or by `connects`).
+least one motor with a prop and a battery with an ESC, a flight controller, a receiver and a GPS, a hinge (`type: hinge`, `parent:` the surface) and a linkage
+(`type: linkage`, `connects:` the servo and the surface) for every aileron, flap, elevator and rudder, and every part attached to the airframe (by touching or by `connects`).
 A design with a missing piece fails with the reason instead of receiving a score. Conventional wing and tail layouts only; V-tails and
 flying wings are not supported yet.
 
