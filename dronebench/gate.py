@@ -249,6 +249,9 @@ def check_control_chain(design, links) -> Check:
         if not any(h.parent == surf.id or surf.id in h.connects for h in hinges):
             probs.append(f"{surf.id} has no hinge (nothing holds it on)")
             continue
+        if not any(l.parent == surf.id or surf.id in l.connects for l in design.of_type("linkage")):
+            probs.append(f"{surf.id} has no linkage (the servo would move nothing)")
+            continue
         servos = driven.get(surf.id, [])
         if not servos:
             probs.append(f"{surf.id} ({surf.role}) has no servo")
