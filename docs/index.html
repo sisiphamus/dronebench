@@ -92,7 +92,7 @@ footer .sp { flex: 1; }
   </nav>
 
   <header class="hero">
-    <h1 class="disp">An agent added <b>38 minutes</b> of flight to this drone.</h1>
+    <h1 class="disp">An agent added <b id="gain">more flight time</b> of flight to this drone.</h1>
     <div class="side">
       <p>DroneBench checks every change an agent makes to a drone design, and keeps it only if the drone still flies and scores higher.</p>
       <div class="btns"><a class="btn" href="demo/">Open the dashboard</a></div>
@@ -145,6 +145,10 @@ const unit = state.meta.unit || 'min';
 const kept = all.filter((r) => r.accepted).map((r) => r.step);          // 0,1,...
 const ids = {};                                                          // step -> Set(part ids)
 await Promise.all(kept.map(async (n) => { const p = await j(`demo/data/step/${n}.json`); ids[n] = new Set(p.report.parts.map((q) => q.id)); }));
+
+// headline from the data
+const bestScore = Math.max(...all.filter((r) => r.accepted).map((r) => r.score));
+$('#gain').textContent = `${Math.round(bestScore - all[0].score)} minutes`;
 
 // attempts table (real data)
 const base = all[0].score; let best = base;

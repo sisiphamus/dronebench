@@ -390,6 +390,27 @@ def check_harness(design: Design, G) -> Check:
     return Check("harness", len(probs), [None, 0], not probs, "; ".join(probs[:6]))
 
 
+FUSELAGE_GAP_MM = 10.0
+
+
+def check_fuselage_continuous(design: Design) -> Check:
+    """The fuselage shells must run nose to tail with no missing section. A section deleted from the middle
+    leaves less skin to drag through the air, which the drag model would otherwise score as a gain."""
+    shells = [p for p in design.parts.values()
+              if (p.type == "fuselage" or p.role == "fuselage") and getattr(p, "bbox_m", None) is not None]
+    if len(shells) < 2:
+        return Check("fuselage_continuous", 0, [None, 0], True, "")
+    spans = sorted((float(p.bbox_m[0][0]), float(p.bbox_m[1][0]), p.id) for p in shells)
+    reach, last, gaps = spans[0][1], spans[0][2], []
+    for lo, hi, pid in spans[1:]:
+        gap = (lo - reach) * 1000.0
+        if gap > FUSELAGE_GAP_MM:
+            gaps.append(f"{gap:.0f} mm missing between {last} and {pid}")
+        if hi > reach:
+            reach, last = hi, pid
+    return Check("fuselage_continuous", len(gaps), [None, 0], not gaps, "; ".join(gaps))
+
+
 CONNECT_MM = 25.0   # parts closer than this are treated as held together (standoffs, brackets, mounting pods)
 
 
@@ -467,8 +488,8 @@ def evaluate_gate(design: Design, graph, geom: AeroGeometry, pres: PhysicsResult
             c.passed = False
             c.detail = f"physics could not run: {note}" + (f" ({c.detail})" if c.detail else "")
     checks = [check_lifting_surfaces(design, geom), *phys, check_power_chain(design, links), check_control_chain(design, links), check_payload(design),
-              check_clearance(design, graph, links), check_airframe_connected(design, graph), check_harness(design, graph)]
+              check_clearance(design, graph, links), check_airframe_connected(design, graph), check_harness(design, graph), check_fuselage_continuous(design)]
     order = ["lifting_surfaces", "static_margin", "stall_margin", "climb", "spar", "tail_volume", "servo_torque",
-             "motor_current", "esc_current", "battery_current", "power_chain", "control_chain", "payload", "clearance", "airframe_connected", "harness"]
+             "motor_current", "esc_current", "battery_current", "power_chain", "control_chain", "payload", "clearance", "airframe_connected", "harness", "fuselage_continuous"]
     checks.sort(key=lambda c: order.index(c.name))
     return GateResult(passed=all(c.passed for c in checks), checks=checks)

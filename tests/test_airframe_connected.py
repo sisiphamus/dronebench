@@ -32,3 +32,8 @@ def test_removing_a_nacelle_strands_the_motor(tmp_path):
     assert not errs
     chk = _check(evaluate(out, necessity=False))
     assert not chk["pass"] and "motor_L" in chk["detail"]
+
+
+def test_cannot_delete_a_fuselage_section(tmp_path):
+    failed = _gate_names_failed(tmp_path, [{"op": "remove", "id": "fuse2"}])
+    assert "fuselage_continuous" in failed
