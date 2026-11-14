@@ -4,128 +4,248 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DroneBench</title>
-<meta name="description" content="An environment where AI agents design, test and improve small electric drones.">
+<meta name="description" content="A test bench where an AI agent edits a small electric drone and every change is checked.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Public+Sans:wght@400;500;600;700&display=swap">
 <style>
-:root { --bg:#0a0c10; --panel:#11141a; --line:#232935; --ink:#e7eaf0; --muted:#8a93a4; --accent:#5b9dff; --good:#3ecf8e; --bad:#ef5b5b; color-scheme: dark; }
+:root {
+  --bg: #efefef; --panel: #ffffff; --ink: #111111; --muted: #565656; --line: #cfcfcf; --hot: #ff4a1c;
+  --display: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --text: "Public Sans", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  color-scheme: light;
+}
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-a { color: var(--accent); text-decoration: none; }
-.wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
-nav { display:flex; align-items:center; gap:22px; height:60px; }
-nav .logo { font-weight:700; display:flex; align-items:center; gap:9px; color:var(--ink); }
-nav .logo svg { width:22px; height:22px; }
-nav .sp { flex:1; } nav a.l { color: var(--muted); font-size:14px; } nav a.l:hover { color: var(--ink); }
-.hero { padding: 72px 0 40px; }
-h1 { font-size: clamp(38px, 6vw, 68px); line-height:1.04; letter-spacing:-.03em; margin:0 0 20px; max-width: 14em; }
-h1 em { font-style: normal; color: var(--good); }
-.lead { font-size: 19px; color: var(--muted); max-width: 40em; margin: 0 0 30px; }
-.btns { display:flex; gap:12px; flex-wrap:wrap; }
-.btn { display:inline-flex; align-items:center; gap:8px; padding: 11px 20px; border-radius: 9px; font-weight:600; font-size:15px; border:1px solid var(--line); color:var(--ink); background: var(--panel); }
-.btn.p { background: var(--accent); border-color: var(--accent); color:#07101f; }
-.btn:hover { filter: brightness(1.12); }
-.stats { display:grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap:14px; margin: 44px 0 0; }
-.stat { background: var(--panel); border:1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
-.stat b { display:block; font-size: 34px; letter-spacing:-.02em; line-height:1.1; }
-.stat span { color: var(--muted); font-size: 14px; }
-.frame { margin: 40px 0 0; border:1px solid var(--line); border-radius: 14px; overflow:hidden; background: var(--panel); box-shadow: 0 30px 80px rgba(0,0,0,.5); }
-.frame .bar { display:flex; align-items:center; gap:7px; padding: 10px 14px; border-bottom:1px solid var(--line); font-size:12.5px; color:var(--muted); }
-.frame .bar i { width:10px; height:10px; border-radius:50%; background:#2d3442; }
-.frame .bar span { margin-left: 8px; }
-.frame iframe { display:block; width:100%; height: 720px; border:0; }
-section { padding: 72px 0 0; }
-h2 { font-size: 30px; letter-spacing:-.02em; margin: 0 0 8px; }
-.sub { color: var(--muted); margin: 0 0 28px; max-width: 42em; }
-.grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:14px; }
-.card { background: var(--panel); border:1px solid var(--line); border-radius: 12px; padding: 20px; }
-.card h3 { margin: 0 0 6px; font-size: 17px; } .card p { margin:0; color: var(--muted); font-size: 15px; }
-.card .n { color: var(--accent); font-weight:700; font-size: 13px; letter-spacing:.08em; margin-bottom: 8px; }
-pre { background:#07090c; border:1px solid var(--line); border-radius: 12px; padding: 18px 20px; overflow-x:auto; font: 13.5px/1.6 ui-monospace, "SF Mono", Menlo, Consolas, monospace; margin: 0; }
-pre .c { color:#5d6575; }
-table { width:100%; border-collapse: collapse; font-size: 15px; }
-td, th { text-align:left; padding: 10px 12px; border-bottom:1px solid var(--line); vertical-align: top; }
-th { color: var(--muted); font-weight:600; font-size:12px; letter-spacing:.07em; text-transform: uppercase; }
-.ok { color: var(--good); font-weight:600; } .no { color: var(--bad); font-weight:600; }
-footer { margin: 90px 0 0; padding: 28px 0 48px; border-top:1px solid var(--line); color: var(--muted); font-size: 14px; }
-@media (max-width: 700px) { .frame iframe { height: 980px; } .hero { padding-top: 40px; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.55 var(--text); }
+a { color: var(--ink); text-underline-offset: 4px; }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 32px; }
+.disp { font-family: var(--display); font-stretch: 62%; font-weight: 800; letter-spacing: -.015em; line-height: .92; }
+
+nav { display: flex; align-items: baseline; gap: 28px; padding: 18px 0; border-bottom: 2px solid var(--ink); }
+nav .logo { font-family: var(--display); font-stretch: 62%; font-weight: 800; font-size: 30px; text-decoration: none; letter-spacing: -.01em; }
+nav .sp { flex: 1; }
+nav a.l { font-size: 15px; font-weight: 600; text-decoration: none; }
+nav a.l:hover { text-decoration: underline; }
+
+.hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 56px; padding: 64px 0 48px; align-items: end; }
+.hero h1 { font-size: clamp(54px, 8.6vw, 124px); margin: 0; }
+.hero h1 b { color: var(--hot); font-weight: 800; }
+.hero .side p { margin: 0 0 22px; max-width: 30em; }
+.btns { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; }
+.btn { display: inline-block; background: var(--ink); color: #fff; padding: 13px 22px; font-weight: 600; font-size: 16px; text-decoration: none; border-radius: 2px; }
+.btn:hover { background: var(--hot); }
+.btns a.t { font-weight: 600; }
+
+.stage { background: var(--panel); border: 2px solid var(--ink); }
+.readout { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 18px 24px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.score { font-family: var(--display); font-stretch: 62%; font-weight: 800; font-size: clamp(72px, 9vw, 128px); line-height: .85; letter-spacing: -.02em; }
+.score small { font-size: .3em; font-weight: 700; color: var(--muted); margin-left: 10px; letter-spacing: 0; }
+.cap { max-width: 34em; text-align: right; }
+.cap .v { font-family: var(--display); font-stretch: 62%; font-weight: 800; font-size: 30px; line-height: 1; }
+.cap .v.rej { color: var(--hot); }
+.cap p { margin: 6px 0 0; font-size: 16px; min-height: 3em; }
+#view { height: min(66vh, 620px); min-height: 380px; background: #e5e5e5; position: relative; }
+#view canvas { display: block; width: 100%; height: 100%; }
+.scrub { display: flex; align-items: center; gap: 20px; padding: 14px 24px 16px; border-top: 1px solid var(--line); }
+.scrub button { background: var(--ink); color: #fff; border: 0; border-radius: 2px; padding: 9px 18px; font: 600 15px var(--text); cursor: pointer; min-width: 84px; }
+.scrub button:hover { background: var(--hot); }
+.scrub input { flex: 1; accent-color: var(--ink); height: 28px; }
+.scrub .lbl { font-size: 14px; color: var(--muted); min-width: 9em; text-align: right; font-variant-numeric: tabular-nums; }
+.key { display: flex; gap: 22px; padding: 0 24px 16px; font-size: 14px; flex-wrap: wrap; }
+.key span { display: inline-flex; align-items: center; gap: 8px; }
+.key i { width: 12px; height: 12px; display: inline-block; border: 1px solid var(--ink); }
+
+section { padding: 88px 0 0; }
+h2 { font-family: var(--display); font-stretch: 62%; font-weight: 800; font-size: clamp(40px, 5.2vw, 72px); line-height: .94; letter-spacing: -.015em; margin: 0 0 24px; max-width: 14em; }
+.lead { max-width: 38em; margin: 0 0 32px; }
+table { width: 100%; border-collapse: collapse; font-size: 16px; }
+th { text-align: left; font-weight: 500; color: var(--muted); font-size: 14px; padding: 6px 12px 8px 0; border-bottom: 2px solid var(--ink); }
+td { padding: 11px 12px 11px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; padding-right: 0; white-space: nowrap; }
+td.rej, td.rej * { color: var(--hot); }
+td.rej b { font-weight: 700; }
+tr.hl td { font-weight: 600; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 56px; }
+.rules p { margin: 0; padding: 16px 0; border-bottom: 1px solid var(--line); max-width: 46em; }
+.rules p:first-child { border-top: 2px solid var(--ink); }
+.rules b { font-weight: 700; }
+pre { margin: 0; background: var(--panel); border: 2px solid var(--ink); padding: 22px 24px; overflow-x: auto; font: 14.5px/1.7 ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace; }
+pre .c { color: #6b6b6b; }
+footer { margin: 96px 0 0; padding: 22px 0 56px; border-top: 2px solid var(--ink); font-size: 15px; display: flex; gap: 24px; flex-wrap: wrap; }
+footer .sp { flex: 1; }
+@media (max-width: 860px) {
+  .wrap { padding: 0 18px; } .hero { grid-template-columns: 1fr; gap: 28px; padding-top: 36px; }
+  .two { grid-template-columns: 1fr; gap: 24px; } .cap { text-align: left; } nav { gap: 16px; }
+  nav a.l.hide { display: none; } .scrub .lbl { display: none; } section { padding-top: 64px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 </style>
+<script type="importmap">{ "imports": { "three": "./demo/vendor/three.module.js", "three/addons/": "./demo/vendor/addons/" } }</script>
 </head>
 <body>
 <div class="wrap">
   <nav>
-    <a class="logo" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="#5b9dff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12 L11 11 L13 3 L15 3 L14.5 11 L21 12 L14.5 13 L15 21 L13 21 L11 13 Z"/></svg>DroneBench</a>
-    <div class="sp"></div>
-    <a class="l" href="#how">How it works</a><a class="l" href="#run">Run it</a><a class="l" href="demo/">Live demo</a>
-    <a class="l" href="https://github.com/sisiphamus/dronebench">GitHub</a>
+    <a class="logo" href="./">DroneBench</a>
+    <span class="sp"></span>
+    <a class="l hide" href="#attempts">Attempts</a><a class="l hide" href="#run">Run it</a>
+    <a class="l" href="demo/">Dashboard</a><a class="l" href="https://github.com/sisiphamus/dronebench">Source</a>
   </nav>
 
   <header class="hero">
-    <h1>A bench where AI agents design drones and <em>get checked</em>.</h1>
-    <p class="lead">DroneBench takes a small electric fixed-wing aircraft, checks that it can fly, and scores it. An agent edits the design, DroneBench accepts or rejects every change with a reason, and you watch the whole run live.</p>
-    <div class="btns"><a class="btn p" href="demo/">Open the live demo →</a><a class="btn" href="#run">Run it yourself</a></div>
-    <div class="stats">
-      <div class="stat"><b>139 → 177</b><span>minutes of flight, one Claude run on a Falcon V2 replica</span></div>
-      <div class="stat"><b>11</b><span>attempts: 9 kept, 2 rejected for scoring worse</span></div>
-      <div class="stat"><b>16</b><span>pass/fail checks on every design</span></div>
-      <div class="stat"><b>~2 s</b><span>to analyse a design, 80 parts</span></div>
-    </div>
-    <div class="frame">
-      <div class="bar"><i></i><i></i><i></i><span>Recorded Claude Code run: click any step, drag the model, press Replay</span></div>
-      <iframe src="demo/" title="DroneBench dashboard" loading="lazy"></iframe>
+    <h1 class="disp">An agent added <b>38 minutes</b> of flight to this drone. Every cut was checked.</h1>
+    <div class="side">
+      <p>DroneBench is a test bench for small electric fixed-wing aircraft. It analyses a design, runs 16 pass or fail checks, and scores it. An agent edits the design with a command, and each edit is kept or rejected with the reason.</p>
+      <div class="btns"><a class="btn" href="demo/">Open the dashboard</a><a class="t" href="#run">Run it yourself</a></div>
     </div>
   </header>
 
-  <section id="how">
-    <h2>The loop</h2>
-    <p class="sub">Every agent gets the same environment: a design folder, a brief, and a few commands. It never edits files by hand, so every change is judged.</p>
-    <div class="grid">
-      <div class="card"><div class="n">1 · EDIT</div><h3>Change the aircraft</h3><p>Remove, swap, scale or move parts, or turn a design knob (span, tail, spar, motor, prop, battery) and rebuild the whole aircraft.</p></div>
-      <div class="card"><div class="n">2 · ANALYSE</div><h3>Check that it flies</h3><p>Lift and drag, motor, prop and battery, spar strength, stability, wiring, and whether every part is still attached to the airframe.</p></div>
-      <div class="card"><div class="n">3 · JUDGE</div><h3>Accept or reject</h3><p>Fails any check: rejected, with the check, the value and the limit. Scores lower: rejected. Otherwise the design moves forward.</p></div>
-      <div class="card"><div class="n">4 · EXPLAIN</div><h3>Every part, justified</h3><p>Each part is removed in a copy and the aircraft re-analysed, so the report says which parts are required, helpful or dead weight.</p></div>
+  <div class="stage" id="stage">
+    <div class="readout">
+      <div class="score" id="score">139.2<small>min</small></div>
+      <div class="cap"><div class="v" id="verdict">Starting design</div><p id="note">A Titan Falcon V2 replica, 80 parts, scored on flight time.</p></div>
     </div>
+    <div id="view" role="img" aria-label="3D model of the drone. Parts the agent removed turn orange for one step, then disappear."></div>
+    <div class="scrub">
+      <button id="play" type="button">Play</button>
+      <input id="range" type="range" min="0" max="9" step="1" value="0" aria-label="Step through the agent's accepted changes">
+      <span class="lbl" id="lbl">Start</span>
+    </div>
+    <div class="key"><span><i style="background:#555"></i>Part kept</span><span><i style="background:var(--hot);border-color:var(--hot)"></i>Part removed at this step</span><span>Drag the drone to turn it.</span></div>
+  </div>
+
+  <section id="attempts">
+    <h2>What the agent tried</h2>
+    <p class="lead">One Claude Code run, 12 attempts allowed, 11 used. It read a report of which parts were dead weight, removed them one at a time, and tried new propellers twice. DroneBench rejected both propeller swaps because the score went down.</p>
+    <table id="tbl"><thead><tr><th>Step</th><th>Result</th><th>Change</th><th class="n">Flight time</th></tr></thead><tbody></tbody></table>
   </section>
 
   <section>
-    <h2>Hard to game</h2>
-    <p class="sub">The first Claude run scored higher by deleting the rudder, all wiring and the motor mounts. Those now fail the gate, and the tests keep it that way.</p>
-    <table>
-      <tr><th>Shortcut</th><th>What stops it</th></tr>
-      <tr><td>Delete the wiring to save weight</td><td class="no">harness check: minimum wire mass for the ESCs, servos and flight controller</td></tr>
-      <tr><td>Delete the rudder and its servo</td><td class="no">control check: roll, pitch and yaw surfaces required</td></tr>
-      <tr><td>Delete the motor pods or a fuselage section</td><td class="no">airframe check: every part must stay attached to one airframe</td></tr>
-      <tr><td>Invent a 400 Wh/kg battery</td><td class="no">plausibility limits clamp agent-supplied specs and flag them</td></tr>
-      <tr><td>Remove genuinely dead weight (ballast, spare GPS, armor)</td><td class="ok">allowed, and it is where most of the gain comes from</td></tr>
-    </table>
+    <div class="two">
+      <div>
+        <h2>What it will not allow</h2>
+      </div>
+      <div class="rules">
+        <p><b>Deleting the wiring.</b> The harness check needs a minimum wire mass for the speed controllers, servos and flight controller.</p>
+        <p><b>Deleting the rudder.</b> The control check needs a surface for roll, pitch and yaw.</p>
+        <p><b>Deleting a motor mount.</b> Every part must stay attached to one airframe, so a motor left floating fails.</p>
+        <p><b>Inventing a 400 Wh/kg battery.</b> Specs an agent types in are clamped to what real parts do, and flagged.</p>
+        <p><b>Removing real dead weight.</b> This is allowed. Armor plating, a fuselage section and ballast made up 27 of the 38 minutes.</p>
+      </div>
+    </div>
   </section>
 
   <section id="run">
     <h2>Run it</h2>
-    <p class="sub">Python 3.11+. Claude Code is optional; any script can drive the same commands.</p>
+    <p class="lead">Python 3.11 or newer. Claude Code is optional, any script can use the same commands.</p>
 <pre><span class="c"># install</span>
-git clone https://github.com/sisiphamus/dronebench && cd dronebench
-uv venv && uv pip install -e .
+git clone https://github.com/sisiphamus/dronebench &amp;&amp; cd dronebench
+uv venv &amp;&amp; uv pip install -e .
 
-<span class="c"># make a workspace and watch it live</span>
+<span class="c"># make a workspace and open the live dashboard</span>
 dronebench init runs/demo --fixture falcon_v2 --steps 12
 dronebench serve runs/demo --open
 
-<span class="c"># in another terminal: let an agent iterate</span>
-dronebench run runs/demo --agent claude        <span class="c"># Claude Code, headless</span>
-dronebench run runs/demo --agent random        <span class="c"># random-search baseline to beat</span>
+<span class="c"># in a second terminal, let an agent iterate</span>
+dronebench run runs/demo --agent claude
+dronebench run runs/demo --agent random      <span class="c"># the baseline to beat</span>
 
-<span class="c"># or drive it by hand, exactly as an agent does</span>
-dronebench status runs/demo
+<span class="c"># or do what the agent does</span>
 dronebench try runs/demo --ops ops.json --note "ballast is dead weight"
-dronebench build runs/demo --set wing.span_mm=2200 --note "more span"</pre>
+dronebench build runs/demo --set wing.span_mm=2200</pre>
   </section>
 
   <section>
-    <h2>How much to trust it</h2>
-    <p class="sub">The physics is analytic: lift slopes, drag build-up, a motor, prop and battery model, a cantilever spar, neutral-point stability. It is meant for ranking designs against each other, with an error of about ±15%. It is not a certificate of airworthiness, and the Falcon V2 planform is a documented assumption.</p>
+    <h2>How far to trust it</h2>
+    <p class="lead">The physics is analytic. It uses lift and drag estimates, a motor, propeller and battery model, a cantilever spar and neutral point stability. Expect about 15% error. That is enough to rank designs against each other. It does not show that an aircraft is safe to fly, and the Falcon V2 wing shape is an assumption written down in the repo.</p>
   </section>
 
-  <footer>DroneBench · built at the AITX hackathon, finished as an agent environment · <a href="https://github.com/sisiphamus/dronebench">source</a></footer>
+  <footer><span>DroneBench, started at the AITX hackathon.</span><span class="sp"></span><a href="demo/">Dashboard</a><a href="https://github.com/sisiphamus/dronebench">Source</a></footer>
 </div>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const j = (u) => fetch(u).then((r) => { if (!r.ok) throw new Error(u); return r.json(); });
+
+const state = await j('demo/data/state.json');
+const recs = new Map(); for (const r of state.runs) recs.set(r.step, r);
+const all = [...recs.values()].sort((a, b) => a.step - b.step);
+const unit = state.meta.unit || 'min';
+const kept = all.filter((r) => r.accepted).map((r) => r.step);          // 0,1,...
+const ids = {};                                                          // step -> Set(part ids)
+await Promise.all(kept.map(async (n) => { const p = await j(`demo/data/step/${n}.json`); ids[n] = new Set(p.report.parts.map((q) => q.id)); }));
+
+// attempts table (real data)
+const base = all[0].score; let best = base;
+$('#tbl tbody').innerHTML = all.map((r) => {
+  const rej = r.step > 0 && !r.accepted;
+  const note = r.step === 0 ? 'Starting design' : (r.note || '');
+  const res = r.step === 0 ? 'Start' : rej ? 'Rejected' : 'Kept';
+  const detail = rej ? (r.reason && r.reason.startsWith('regression') ? 'scored lower than the best so far' : (r.reason || '')) : '';
+  if (r.accepted) best = Math.max(best, r.score);
+  return `<tr><td>${r.step}</td><td class="${rej ? 'rej' : ''}"><b>${res}</b></td><td class="${rej ? 'rej' : ''}">${esc(note)}${detail ? `<br><span style="font-size:14px">${esc(detail)}</span>` : ''}</td><td class="n ${rej ? 'rej' : ''}">${(r.score ?? 0).toFixed(1)} ${unit}</td></tr>`;
+}).join('');
+
+// 3D scrubber
+const view = $('#view');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); view.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+const cam = new THREE.PerspectiveCamera(34, 1, 0.01, 50);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x9a9a9a, 1.35));
+const sun = new THREE.DirectionalLight(0xffffff, 1.9); sun.position.set(-2, 4, 3); scene.add(sun);
+const grid = new THREE.GridHelper(4, 40, 0xbdbdbd, 0xd2d2d2); scene.add(grid);
+const controls = new OrbitControls(cam, renderer.domElement);
+controls.enableDamping = true; controls.enablePan = false; controls.enableZoom = false;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+controls.autoRotate = !reduce; controls.autoRotateSpeed = 0.9;
+controls.addEventListener('start', () => { controls.autoRotate = false; });
+function resize() { const r = view.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); cam.aspect = r.width / r.height; cam.updateProjectionMatrix(); }
+new ResizeObserver(resize).observe(view); resize();
+
+const buf = await (await fetch('demo/data/step/0.glb')).arrayBuffer();
+const root = await new Promise((res, rej) => new GLTFLoader().parse(buf, '', (g) => res(g.scene), rej));
+const meshes = [];
+root.traverse((o) => { if (o.isMesh) { o.userData.pid = o.name || o.parent.name; o.material = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.62, metalness: 0.05, side: THREE.DoubleSide, transparent: true }); meshes.push(o); } });
+scene.add(root);
+const box = new THREE.Box3().setFromObject(root), ctr = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3());
+grid.position.y = box.min.y - 0.02;
+const mx = Math.max(size.x, size.z, 0.5);
+controls.target.copy(ctr); cam.position.copy(ctr).add(new THREE.Vector3(-mx * 0.8, mx * 0.5, mx * 1.0)); controls.update();
+(function loop() { controls.update(); renderer.render(scene, cam); requestAnimationFrame(loop); })();
+
+const range = $('#range'); range.max = kept.length - 1;
+function show(k) {
+  const n = kept[k], prev = k > 0 ? ids[kept[k - 1]] : null, cur = ids[n];
+  for (const m of meshes) {
+    const id = m.userData.pid, here = cur.has(id), justGone = prev && prev.has(id) && !here;
+    m.visible = here || !!justGone;
+    m.material.color.set(justGone ? '#ff4a1c' : '#555555');
+  }
+  const r = recs.get(n);
+  $('#score').innerHTML = `${r.score.toFixed(1)}<small>${unit}</small>`;
+  $('#verdict').textContent = n === 0 ? 'Starting design' : `Kept, ${(r.score - recs.get(kept[k - 1]).score >= 0 ? '+' : '')}${(r.score - recs.get(kept[k - 1]).score).toFixed(1)} ${unit}`;
+  $('#note').textContent = n === 0 ? 'A Titan Falcon V2 replica, 80 parts, scored on flight time.' : (r.note || '');
+  $('#lbl').textContent = n === 0 ? 'Start' : `Step ${n} of ${kept[kept.length - 1]}`;
+  range.value = k;
+}
+let timer = null;
+function stop() { clearInterval(timer); timer = null; $('#play').textContent = 'Play'; }
+function play() {
+  if (timer) return stop();
+  if (+range.value >= kept.length - 1) show(0);
+  $('#play').textContent = 'Pause';
+  timer = setInterval(() => { const k = +range.value + 1; if (k >= kept.length) return stop(); show(k); }, 1300);
+}
+$('#play').onclick = play;
+range.oninput = () => { stop(); show(+range.value); };
+show(0);
+if (!reduce) new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { o.disconnect(); setTimeout(play, 600); } }, { threshold: 0.5 }).observe($('#stage'));
+</script>
 </body>
 </html>
