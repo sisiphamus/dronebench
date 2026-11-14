@@ -180,5 +180,41 @@ def test_run_label_defaults_to_the_command_name(monkeypatch):
     from dronebench import agents
     seen = {}
     monkeypatch.setattr(agents, "run_command", lambda ws, cmd, label="agent", say=print: seen.update(label=label) or 0)
-    assert cli.main(["run", "w", "--cmd", "python my_agent.py --fast"]) == 0
-    assert seen["label"] == "python"
+    for line, label in (("python my_agent.py --fast", "my_agent"), ("python3 -u agents/solver.py", "solver"),
+                        ("uv run tool.py x", "tool"), ("python -m mypkg.agent", "mypkg.agent"),
+                        ("./run.sh", "run.sh"), ("my-agent --budget 5", "my-agent")):
+        assert cli.main(["run", "w", "--cmd", line]) == 0
+        assert seen["label"] == label, line
+
+
+def test_run_with_an_empty_or_broken_command_is_a_usage_error(monkeypatch, capsys):
+    from dronebench import agents
+    monkeypatch.setattr(agents, "run_command", lambda *a, **k: pytest.fail("must not run"))
+    monkeypatch.setattr(agents, "run_random", lambda *a, **k: pytest.fail("must not fall back to the random agent"))
+    assert cli.main(["run", "w", "--cmd", ""]) == 2
+    assert cli.main(["run", "w", "--cmd", "echo 'unclosed"]) == 2
+    assert capsys.readouterr().err.count("--cmd") >= 1
+
+
+def test_verify_standard_flag_reaches_the_replay(tmp_path, monkeypatch, capsys):
+    from dronebench import results
+    seen = {}
+
+    def fake(r, design=None, standard=False):
+        seen["standard"] = standard
+        return {"ok": False, "replayed": 0, "baseline": None, "best": None,
+                "mismatches": [{"what": "standard task", "claimed": "-", "replayed": "-", "why": "fixture is 'x'"}]}
+
+    monkeypatch.setattr(results, "verify_result", fake)
+    f = tmp_path / "r.json"
+    f.write_text(json.dumps({"best": 1}))
+    assert cli.main(["verify", str(f), "--standard"]) == 3
+    assert seen["standard"] is True and "NOT VERIFIED" in capsys.readouterr().out
+
+
+def test_result_warns_about_edits_that_cannot_be_replayed(tmp_path, monkeypatch, capsys):
+    from dronebench import results
+    monkeypatch.setattr(results, "export_result", lambda ws: {
+        "steps": [{"step": 3, "accepted": True, "ops": [{"op": "add", "cad_file": "/x.stl"}]}]})
+    assert cli.main(["result", "w"]) == 0
+    assert "step 3" in capsys.readouterr().err

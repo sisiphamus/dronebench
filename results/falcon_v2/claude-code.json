@@ -1,0 +1,1070 @@
+{
+  "format": "dronebench-result/1",
+  "dronebench": "0.2.0",
+  "fixture": "falcon_v2",
+  "builder": "falcon_v2",
+  "preset": "endurance",
+  "fidelity": "flown",
+  "start_params": {},
+  "start_design_sha256": "abcfb87adfa04d4fe946a5ebc2a32e29394cb661cb8491d5690d4786d6417a67",
+  "agent": "claude",
+  "baseline": 148.8376,
+  "best": 344.6705,
+  "unit": "min",
+  "budget": 30,
+  "attempts": 30,
+  "accepted": 20,
+  "steps": [
+    {
+      "step": 1,
+      "kind": "try",
+      "accepted": true,
+      "score": 149.2852,
+      "note": "remove unnecessary pitot (-6 g)",
+      "reason": null,
+      "ops": [
+        {
+          "op": "remove",
+          "id": "pitot"
+        }
+      ]
+    },
+    {
+      "step": 2,
+      "kind": "try",
+      "accepted": false,
+      "score": 0.0,
+      "note": "6S3P pack: +50% energy, mass +450g; risk stall/climb/spar",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "swap",
+          "id": "battery",
+          "entry": {
+            "part_number": "6S3P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 3,
+      "kind": "try",
+      "accepted": false,
+      "score": 0.0,
+      "note": "6S3P pack with full specs: +50% energy for +450 g; risk spar SF, stall margin",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "swap",
+          "id": "battery",
+          "entry": {
+            "part_number": "6S3P Molicel P42A Li-ion",
+            "specs": {
+              "cells_s": 6,
+              "cells_p": 3,
+              "capacity_mah": 12600,
+              "c_rating": 10.7,
+              "ir_mohm_per_cell": 15,
+              "mass_g": 1350,
+              "chemistry": "liion",
+              "nominal_v": 21.6,
+              "energy_wh": 272.2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step": 4,
+      "kind": "build",
+      "accepted": false,
+      "score": 0.0,
+      "note": "6S3P pack (+50% energy) with room for it and a stiffer main spar for the extra weight; risk motor current",
+      "reason": "invalid build",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "battery.part_number": "6S3P Molicel P42A Li-ion",
+            "battery.size_mm": [
+              145,
+              99,
+              46
+            ],
+            "spars.main.od_mm": 12,
+            "spars.main.id_mm": 10
+          }
+        }
+      ]
+    },
+    {
+      "step": 5,
+      "kind": "build",
+      "accepted": false,
+      "score": 0.0,
+      "note": "setup: room for a 6S3P pack and a stiffer main spar; score will dip from spar mass",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "battery.size_mm": [
+              145,
+              99,
+              46
+            ],
+            "spars.main.od_mm": 12,
+            "spars.main.id_mm": 10
+          }
+        }
+      ]
+    },
+    {
+      "step": 6,
+      "kind": "build",
+      "accepted": true,
+      "score": 148.2951,
+      "note": "setup: longer bay for a 6S3P pack and a stiffer main spar; score will dip from spar mass",
+      "reason": null,
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "battery.size_mm": [
+              172,
+              66,
+              46
+            ],
+            "spars.main.od_mm": 12,
+            "spars.main.id_mm": 10
+          }
+        }
+      ]
+    },
+    {
+      "step": 7,
+      "kind": "try",
+      "accepted": true,
+      "score": 171.9397,
+      "note": "6S3P pack (+50% energy) + 11x7 props to keep full-throttle current under 35 A; risk climb, stall margin",
+      "reason": null,
+      "ops": [
+        {
+          "op": "swap",
+          "id": "battery",
+          "entry": {
+            "part_number": "6S3P Molicel P42A Li-ion",
+            "specs": {
+              "cells_s": 6,
+              "cells_p": 3,
+              "capacity_mah": 12600,
+              "c_rating": 10.7,
+              "ir_mohm_per_cell": 15,
+              "mass_g": 1350,
+              "chemistry": "liion",
+              "nominal_v": 21.6,
+              "energy_wh": 272.2
+            }
+          }
+        },
+        {
+          "op": "swap",
+          "id": "prop_L",
+          "entry": {
+            "part_number": "APC 11x7E",
+            "specs": {
+              "diam_in": 11,
+              "pitch_in": 7,
+              "blades": 2,
+              "mass_g": 27,
+              "rotation": "CCW"
+            }
+          }
+        },
+        {
+          "op": "swap",
+          "id": "prop_R",
+          "entry": {
+            "part_number": "APC 11x7E",
+            "specs": {
+              "diam_in": 11,
+              "pitch_in": 7,
+              "blades": 2,
+              "mass_g": 27,
+              "rotation": "CW"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step": 8,
+      "kind": "build",
+      "accepted": true,
+      "score": 150.2076,
+      "note": "setup: bay for a 6S4P pack (reverts pack/props, re-swapped next)",
+      "reason": null,
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "battery.size_mm": [
+              232,
+              66,
+              46
+            ],
+            "spars.main.od_mm": 12,
+            "spars.main.id_mm": 10
+          }
+        }
+      ]
+    },
+    {
+      "step": 9,
+      "kind": "try",
+      "accepted": true,
+      "score": 198.4651,
+      "note": "6S4P pack (+100% energy vs stock), 11x7 props, drop pitot; risk spar SF, climb, motor current",
+      "reason": null,
+      "ops": [
+        {
+          "op": "swap",
+          "id": "battery",
+          "entry": {
+            "part_number": "6S4P Molicel P42A Li-ion",
+            "specs": {
+              "cells_s": 6,
+              "cells_p": 4,
+              "capacity_mah": 16800,
+              "c_rating": 10.7,
+              "ir_mohm_per_cell": 15,
+              "mass_g": 1800,
+              "chemistry": "liion",
+              "nominal_v": 21.6,
+              "energy_wh": 362.9
+            }
+          }
+        },
+        {
+          "op": "swap",
+          "id": "prop_L",
+          "entry": {
+            "part_number": "APC 11x7E",
+            "specs": {
+              "diam_in": 11,
+              "pitch_in": 7,
+              "blades": 2,
+              "mass_g": 27,
+              "rotation": "CCW"
+            }
+          }
+        },
+        {
+          "op": "swap",
+          "id": "prop_R",
+          "entry": {
+            "part_number": "APC 11x7E",
+            "specs": {
+              "diam_in": 11,
+              "pitch_in": 7,
+              "blades": 2,
+              "mass_g": 27,
+              "rotation": "CW"
+            }
+          }
+        },
+        {
+          "op": "remove",
+          "id": "pitot"
+        }
+      ]
+    },
+    {
+      "step": 10,
+      "kind": "try",
+      "accepted": true,
+      "score": 207.0151,
+      "note": "battery 60 mm aft: SM 0.23 -> ~0.10, less elevator trim drag; risk clearance, SM floor",
+      "reason": null,
+      "ops": [
+        {
+          "op": "move",
+          "ids": [
+            "battery"
+          ],
+          "offset_m": [
+            0.06,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "step": 11,
+      "kind": "try",
+      "accepted": true,
+      "score": 210.0047,
+      "note": "battery 20 mm further aft: SM toward ~0.07; risk SM floor 0.05, turbulence load",
+      "reason": null,
+      "ops": [
+        {
+          "op": "move",
+          "ids": [
+            "battery"
+          ],
+          "offset_m": [
+            0.02,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "step": 12,
+      "kind": "try",
+      "accepted": true,
+      "score": 211.8348,
+      "note": "battery 12 mm further aft: SM toward ~0.06; risk SM floor 0.05",
+      "reason": null,
+      "ops": [
+        {
+          "op": "move",
+          "ids": [
+            "battery"
+          ],
+          "offset_m": [
+            0.012,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "step": 13,
+      "kind": "build",
+      "accepted": false,
+      "score": 0.0,
+      "note": "setup: longer wing (higher aspect ratio, lower stall), bay for 6S5P, stiffer spar, aft CG target; pack/props re-swapped next",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2400,
+            "battery.size_mm": [
+              290,
+              66,
+              46
+            ],
+            "spars.main.od_mm": 14,
+            "spars.main.id_mm": 12,
+            "target_cg_frac_mac": 0.42
+          }
+        }
+      ]
+    },
+    {
+      "step": 14,
+      "kind": "build",
+      "accepted": true,
+      "score": 170.6236,
+      "note": "setup: longer wing with spars scaled to it, taller bay for 6S5P, aft CG target",
+      "reason": null,
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2400,
+            "battery.size_mm": [
+              232,
+              66,
+              58
+            ],
+            "spars.main.od_mm": 12,
+            "spars.main.id_mm": 10,
+            "spars.main.half_length_mm": 920,
+            "spars.rear.half_length_mm": 690,
+            "target_cg_frac_mac": 0.42
+          }
+        }
+      ]
+    },
+    {
+      "step": 15,
+      "kind": "try",
+      "accepted": false,
+      "score": 0.0,
+      "note": "6S5P pack on the 2.4 m wing, 11x7 props, drop pitot; risk spar SF, stall margin, SM",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "swap",
+          "id": "battery",
+          "entry": {
+            "part_number": "6S5P Molicel P42A Li-ion",
+            "specs": {
+              "cells_s": 6,
+              "cells_p": 5,
+              "capacity_mah": 21000,
+              "c_rating": 10.7,
+              "ir_mohm_per_cell": 15,
+              "mass_g": 2250,
+              "chemistry": "liion",
+              "nominal_v": 21.6,
+              "energy_wh": 453.6
+            }
+          }
+        },
+        {
+          "op": "swap",
+          "id": "prop_L",
+          "entry": {
+            "part_number": "APC 11x7E",
+            "specs": {
+              "diam_in": 11,
+              "pitch_in": 7,
+              "blades": 2,
+              "mass_g": 27,
+              "rotation": "CCW"
+            }
+          }
+        },
+        {
+          "op": "swap",
+          "id": "prop_R",
+          "entry": {
+            "part_number": "APC 11x7E",
+            "specs": {
+              "diam_in": 11,
+              "pitch_in": 7,
+              "blades": 2,
+              "mass_g": 27,
+              "rotation": "CW"
+            }
+          }
+        },
+        {
+          "op": "remove",
+          "id": "pitot"
+        }
+      ]
+    },
+    {
+      "step": 16,
+      "kind": "try",
+      "accepted": true,
+      "score": 250.0705,
+      "note": "6S5P pack on 2.4 m wing + thicker-wall main spar (12/9.5) to restore spar SF; risk stall margin, SM",
+      "reason": null,
+      "ops": [
+        {
+          "op": "swap",
+          "id": "battery",
+          "entry": {
+            "part_number": "6S5P Molicel P42A Li-ion",
+            "specs": {
+              "cells_s": 6,
+              "cells_p": 5,
+              "capacity_mah": 21000,
+              "c_rating": 10.7,
+              "ir_mohm_per_cell": 15,
+              "mass_g": 2250,
+              "chemistry": "liion",
+              "nominal_v": 21.6,
+              "energy_wh": 453.6
+            }
+          }
+        },
+        {
+          "op": "swap",
+          "id": "prop_L",
+          "entry": {
+            "part_number": "APC 11x7E",
+            "specs": {
+              "diam_in": 11,
+              "pitch_in": 7,
+              "blades": 2,
+              "mass_g": 27,
+              "rotation": "CCW"
+            }
+          }
+        },
+        {
+          "op": "swap",
+          "id": "prop_R",
+          "entry": {
+            "part_number": "APC 11x7E",
+            "specs": {
+              "diam_in": 11,
+              "pitch_in": 7,
+              "blades": 2,
+              "mass_g": 27,
+              "rotation": "CW"
+            }
+          }
+        },
+        {
+          "op": "remove",
+          "id": "pitot"
+        },
+        {
+          "op": "set",
+          "id": "main_spar",
+          "path": "specs.inner_d_mm",
+          "value": 9.5
+        },
+        {
+          "op": "set",
+          "id": "main_spar",
+          "path": "part_number",
+          "value": "CF tube 12/9.5 mm pultruded"
+        }
+      ]
+    },
+    {
+      "step": 17,
+      "kind": "try",
+      "accepted": true,
+      "score": 256.865,
+      "note": "battery 35 mm aft: SM 0.146 -> ~0.07, less trim drag; risk SM floor, clearance",
+      "reason": null,
+      "ops": [
+        {
+          "op": "move",
+          "ids": [
+            "battery"
+          ],
+          "offset_m": [
+            0.035,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "step": 18,
+      "kind": "build",
+      "accepted": false,
+      "score": 0.0,
+      "note": "setup: 2.8 m wing (lower induced drag, lower stall), spars scaled, bay for 6S6P",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2800,
+            "battery.size_mm": [
+              232,
+              66,
+              68
+            ],
+            "spars.main.od_mm": 14,
+            "spars.main.id_mm": 12,
+            "spars.main.half_length_mm": 1070,
+            "spars.rear.half_length_mm": 800,
+            "target_cg_frac_mac": 0.42
+          }
+        }
+      ]
+    },
+    {
+      "step": 19,
+      "kind": "build",
+      "accepted": true,
+      "score": 187.0837,
+      "note": "setup: 2.8 m wing, fin enlarged to keep Vv>0.02, spars scaled, bay for 6S6P",
+      "reason": null,
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2800,
+            "vtail.area_m2": 0.048,
+            "battery.size_mm": [
+              232,
+              66,
+              68
+            ],
+            "spars.main.od_mm": 14,
+            "spars.main.id_mm": 12,
+            "spars.main.half_length_mm": 1070,
+            "spars.rear.half_length_mm": 800,
+            "target_cg_frac_mac": 0.42
+          }
+        }
+      ]
+    },
+    {
+      "step": 20,
+      "kind": "try",
+      "accepted": true,
+      "score": 298.4607,
+      "note": "6S6P pack on 2.8 m wing, 11x7 props, no pitot, thicker-wall 14/11.5 spar; risk spar SF, stall margin, SM, motor current",
+      "reason": null,
+      "ops": [
+        {
+          "op": "swap",
+          "id": "battery",
+          "entry": {
+            "part_number": "6S6P Molicel P42A Li-ion",
+            "specs": {
+              "cells_s": 6,
+              "cells_p": 6,
+              "capacity_mah": 25200,
+              "c_rating": 10.7,
+              "ir_mohm_per_cell": 15,
+              "mass_g": 2700,
+              "chemistry": "liion",
+              "nominal_v": 21.6,
+              "energy_wh": 544.3
+            }
+          }
+        },
+        {
+          "op": "swap",
+          "id": "prop_L",
+          "entry": {
+            "part_number": "APC 11x7E",
+            "specs": {
+              "diam_in": 11,
+              "pitch_in": 7,
+              "blades": 2,
+              "mass_g": 27,
+              "rotation": "CCW"
+            }
+          }
+        },
+        {
+          "op": "swap",
+          "id": "prop_R",
+          "entry": {
+            "part_number": "APC 11x7E",
+            "specs": {
+              "diam_in": 11,
+              "pitch_in": 7,
+              "blades": 2,
+              "mass_g": 27,
+              "rotation": "CW"
+            }
+          }
+        },
+        {
+          "op": "remove",
+          "id": "pitot"
+        },
+        {
+          "op": "set",
+          "id": "main_spar",
+          "path": "specs.inner_d_mm",
+          "value": 11.5
+        },
+        {
+          "op": "set",
+          "id": "main_spar",
+          "path": "part_number",
+          "value": "CF tube 14/11.5 mm pultruded"
+        }
+      ]
+    },
+    {
+      "step": 21,
+      "kind": "try",
+      "accepted": true,
+      "score": 306.2209,
+      "note": "battery 32 mm aft: SM 0.146 -> ~0.07; risk SM floor, clearance",
+      "reason": null,
+      "ops": [
+        {
+          "op": "move",
+          "ids": [
+            "battery"
+          ],
+          "offset_m": [
+            0.032,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "step": 22,
+      "kind": "try",
+      "accepted": false,
+      "score": 0.0,
+      "note": "6S7P pack (+17% energy), battery CAD 20% taller to fit; risk stall margin ~1.30, SM shift, clearance",
+      "reason": "invalid ops",
+      "ops": [
+        {
+          "op": "swap",
+          "id": "battery",
+          "entry": {
+            "part_number": "6S7P Molicel P42A Li-ion",
+            "specs": {
+              "cells_s": 6,
+              "cells_p": 7,
+              "capacity_mah": 29400,
+              "c_rating": 10.7,
+              "ir_mohm_per_cell": 15,
+              "mass_g": 3150,
+              "chemistry": "liion",
+              "nominal_v": 21.6,
+              "energy_wh": 635.0
+            }
+          }
+        },
+        {
+          "op": "scale",
+          "ids": [
+            "battery"
+          ],
+          "factors": [
+            1.0,
+            1.0,
+            1.2
+          ],
+          "about": "centroid"
+        }
+      ]
+    },
+    {
+      "step": 23,
+      "kind": "try",
+      "accepted": false,
+      "score": 0.0,
+      "note": "6S7P pack (+17% energy), battery CAD 20% taller to fit; risk stall margin ~1.30, SM shift, clearance",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "swap",
+          "id": "battery",
+          "entry": {
+            "part_number": "6S7P Molicel P42A Li-ion",
+            "specs": {
+              "cells_s": 6,
+              "cells_p": 7,
+              "capacity_mah": 29400,
+              "c_rating": 10.7,
+              "ir_mohm_per_cell": 15,
+              "mass_g": 3150,
+              "chemistry": "liion",
+              "nominal_v": 21.6,
+              "energy_wh": 635.0
+            }
+          }
+        },
+        {
+          "op": "scale",
+          "ids": [
+            "battery"
+          ],
+          "factors": [
+            1.0,
+            1.0,
+            1.2
+          ],
+          "about": "part_cg"
+        }
+      ]
+    },
+    {
+      "step": 24,
+      "kind": "try",
+      "accepted": true,
+      "score": 319.9756,
+      "note": "6S7P pack, battery CAD 18% longer to fit (pitot gone); risk stall margin, clearance",
+      "reason": null,
+      "ops": [
+        {
+          "op": "swap",
+          "id": "battery",
+          "entry": {
+            "part_number": "6S7P Molicel P42A Li-ion",
+            "specs": {
+              "cells_s": 6,
+              "cells_p": 7,
+              "capacity_mah": 29400,
+              "c_rating": 10.7,
+              "ir_mohm_per_cell": 15,
+              "mass_g": 3150,
+              "chemistry": "liion",
+              "nominal_v": 21.6,
+              "energy_wh": 635.0
+            }
+          }
+        },
+        {
+          "op": "scale",
+          "ids": [
+            "battery"
+          ],
+          "factors": [
+            1.18,
+            1.0,
+            1.0
+          ],
+          "about": "part_cg"
+        }
+      ]
+    },
+    {
+      "step": 25,
+      "kind": "try",
+      "accepted": true,
+      "score": 332.7456,
+      "note": "lighten print: fuselage 3->2 walls, tray infill 0.2->0.1, nacelle infill 0.15->0.08; risk shell_structure check",
+      "reason": null,
+      "ops": [
+        {
+          "op": "set",
+          "id": "fuse1",
+          "path": "material.walls",
+          "value": 2
+        },
+        {
+          "op": "set",
+          "id": "fuse2",
+          "path": "material.walls",
+          "value": 2
+        },
+        {
+          "op": "set",
+          "id": "fuse3",
+          "path": "material.walls",
+          "value": 2
+        },
+        {
+          "op": "set",
+          "id": "fuse4",
+          "path": "material.walls",
+          "value": 2
+        },
+        {
+          "op": "set",
+          "id": "fuse5",
+          "path": "material.walls",
+          "value": 2
+        },
+        {
+          "op": "set",
+          "id": "tray",
+          "path": "material.infill",
+          "value": 0.1
+        },
+        {
+          "op": "set",
+          "id": "nacelle_L",
+          "path": "material.infill",
+          "value": 0.08
+        },
+        {
+          "op": "set",
+          "id": "nacelle_R",
+          "path": "material.infill",
+          "value": 0.08
+        }
+      ]
+    },
+    {
+      "step": 26,
+      "kind": "try",
+      "accepted": false,
+      "score": 0.0,
+      "note": "fuselage 1 wall, tray/nacelles/camera mount in LW-PLA; risk shell_structure, mount strength",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "set",
+          "id": "fuse1",
+          "path": "material.walls",
+          "value": 1
+        },
+        {
+          "op": "set",
+          "id": "fuse2",
+          "path": "material.walls",
+          "value": 1
+        },
+        {
+          "op": "set",
+          "id": "fuse3",
+          "path": "material.walls",
+          "value": 1
+        },
+        {
+          "op": "set",
+          "id": "fuse4",
+          "path": "material.walls",
+          "value": 1
+        },
+        {
+          "op": "set",
+          "id": "fuse5",
+          "path": "material.walls",
+          "value": 1
+        },
+        {
+          "op": "set",
+          "id": "nacelle_L",
+          "path": "material.name",
+          "value": "LW-PLA"
+        },
+        {
+          "op": "set",
+          "id": "nacelle_R",
+          "path": "material.name",
+          "value": "LW-PLA"
+        },
+        {
+          "op": "set",
+          "id": "tray",
+          "path": "material.name",
+          "value": "LW-PLA"
+        },
+        {
+          "op": "set",
+          "id": "camera_mount",
+          "path": "material.name",
+          "value": "LW-PLA"
+        }
+      ]
+    },
+    {
+      "step": 27,
+      "kind": "try",
+      "accepted": true,
+      "score": 342.2137,
+      "note": "tray/nacelles/camera mount in LW-PLA (fuselage stays 2 walls); risk mount strength",
+      "reason": null,
+      "ops": [
+        {
+          "op": "set",
+          "id": "nacelle_L",
+          "path": "material.name",
+          "value": "LW-PLA"
+        },
+        {
+          "op": "set",
+          "id": "nacelle_R",
+          "path": "material.name",
+          "value": "LW-PLA"
+        },
+        {
+          "op": "set",
+          "id": "tray",
+          "path": "material.name",
+          "value": "LW-PLA"
+        },
+        {
+          "op": "set",
+          "id": "camera_mount",
+          "path": "material.name",
+          "value": "LW-PLA"
+        }
+      ]
+    },
+    {
+      "step": 28,
+      "kind": "try",
+      "accepted": true,
+      "score": 343.7758,
+      "note": "battery 5 mm aft: SM ~0.07 -> ~0.056, a bit less trim drag; risk SM floor 0.05",
+      "reason": null,
+      "ops": [
+        {
+          "op": "move",
+          "ids": [
+            "battery"
+          ],
+          "offset_m": [
+            0.005,
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "step": 29,
+      "kind": "try",
+      "accepted": true,
+      "score": 344.6705,
+      "note": "drop 7 horns flagged unnecessary, tray/nacelle infill to 5%; risk control_chain check",
+      "reason": null,
+      "ops": [
+        {
+          "op": "remove",
+          "id": "horn_flap_L"
+        },
+        {
+          "op": "remove",
+          "id": "horn_aileron_L"
+        },
+        {
+          "op": "remove",
+          "id": "horn_flap_R"
+        },
+        {
+          "op": "remove",
+          "id": "horn_aileron_R"
+        },
+        {
+          "op": "remove",
+          "id": "horn_elevator_L"
+        },
+        {
+          "op": "remove",
+          "id": "horn_elevator_R"
+        },
+        {
+          "op": "remove",
+          "id": "horn_rudder"
+        },
+        {
+          "op": "set",
+          "id": "tray",
+          "path": "material.infill",
+          "value": 0.05
+        },
+        {
+          "op": "set",
+          "id": "nacelle_L",
+          "path": "material.infill",
+          "value": 0.05
+        },
+        {
+          "op": "set",
+          "id": "nacelle_R",
+          "path": "material.infill",
+          "value": 0.05
+        }
+      ]
+    },
+    {
+      "step": 30,
+      "kind": "try",
+      "accepted": true,
+      "score": 344.6705,
+      "note": "thinner-wall rear spar 6/4.8: lighter; risk spar SF (1.71 now)",
+      "reason": null,
+      "ops": [
+        {
+          "op": "set",
+          "id": "rear_spar",
+          "path": "specs.inner_d_mm",
+          "value": 4.8
+        },
+        {
+          "op": "set",
+          "id": "rear_spar",
+          "path": "part_number",
+          "value": "CF tube 6/4.8 mm pultruded"
+        }
+      ]
+    }
+  ]
+}

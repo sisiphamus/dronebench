@@ -77,7 +77,7 @@ dronebench verify results/falcon_v2/my-agent.json             # re-flies the run
 ```
 
 `verify` does not trust the file: it rebuilds the starting design, replays each accepted step through the same gate and simulator, and
-fails if any score does not reproduce. Results are submitted as pull requests; see [CONTRIBUTING.md](CONTRIBUTING.md).
+fails if any score is off by more than 0.1%. `--standard` also checks that it is the standard task (plain `falcon_v2`, default mission, at most 30 steps). Results are submitted as pull requests; see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## As a Gymnasium environment
 
@@ -111,24 +111,30 @@ pass or fail, not scored: one realisation moves average power by tens of percent
 `seed_offset` rotates the turbulence seeds if you want to hold some back.
 
 The gate checks static margin, stall margin, climb, that every segment is completed, peak load factor, no stall, a pack that fits its volume, the
-mission's takeoff mass limit, and structure and systems: spar, current limits, wiring, every part attached, continuous fuselage, printed shells with ribs.
+mission's takeoff mass limit, and structure and systems: spar, current limits, wiring, flight controller, receiver and GPS, a hinge and a linkage on every control surface, every part attached, continuous fuselage, printed shells with ribs.
 An aircraft that cannot be trimmed, cannot be flown by the autopilot, or has no tail the model can represent fails with the reason, instead of
 receiving a made-up score.
 
 ## Baselines on the Falcon V2 (endurance, minutes)
 
-One run each from the same starting design, same weather and gate; scores are flown. Reproduce with `dronebench run WS --agent claude|cma|random-params|random`.
+One run each of 30 steps from the same plain `falcon_v2`, same weather and gate; scores are flown. The files are in `results/falcon_v2/` and replay
+with `dronebench verify --standard`. Reproduce with `dronebench run WS --agent claude|cma|random-params|random`.
 
 | Agent | Start | Best | Attempts | Failed the gate | Scored lower |
 |---|---|---|---|---|---|
-| Claude Code | 134 | 204 (+53%) | 15 | 4 | 1 |
-| Random part edits | 134 | 146 (+9%) | 30 | 9 | 7 |
-| Random search over design parameters | 134 | 143 (+7%) | 30 | 22 | 4 |
-| CMA-ES over design parameters | 134 | 142 (+7%) | 30 | 12 | 14 |
+| Claude Code | 149 | 345 (+132%) | 30 | 8 | 0 |
+| Random part edits | 149 | 168 (+13%) | 30 | 10 | 7 |
+| Random search over design parameters | 149 | 161 (+8%) | 30 | 22 | 5 |
+| CMA-ES over design parameters | 149 | 159 (+7%) | 30 | 12 | 14 |
 
-A learned flight controller: PPO on `FlightEnv` (orbit in wind and turbulence) reaches a return of 138 against the cascaded autopilot's 152 after 800,000
-steps (about 30 minutes on one core), completing all 8 held-out test flights; doing nothing returns -894 and random actions -207.
-One run per agent gives a sanity check that the environment rewards engineering over luck, with no ranking between the search methods.
+Claude Code's 345 minutes came from a 3.5 times larger battery pack carried by a longer wing (2.09 m to 2.8 m), a stronger spar, smaller propellers
+to stay under the motor current limit, the pack moved aft to cut trim drag, and lighter printed shells, all inside the 7 kg takeoff limit and with every
+gate check passing. The gate now requires a GPS, a hinge and a linkage on every control surface and a minimum of servo wiring, so removing parts the
+simulator does not need no longer scores; an airspeed sensor and control horns can still be dropped for a minute or two.
+
+A learned flight controller: PPO on `FlightEnv` (orbit in wind and turbulence) trained on the 3.4 kg `falcon_v2_padded` reaches a return of 138 against the
+cascaded autopilot's 152 after 800,000 steps (about 30 minutes on one core), completing all 8 held-out test flights; doing nothing returns -894 and random
+actions -207. One run per agent gives a sanity check that the environment rewards engineering over luck, with no ranking between the search methods.
 
 ## What an agent can change
 

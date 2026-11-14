@@ -62,7 +62,7 @@ footer { margin: 96px 0 0; padding: 22px 0 56px; border-top: 2px solid var(--ink
 footer .sp { flex: 1; }
 @media (max-width: 860px) {
   .wrap { padding: 0 18px; } .hero { grid-template-columns: 1fr; gap: 28px; padding-top: 36px; }
-  .two { grid-template-columns: 1fr; gap: 32px; } .cap { text-align: left; } nav { gap: 16px; }
+  .two { grid-template-columns: 1fr; gap: 32px; } .cap { text-align: left; } nav { gap: 6px 16px; flex-wrap: wrap; } nav a.l { white-space: nowrap; }
   .scrub .lbl { display: none; } section { padding-top: 64px; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
@@ -181,7 +181,7 @@ if (learn && learn.curve && learn.curve.length) {
   h += `<text x="${(L + W - R) / 2}" y="${H - 1}" text-anchor="middle">training steps</text>`;
   $('#learn').innerHTML = h;
   const last = learn.curve[learn.curve.length - 1];
-  $('#learnnote').textContent = `PPO learning to hold an orbit in wind and turbulence, return per 45 s flight on 8 fixed test flights. After ${last.steps.toLocaleString()} steps: ${last.return.toFixed(0)} against the autopilot's ${refs.autopilot[0].toFixed(0)}, and ${Math.round(last.survival * 100)}% of the test flights completed.`;
+  $('#learnnote').textContent = `PPO learning to hold an orbit in wind and turbulence on the 3.4 kg padded Falcon V2, return per 45 s flight on 8 fixed test flights. After ${last.steps.toLocaleString()} steps: ${last.return.toFixed(0)} against the autopilot's ${refs.autopilot[0].toFixed(0)}, and ${Math.round(last.survival * 100)}% of the test flights completed.`;
 } else $('#learn').closest('div').style.display = 'none';
 
 // ---- 3D scrubber, one model per kept step

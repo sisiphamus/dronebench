@@ -396,7 +396,7 @@ def build(params: dict, out: Path, verbose=True):
     A.add("wiring_signal", "wire", part_number="servo extensions + signal leads",
           specs={"mass_g": 45, "gauge_awg": 26, "cg_mm": mm3((x_le + 0.25, 0, z_root))})
 
-    # ---------------- seeded waste
+    # ---------------- planted waste (off in falcon_v2, on in falcon_v2_padded)
     wst = P.get("waste", {})
     if wst.get("ballast_nose"):
         A.add("ballast_nose", "ballast", mk.box((0.030, 0.024, 0.0142), (0.058, 0, ctop + 0.0072)),

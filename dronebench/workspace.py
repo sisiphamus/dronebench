@@ -177,7 +177,9 @@ def init(ws, fixture: str = "falcon_v2", preset: Optional[str] = None, steps: in
     src = fixture_path(fixture)
     if ws.exists() and any(ws.iterdir()):
         if not force:
-            raise WorkspaceError(f"{ws} is not empty (use --force to replace it)")
+            raise WorkspaceError(f"{ws} is not empty (use --force to replace a workspace)")
+        if not (ws / "workspace.json").exists():
+            raise WorkspaceError(f"{ws} is not a DroneBench workspace (no workspace.json), so --force will not delete it; pick an empty folder")
         shutil.rmtree(ws)
     ws.mkdir(parents=True, exist_ok=True)
     shutil.copytree(src, ws / "design")

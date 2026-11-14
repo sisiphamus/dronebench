@@ -1,0 +1,664 @@
+{
+  "format": "dronebench-result/1",
+  "dronebench": "0.2.0",
+  "fixture": "falcon_v2",
+  "builder": "falcon_v2",
+  "preset": "endurance",
+  "fidelity": "flown",
+  "start_params": {},
+  "start_design_sha256": "abcfb87adfa04d4fe946a5ebc2a32e29394cb661cb8491d5690d4786d6417a67",
+  "agent": "random",
+  "baseline": 148.8376,
+  "best": 167.9519,
+  "unit": "min",
+  "budget": 30,
+  "attempts": 30,
+  "accepted": 13,
+  "steps": [
+    {
+      "step": 1,
+      "kind": "try",
+      "accepted": true,
+      "score": 155.3688,
+      "note": "random: scale wing_L1,wing_L2",
+      "reason": null,
+      "ops": [
+        {
+          "op": "scale",
+          "ids": [
+            "wing_L1",
+            "wing_L2",
+            "flap_L",
+            "wing_L3",
+            "aileron_L",
+            "wing_R1",
+            "wing_R2",
+            "flap_R",
+            "wing_R3",
+            "aileron_R",
+            "main_spar",
+            "rear_spar"
+          ],
+          "factors": [
+            1.0,
+            1.05,
+            1.0
+          ],
+          "about": "origin"
+        }
+      ]
+    },
+    {
+      "step": 2,
+      "kind": "try",
+      "accepted": false,
+      "score": 0.0,
+      "note": "random: remove hstab",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "remove",
+          "id": "hstab"
+        }
+      ]
+    },
+    {
+      "step": 3,
+      "kind": "try",
+      "accepted": true,
+      "score": 156.1796,
+      "note": "random: move battery",
+      "reason": null,
+      "ops": [
+        {
+          "op": "move",
+          "ids": [
+            "battery"
+          ],
+          "offset_m": [
+            0.01,
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "step": 4,
+      "kind": "try",
+      "accepted": true,
+      "score": 162.8379,
+      "note": "random: scale wing_L1,wing_L2",
+      "reason": null,
+      "ops": [
+        {
+          "op": "scale",
+          "ids": [
+            "wing_L1",
+            "wing_L2",
+            "flap_L",
+            "wing_L3",
+            "aileron_L",
+            "wing_R1",
+            "wing_R2",
+            "flap_R",
+            "wing_R3",
+            "aileron_R",
+            "main_spar",
+            "rear_spar"
+          ],
+          "factors": [
+            1.0,
+            1.05,
+            1.0
+          ],
+          "about": "origin"
+        }
+      ]
+    },
+    {
+      "step": 5,
+      "kind": "try",
+      "accepted": false,
+      "score": 0.0,
+      "note": "random: scale wing_L1,wing_L2",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "scale",
+          "ids": [
+            "wing_L1",
+            "wing_L2",
+            "flap_L",
+            "wing_L3",
+            "aileron_L",
+            "wing_R1",
+            "wing_R2",
+            "flap_R",
+            "wing_R3",
+            "aileron_R",
+            "main_spar",
+            "rear_spar"
+          ],
+          "factors": [
+            1.0,
+            1.05,
+            1.0
+          ],
+          "about": "origin"
+        }
+      ]
+    },
+    {
+      "step": 6,
+      "kind": "try",
+      "accepted": false,
+      "score": 162.0037,
+      "note": "random: move battery",
+      "reason": "regression: 162.00 < best 162.84 (use --keep to accept anyway)",
+      "ops": [
+        {
+          "op": "move",
+          "ids": [
+            "battery"
+          ],
+          "offset_m": [
+            -0.01,
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "step": 7,
+      "kind": "try",
+      "accepted": false,
+      "score": 162.0037,
+      "note": "random: move battery",
+      "reason": "regression: 162.00 < best 162.84 (use --keep to accept anyway)",
+      "ops": [
+        {
+          "op": "move",
+          "ids": [
+            "battery"
+          ],
+          "offset_m": [
+            -0.01,
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "step": 8,
+      "kind": "try",
+      "accepted": true,
+      "score": 162.8379,
+      "note": "random: set fuse5",
+      "reason": null,
+      "ops": [
+        {
+          "op": "set",
+          "id": "fuse5",
+          "path": "material.infill",
+          "value": 0.0
+        }
+      ]
+    },
+    {
+      "step": 9,
+      "kind": "try",
+      "accepted": true,
+      "score": 163.6788,
+      "note": "random: move battery",
+      "reason": null,
+      "ops": [
+        {
+          "op": "move",
+          "ids": [
+            "battery"
+          ],
+          "offset_m": [
+            0.01,
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "step": 10,
+      "kind": "try",
+      "accepted": false,
+      "score": 162.8379,
+      "note": "random: move battery",
+      "reason": "regression: 162.84 < best 163.68 (use --keep to accept anyway)",
+      "ops": [
+        {
+          "op": "move",
+          "ids": [
+            "battery"
+          ],
+          "offset_m": [
+            -0.01,
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "step": 11,
+      "kind": "try",
+      "accepted": true,
+      "score": 163.6788,
+      "note": "random: set fuse4",
+      "reason": null,
+      "ops": [
+        {
+          "op": "set",
+          "id": "fuse4",
+          "path": "material.infill",
+          "value": 0.0
+        }
+      ]
+    },
+    {
+      "step": 12,
+      "kind": "try",
+      "accepted": true,
+      "score": 164.7213,
+      "note": "random: set nacelle_L",
+      "reason": null,
+      "ops": [
+        {
+          "op": "set",
+          "id": "nacelle_L",
+          "path": "material.infill",
+          "value": 0.1
+        }
+      ]
+    },
+    {
+      "step": 13,
+      "kind": "try",
+      "accepted": true,
+      "score": 164.7213,
+      "note": "random: set wing_R3",
+      "reason": null,
+      "ops": [
+        {
+          "op": "set",
+          "id": "wing_R3",
+          "path": "material.infill",
+          "value": 0.05
+        }
+      ]
+    },
+    {
+      "step": 14,
+      "kind": "try",
+      "accepted": false,
+      "score": 163.8718,
+      "note": "random: move battery",
+      "reason": "regression: 163.87 < best 164.72 (use --keep to accept anyway)",
+      "ops": [
+        {
+          "op": "move",
+          "ids": [
+            "battery"
+          ],
+          "offset_m": [
+            -0.01,
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "step": 15,
+      "kind": "try",
+      "accepted": true,
+      "score": 165.5778,
+      "note": "random: move battery",
+      "reason": null,
+      "ops": [
+        {
+          "op": "move",
+          "ids": [
+            "battery"
+          ],
+          "offset_m": [
+            0.01,
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "step": 16,
+      "kind": "try",
+      "accepted": false,
+      "score": 0.0,
+      "note": "random: scale wing_L1,wing_L2",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "scale",
+          "ids": [
+            "wing_L1",
+            "wing_L2",
+            "flap_L",
+            "wing_L3",
+            "aileron_L",
+            "wing_R1",
+            "wing_R2",
+            "flap_R",
+            "wing_R3",
+            "aileron_R",
+            "main_spar",
+            "rear_spar"
+          ],
+          "factors": [
+            1.0,
+            1.05,
+            1.0
+          ],
+          "about": "origin"
+        }
+      ]
+    },
+    {
+      "step": 17,
+      "kind": "try",
+      "accepted": false,
+      "score": 0.0,
+      "note": "random: remove wiring_power",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "remove",
+          "id": "wiring_power"
+        }
+      ]
+    },
+    {
+      "step": 18,
+      "kind": "try",
+      "accepted": false,
+      "score": 0.0,
+      "note": "random: remove wing_R2",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "remove",
+          "id": "wing_R2"
+        }
+      ]
+    },
+    {
+      "step": 19,
+      "kind": "try",
+      "accepted": false,
+      "score": 158.5508,
+      "note": "random: scale wing_L1,wing_L2",
+      "reason": "regression: 158.55 < best 165.58 (use --keep to accept anyway)",
+      "ops": [
+        {
+          "op": "scale",
+          "ids": [
+            "wing_L1",
+            "wing_L2",
+            "flap_L",
+            "wing_L3",
+            "aileron_L",
+            "wing_R1",
+            "wing_R2",
+            "flap_R",
+            "wing_R3",
+            "aileron_R",
+            "main_spar",
+            "rear_spar"
+          ],
+          "factors": [
+            1.0,
+            0.95,
+            1.0
+          ],
+          "about": "origin"
+        }
+      ]
+    },
+    {
+      "step": 20,
+      "kind": "try",
+      "accepted": true,
+      "score": 166.4414,
+      "note": "random: move battery",
+      "reason": null,
+      "ops": [
+        {
+          "op": "move",
+          "ids": [
+            "battery"
+          ],
+          "offset_m": [
+            0.01,
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "step": 21,
+      "kind": "try",
+      "accepted": true,
+      "score": 166.4414,
+      "note": "random: set flap_L",
+      "reason": null,
+      "ops": [
+        {
+          "op": "set",
+          "id": "flap_L",
+          "path": "material.infill",
+          "value": 0.05
+        }
+      ]
+    },
+    {
+      "step": 22,
+      "kind": "try",
+      "accepted": false,
+      "score": 0.0,
+      "note": "random: remove prop_R",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "remove",
+          "id": "prop_R"
+        }
+      ]
+    },
+    {
+      "step": 23,
+      "kind": "try",
+      "accepted": false,
+      "score": 165.5778,
+      "note": "random: move battery",
+      "reason": "regression: 165.58 < best 166.44 (use --keep to accept anyway)",
+      "ops": [
+        {
+          "op": "move",
+          "ids": [
+            "battery"
+          ],
+          "offset_m": [
+            -0.01,
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "step": 24,
+      "kind": "try",
+      "accepted": false,
+      "score": 0.0,
+      "note": "random: swap motor_L; swap motor_R",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "swap",
+          "id": "motor_L",
+          "entry": {
+            "part_number": "SunnySky X2216 1250KV",
+            "specs": {
+              "kv": 1250,
+              "rm_ohm": 0.07,
+              "i0_a": 0.7,
+              "imax_a": 28,
+              "mass_g": 72
+            }
+          }
+        },
+        {
+          "op": "swap",
+          "id": "motor_R",
+          "entry": {
+            "part_number": "SunnySky X2216 1250KV",
+            "specs": {
+              "kv": 1250,
+              "rm_ohm": 0.07,
+              "i0_a": 0.7,
+              "imax_a": 28,
+              "mass_g": 72
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step": 25,
+      "kind": "try",
+      "accepted": false,
+      "score": 159.3896,
+      "note": "random: scale wing_L1,wing_L2",
+      "reason": "regression: 159.39 < best 166.44 (use --keep to accept anyway)",
+      "ops": [
+        {
+          "op": "scale",
+          "ids": [
+            "wing_L1",
+            "wing_L2",
+            "flap_L",
+            "wing_L3",
+            "aileron_L",
+            "wing_R1",
+            "wing_R2",
+            "flap_R",
+            "wing_R3",
+            "aileron_R",
+            "main_spar",
+            "rear_spar"
+          ],
+          "factors": [
+            1.0,
+            0.95,
+            1.0
+          ],
+          "about": "origin"
+        }
+      ]
+    },
+    {
+      "step": 26,
+      "kind": "try",
+      "accepted": false,
+      "score": 0.0,
+      "note": "random: remove link_flap_L",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "remove",
+          "id": "link_flap_L"
+        }
+      ]
+    },
+    {
+      "step": 27,
+      "kind": "try",
+      "accepted": true,
+      "score": 167.0759,
+      "note": "random: move battery",
+      "reason": null,
+      "ops": [
+        {
+          "op": "move",
+          "ids": [
+            "battery"
+          ],
+          "offset_m": [
+            0.01,
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "step": 28,
+      "kind": "try",
+      "accepted": false,
+      "score": 0.0,
+      "note": "random: remove servo_flap_L",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "remove",
+          "id": "servo_flap_L"
+        }
+      ]
+    },
+    {
+      "step": 29,
+      "kind": "try",
+      "accepted": true,
+      "score": 167.9519,
+      "note": "random: move battery",
+      "reason": null,
+      "ops": [
+        {
+          "op": "move",
+          "ids": [
+            "battery"
+          ],
+          "offset_m": [
+            0.01,
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "step": 30,
+      "kind": "try",
+      "accepted": false,
+      "score": 0.0,
+      "note": "random: remove wiring_power",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "remove",
+          "id": "wiring_power"
+        }
+      ]
+    }
+  ]
+}

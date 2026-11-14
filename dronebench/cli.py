@@ -285,7 +285,12 @@ def cmd_calibrate(args) -> int:
 
 def cmd_result(args) -> int:
     from dronebench import results
-    text = _dumps(_ws_call(results.export_result, args.workspace), pretty=True)
+    res = _ws_call(results.export_result, args.workspace)
+    local = results.uses_local_files(res)
+    if local:
+        print(f"warning: edits in step {', '.join(map(str, local))} read a mesh file from this machine (cad_file); "
+              "nobody else can replay them, so this result cannot be verified or submitted", file=sys.stderr)
+    text = _dumps(res, pretty=True)
     if args.out:
         Path(args.out).write_text(text + "\n")
         print(args.out)
@@ -301,21 +306,45 @@ def cmd_verify(args) -> int:
     except (OSError, json.JSONDecodeError) as e:
         raise UsageError(f"cannot read {args.result}: {e}")
     try:
-        v = results.verify_result(r, args.design)
+        v = results.verify_result(r, args.design, args.standard)
     except results.ResultError as e:
         raise UsageError(str(e))
-    print(f"replayed {v['replayed']} accepted steps from {v['baseline']:.2f}: best {v['best']:.2f} (claimed {r.get('best')})")
+    if v["best"] is not None:
+        print(f"replayed {v['replayed']} accepted steps from {v['baseline']:.2f}: best {v['best']:.2f} (claimed {r.get('best')})")
     for m in v["mismatches"]:
         print(f"  mismatch, {m['what']}: claimed {m['claimed']}, replayed {m['replayed']}" + (f" ({m['why']})" if m.get("why") else ""))
     print("VERIFIED" if v["ok"] else "NOT VERIFIED")
     return 0 if v["ok"] else 3
 
 
+_RUNNERS = {"python", "python3", "node", "bash", "sh", "uv", "npx", "deno", "ruby", "perl"}
+
+
+def _command_label(line: str) -> str:
+    """Name for an agent started by `--cmd`: the script or module it runs, not the interpreter."""
+    import shlex
+    try:
+        words = shlex.split(line)
+    except ValueError as e:
+        raise UsageError(f"--cmd is not a valid command line: {e}")
+    if not words:
+        raise UsageError("--cmd is empty; give the command that starts your agent, e.g. --cmd \"python my_agent.py\"")
+    i = 0
+    while i < len(words) and Path(words[i]).name in _RUNNERS | {"run"}:
+        i += 1
+        while i < len(words) and words[i].startswith("-") and words[i] != "-m":
+            i += 1
+        if i < len(words) and words[i] == "-m":
+            return words[i + 1] if i + 1 < len(words) else "agent"
+    word = words[i] if i < len(words) else words[0]
+    name = Path(word).name
+    return name[:-3] if name.endswith(".py") else name
+
+
 def cmd_run(args) -> int:
     from dronebench import agents
-    if args.cmd_line:
-        import shlex
-        label = args.label or Path(shlex.split(args.cmd_line)[0]).name
+    if args.cmd_line is not None:
+        label = args.label or _command_label(args.cmd_line)
         return _ws_call(agents.run_command, args.workspace, args.cmd_line, label)
     if args.agent in ("random", "cma", "random-params"):
         fn = {"random": agents.run_random, "cma": agents.run_cma, "random-params": agents.run_random_params}[args.agent]
@@ -449,6 +478,8 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("verify", help="re-fly a result file from the starting design and compare every score")
     p.add_argument("result")
     p.add_argument("--design", help="starting design folder, for results made on your own design")
+    p.add_argument("--standard", action="store_true",
+                   help="also require the standard task (plain falcon_v2, default mission, flown, at most 30 steps); what a submission must be")
     p.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help=argparse.SUPPRESS)
     p.set_defaults(func=cmd_verify)
 

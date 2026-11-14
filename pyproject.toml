@@ -3,10 +3,10 @@ name = "dronebench"
 version = "0.2.0"
 description = "Design and flight environment for small electric fixed-wing UAVs: designs are flown in a 6-DOF simulator before they score"
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
 classifiers = [
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Topic :: Scientific/Engineering",
 ]
@@ -24,7 +24,7 @@ Source = "https://github.com/sisiphamus/dronebench"
 dronebench = "dronebench.cli:main"
 
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]

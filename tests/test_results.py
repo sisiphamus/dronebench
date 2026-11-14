@@ -58,6 +58,104 @@ def test_replay_rejects_a_file_in_the_wrong_format():
         results.verify_result({"format": "something-else"})
 
 
+def test_small_inflation_is_caught(run):
+    r = results.export_result(run)
+    r["steps"][2]["score"] *= 1.004
+    r["best"] = max(r["best"], r["steps"][2]["score"])
+    assert not results.verify_result(r)["ok"]
+
+
+def test_budget_smaller_than_the_attempts_is_refused(run):
+    r = results.export_result(run)
+    r["budget"] = 1
+    with pytest.raises(results.ResultError, match="budget"):
+        results.verify_result(r)
+
+
+@pytest.mark.parametrize("drop", ["baseline", "steps", "fixture", "budget"])
+def test_malformed_files_are_refused_cleanly(run, drop):
+    r = results.export_result(run)
+    del r[drop]
+    with pytest.raises(results.ResultError, match="malformed"):
+        results.verify_result(r)
+
+
+def test_a_step_without_a_score_is_malformed(run):
+    r = results.export_result(run)
+    del r["steps"][0]["score"]
+    with pytest.raises(results.ResultError, match="malformed"):
+        results.verify_result(r)
+
+
+def test_a_fixture_cannot_be_a_path(run, tmp_path):
+    r = results.export_result(run)
+    r["fixture"] = str(tmp_path)
+    with pytest.raises(results.ResultError, match="not a built-in"):
+        results.verify_result(r)
+
+
+def _standard_result(**over):
+    r = {"format": results.FORMAT, "fixture": "falcon_v2", "preset": "endurance", "fidelity": "flown", "start_params": {},
+         "budget": 30, "baseline": 1.0, "best": 1.0, "steps": []}
+    r.update(over)
+    return r
+
+
+def test_the_standard_task_is_the_plain_falcon_flown_within_30_steps():
+    assert results.standard_problems(_standard_result()) == []
+    for over, word in (({"fixture": "trainer"}, "fixture"), ({"start_params": {"wing.span_mm": 2200}}, "own numbers"),
+                       ({"preset": "range"}, "preset"), ({"fidelity": "analytic"}, "fidelity"), ({"budget": 31}, "budget"),
+                       ({"steps": [{"step": 1, "accepted": True, "score": 2.0, "ops": [{"op": "add", "cad_file": "/etc/passwd"}]}]},
+                        "cad_file")):
+        probs = results.standard_problems(_standard_result(**over))
+        assert probs and word in " ".join(probs), (over, probs)
+
+
+def test_verify_standard_stops_before_flying_anything(run):
+    r = results.export_result(run)          # a trainer run: not the standard task
+    v = results.verify_result(r, standard=True)
+    assert not v["ok"] and v["replayed"] == 0 and "fixture" in v["mismatches"][0]["why"]
+
+
+def test_build_and_try_steps_replay_together(tmp_path):
+    p = tmp_path / "w"
+    W.init(p, "falcon_v2", steps=4, necessity=False, fidelity="analytic")
+    W.build_step(p, {"wing.span_mm": 2150}, "wider", agent="mix", keep=True, necessity=False)
+    W.try_step(p, NUDGE, "battery", agent="mix", keep=True, necessity=False)
+    r = results.export_result(p)
+    assert [s["kind"] for s in r["steps"]] == ["build", "try"]
+    v = results.verify_result(r)
+    assert v["ok"] and v["replayed"] == 2, v
+
+
+def test_a_design_folder_result_needs_that_folder(tmp_path):
+    import shutil
+    src = tmp_path / "mine"
+    shutil.copytree("fixtures/trainer", src)
+    p = tmp_path / "w"
+    W.init(p, str(src), steps=3, necessity=False, fidelity="analytic")
+    W.try_step(p, NUDGE, "x", agent="mine", keep=True, necessity=False)
+    r = results.export_result(p)
+    with pytest.raises(results.ResultError, match="not a built-in"):
+        results.verify_result(r)
+    assert results.verify_result(r, design=str(src))["ok"]
+    other = tmp_path / "other"
+    shutil.copytree("fixtures/trainer", other)
+    import yaml
+    bom = yaml.safe_load((other / "bom.yaml").read_text())
+    bom["parts"][0]["part_number"] = "something else"
+    (other / "bom.yaml").write_text(yaml.safe_dump(bom))
+    with pytest.raises(results.ResultError, match="not the one"):
+        results.verify_result(r, design=str(other))
+
+
+def test_edits_that_read_local_files_are_flagged(run):
+    r = results.export_result(run)
+    assert results.uses_local_files(r) == []
+    r["steps"][1]["ops"] = [{"op": "add", "entry": {"id": "x"}, "cad_file": "/home/me/part.stl"}]
+    assert results.uses_local_files(r) == [2]
+
+
 def test_cli_result_and_verify_round_trip(run, tmp_path, capsys):
     out = tmp_path / "r.json"
     assert cli.main(["result", str(run), "--out", str(out)]) == 0

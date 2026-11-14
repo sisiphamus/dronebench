@@ -25,8 +25,11 @@ jobs:
       - run: uv venv --python 3.12 && uv pip install -e .
       - name: Replay changed result files
         run: |
-          files=$(git diff --name-only --diff-filter=AM origin/${{ github.base_ref }}...HEAD -- 'results/**/*.json')
-          for f in $files; do
+          git diff --name-only --diff-filter=AM origin/${{ github.base_ref }}...HEAD -- 'results/**/*.json' > changed.txt
+          cat changed.txt
+          status=0
+          while IFS= read -r f; do
             echo "== $f"
-            .venv/bin/dronebench verify "$f"
-          done
+            .venv/bin/dronebench verify --standard "$f" || status=1
+          done < changed.txt
+          exit $status

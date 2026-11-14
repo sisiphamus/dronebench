@@ -83,6 +83,18 @@ def test_init_can_start_from_chosen_numbers(tmp_path):
     assert (p / "design" / "cad").is_dir() and m["baseline"] >= 0
 
 
+def test_force_only_replaces_a_dronebench_workspace(tmp_path):
+    """`init . --force` in a folder of your own files used to delete the folder."""
+    mine = tmp_path / "my_project"
+    mine.mkdir()
+    (mine / "notes.txt").write_text("keep me")
+    with pytest.raises(W.WorkspaceError, match="not a DroneBench workspace"):
+        W.init(mine, "trainer", steps=2, necessity=False, fidelity="analytic", force=True)
+    assert (mine / "notes.txt").read_text() == "keep me"
+    W.init(tmp_path / "w", "trainer", steps=2, necessity=False, fidelity="analytic")
+    W.init(tmp_path / "w", "trainer", steps=2, necessity=False, fidelity="analytic", force=True)   # a real workspace: fine
+
+
 def test_init_rejects_numbers_for_a_design_without_a_builder(tmp_path):
     with pytest.raises(W.WorkspaceError, match="no parameters to set"):
         W.init(tmp_path / "w", "trainer", steps=2, necessity=False, sets={"wing.span_mm": 1000})

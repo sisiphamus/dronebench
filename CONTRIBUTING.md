@@ -16,12 +16,13 @@ uv venv && uv pip install -e ".[dev]"
    dronebench run ws --cmd "python my_agent.py" --label my-agent
    ```
 2. Export it: `dronebench result ws --out results/falcon_v2/my-agent.json`
-3. Check that it replays on your machine: `dronebench verify results/falcon_v2/my-agent.json`
+3. Check that it replays on your machine: `dronebench verify --standard results/falcon_v2/my-agent.json`
 4. Open a pull request with the file. CI replays every result file in the pull request and fails if a score does not reproduce.
 
-Rules for a result to count: start from the unmodified `falcon_v2` with the default preset, use only `dronebench try` and `dronebench build`
-(the workspace refuses anything else, and the replay catches edits made outside it), and say in the pull request which model or method it
-was. One run is a sample, not a ranking; repeat runs are welcome.
+Rules for a result to count, all checked by `verify --standard`: the unmodified `falcon_v2` with the default mission, flown, at most 30 steps,
+and no `add` op that reads a mesh from your disk (`cad_file`), because nobody else has that file. Use only `dronebench try` and
+`dronebench build`; edits made outside them do not replay and fail the check. Say in the pull request which model or method it was.
+One run is a sample, not a ranking; repeat runs are welcome. Scores must reproduce to 0.1%.
 
 ## Add a design or a fixture
 
