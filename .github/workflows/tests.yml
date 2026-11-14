@@ -28,6 +28,11 @@ jobs:
         run: |
           git checkout origin/${{ github.base_ref }} -- dronebench fixtures pyproject.toml
           uv venv --python 3.12 && uv pip install -e .
+          if ! .venv/bin/dronebench verify --help > /dev/null 2>&1; then
+            echo "The base branch has no verify command yet (the pull request that adds it); using this pull request's code once."
+            git checkout HEAD -- dronebench fixtures pyproject.toml
+            uv pip install -e .
+          fi
           status=0
           while IFS= read -r -d '' f; do
             echo "== $f"
