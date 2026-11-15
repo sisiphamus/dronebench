@@ -57,7 +57,7 @@ section h2 { font-size: clamp(2.6rem, 5.4vw, 4.5rem); line-height: .92; max-widt
 .test { background: var(--white); }
 .testGrid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: clamp(24px, 5vw, 80px); align-items: start; margin-top: 28px; }
 .drawWrap { position: relative; margin-top: 48px; }
-#draw { width: 100%; aspect-ratio: 2.2; background: var(--grey); border-radius: 22px; overflow: hidden; }
+#draw { width: 100%; aspect-ratio: 3; background: var(--grey); border-radius: 22px; overflow: hidden; }
 .stats { display: flex; gap: 8px 28px; flex-wrap: wrap; padding: 10px 26px 0; color: var(--muted); font-size: 15px; font-variant-numeric: tabular-nums; }
 .stats b { color: var(--ink); font-weight: 700; }
 #draw canvas { display: block; width: 100%; height: 100%; }
@@ -185,7 +185,7 @@ footer a { color: var(--white); font-weight: 600; text-decoration: none; }
 <section class="test" id="test">
   <div class="wrap">
     <h2>What every design has to survive</h2>
-    <p class="lede" id="testLede">The bench checks the structure, then flies the aircraft.</p>
+    <p class="lede" id="testLede">29 checks decide whether a design counts.</p>
     <div class="drawWrap">
       <div id="draw" role="img" aria-label="Line drawing of the final design pulled apart into its parts. It moves closer together as you scroll."></div>
     </div>
@@ -199,14 +199,14 @@ footer a { color: var(--white); font-weight: 600; text-decoration: none; }
 <section id="story">
   <div class="wrap">
     <h2>Every change the agent made</h2>
-    <p class="lede" id="storyLede">The drone is rebuilt after every kept change. Parts that changed are blue.</p>
+    <p class="lede" id="storyLede">Kept changes in order. Rejected attempts are grouped between them.</p>
     <div class="story">
       <div class="stage" id="stage">
         <div class="readout">
           <div class="score" id="score">&nbsp;</div>
         </div>
         <div class="stats" id="stats"></div>
-        <div id="view" role="img" aria-label="3D model of the drone after the selected change. Parts that changed since the last kept step are black; removed parts are faint."></div>
+        <div id="view" role="img" aria-label="3D model of the drone after the selected change. Parts that changed since the last kept step are blue; removed parts are faint."></div>
         <div class="legend"><span><i style="background:#2a3cff"></i>Changed</span><span><i style="background:rgba(10,11,26,.25)"></i>Removed</span></div>
         <div class="scrub">
           <span class="lbl" id="lbl"></span>
@@ -272,13 +272,11 @@ dronebench verify --standard results/falcon_v2/my-agent.json</pre>
     <h2>What it does not know yet</h2>
     <dl>
       <dt>No flight logs</dt>
-      <dd>The physics matches theory, a second aerodynamic method and one manufacturer figure, within 15% from 45 to 65 km/h. It has not been compared with measured flights.</dd>
+      <dd>The physics matches theory and one manufacturer's figure within 15% from 45 to 65 km/h. It has not been compared with measured flights.</dd>
       <dt>Mostly battery</dt>
       <dd>The from-nothing design is 62% battery by mass. Flight time rewards that. The payload check only asks that a camera is on board, so the agent swapped to one 10 g lighter and gained 4 minutes.</dd>
       <dt>One kind of aircraft</dt>
-      <dd>A wing, a tail and one or two motors. V-tails and flying wings fail with a message.</dd>
-      <dt>Starts in the air</dt>
-      <dd>Takeoff and landing are not modelled, and the propeller data is a generic fit.</dd>
+      <dd>A wing, a tail and one or two motors. V-tails and flying wings fail with a message. Takeoff and landing are not modelled, and the propeller data is a generic fit.</dd>
     </dl>
     <a class="more" href="https://github.com/sisiphamus/dronebench/blob/main/VALIDATION.md">Read what was checked and what is open</a>
   </div>
@@ -412,8 +410,8 @@ if (state && kept.length) {
   // each check is pinned to the part that mostly decides it
   const ROWS = [
     ['spar', 'Wing spar strength', 'spar', (c) => `${c.value.toFixed(2)}, needs ${c.limit[0]}`],
-    ['static_margin', 'Balance (static margin)', 'battery', (c) => `${c.value.toFixed(2)}, allowed ${c.limit[0]} to ${c.limit[1]}`],
-    ['stall_margin', 'Stall margin (cruise over stall speed)', 'wing', (c) => `${c.value.toFixed(2)}, needs ${c.limit[0]}`],
+    ['static_margin', 'Balance', 'battery', (c) => `${c.value.toFixed(2)}, allowed ${c.limit[0]} to ${c.limit[1]}`],
+    ['stall_margin', 'Stall margin', 'wing', (c) => `${c.value.toFixed(2)}, needs ${c.limit[0]}`],
     ['climb', 'Climb rate', 'prop', (c) => `${c.value.toFixed(1)} m/s, needs ${c.limit[0]}`],
     ['motor_current', 'Motor current', 'motor', (c) => `${c.value.toFixed(1)} A, limit ${c.limit[1]}`],
     ['tail_volume', 'Tail size', 'htail', (c) => `${c.value.vh.toFixed(2)}, needs ${c.limit.vh[0]}`],
@@ -645,7 +643,7 @@ if (learn && learn.curve && learn.curve.length) {
   h += `<text x="${(L + W - R) / 2}" y="${H + 20}" text-anchor="middle">training steps</text>`;
   $('#learn').innerHTML = h;
   const last = learn.curve[learn.curve.length - 1];
-  $('#learnText').textContent = `FlightEnv lets a policy learn to fly any design. After ${last.steps.toLocaleString()} steps a PPO policy holds an orbit in wind and turbulence almost as well as the stock autopilot (${last.return.toFixed(0)} against ${refs.autopilot[0].toFixed(0)}) and finished ${Math.round(last.survival * 100)}% of its 8 test flights. Trained on the Falcon with planted weight.`;
+  $('#learnText').textContent = `FlightEnv lets a policy learn to fly any design. After ${last.steps.toLocaleString()} steps a PPO policy holds an orbit in wind and turbulence almost as well as the stock autopilot (${last.return.toFixed(0)} against ${refs.autopilot[0].toFixed(0)}) and finished ${Math.round(last.survival * 100)}% of its 8 test flights. It was trained on a heavier version of the Falcon drone.`;
 } else $('#learn').closest('section').style.display = 'none';
 
 // ---------------------------------------------------------------- copy button
