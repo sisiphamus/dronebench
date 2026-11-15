@@ -34,6 +34,10 @@ https://www.figure.ai, https://www.1x.tech, https://www.zipline.com, https://www
 Cosmos (https://www.cosmos.so, signed in): element searches "robotics", "drone", "exploded view technical diagram", "hardware startup website".
 Not opened: Boston Dynamics, Apptronik, Joby, Wing. Web searches for "best hardware startup websites" returned rankings of companies, not of their sites, so nothing was taken from them.
 
+## Cosmos pages opened for the blueprint rebuild (2026-11-15, signed in as Adam)
+
+His own boards (https://www.cosmos.so/sisiphamus/collections: "life os", "Pitch Deck", "poster"), and element searches "blueprint technical drawing poster" and "line art airplane wireframe". What they show: saturated cyanotype blue sheets, white line art, title blocks, dimension lines, huge white condensed type (the Pitch Deck board). The final page takes the blue sheet, the white line drawing, the dimension line and the title block from these.
+
 ## What this means for DroneBench
 
 DroneBench has no product photography and should not fake any. What it has is a drone that exists only as geometry and
