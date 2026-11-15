@@ -4,102 +4,279 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DroneBench</title>
-<meta name="description" content="An AI agent designed this drone with no example aircraft. A simulator flies every design before it scores.">
-<meta name="theme-color" content="#e4e6ec">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a3cff'/%3E%3Cpath d='M4 17 L28 9 L28 12 L4 20Z' fill='white'/%3E%3C/svg%3E">
+<meta name="description" content="An AI agent designed this drone with no example aircraft. A simulator flew every attempt.">
+<meta name="theme-color" content="#1b3cf0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%231b3cf0'/%3E%3Cpath d='M3 17 L29 9 L29 12 L3 20Z' fill='white'/%3E%3C/svg%3E">
 <link rel="preload" href="fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 @font-face { font-family: "Archivo"; src: url(fonts/archivo-latin.woff2) format("woff2"); font-weight: 300 900; font-stretch: 62% 125%; font-display: swap; }
-:root { --ink: #0a0b1a; --grey: #e4e6ec; --muted: #54566a; --blue: #2a3cff; --white: #fff; --font: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif; color-scheme: light; }
-html, body { height: 100%; margin: 0; overflow: hidden; }
-body { background: var(--grey); color: var(--ink); font: 400 19px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
-main { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
-#model { grid-area: 1 / 1; min-height: 0; cursor: grab; touch-action: none; }
-#model:active { cursor: grabbing; }
-#model canvas { display: block; width: 100%; height: 100%; }
-.text { grid-area: 1 / 1; align-self: center; z-index: 2; padding: 0 4.5rem; pointer-events: none; }
-.text a { pointer-events: auto; }
-.name { color: var(--ink); max-width: none; font: 900 30px/1 var(--font); font-stretch: 62%; letter-spacing: -.01em; margin: 0 0 28px; }
-h1 { font: 900 5rem/.98 var(--font); font-stretch: 62%; letter-spacing: -.012em; word-spacing: .12em; margin: 0; max-width: 7.6em; }
-h1 b { color: var(--blue); font-weight: 900; }
-p { color: var(--muted); max-width: 30ch; margin: 22px 0 30px; }
-.btn { display: inline-flex; align-items: center; min-height: 52px; padding: 0 30px; border-radius: 999px; background: var(--ink); color: var(--white); font: 700 17px var(--font); text-decoration: none; transition: background .25s cubic-bezier(.16,1,.3,1), transform .12s; }
-.btn:hover { background: var(--blue); }
+:root {
+  --blue: #1b3cf0; --white: #ffffff; --soft: rgba(255,255,255,.78); --line: rgba(255,255,255,.9); --orange: #ff7a3d;
+  --font: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --ease: cubic-bezier(.16,1,.3,1);
+  color-scheme: dark;
+}
+html, body { height: 100%; margin: 0; overflow: hidden; background: var(--blue); }
+body { color: var(--white); font: 400 18px/1.45 var(--font); -webkit-font-smoothing: antialiased; }
+a, button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--white); outline-offset: 3px; }
+
+/* the sheet: a drawing border, then three rows (bar, drawing, words and title block) */
+.sheet { box-sizing: border-box; height: 100%; padding: 14px; }
+.frame { box-sizing: border-box; height: 100%; border: 2px solid var(--line); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; padding: 0 28px; }
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 0 0; }
+.mark { font: 900 30px/1 var(--font); font-stretch: 62%; letter-spacing: -.01em; }
+.btn { display: inline-flex; align-items: center; min-height: 48px; padding: 0 26px; border: 2px solid var(--white); border-radius: 999px; background: transparent; font-weight: 700; text-decoration: none; cursor: pointer; transition: background .25s var(--ease), color .25s var(--ease), transform .12s; }
+.btn:hover { background: var(--white); color: var(--blue); }
 .btn:active { transform: translateY(1px); }
-.btn:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
-@media (max-width: 1150px) { h1 { font-size: 4rem; } .text { padding: 0 2.5rem; } }
+
+.draw { position: relative; min-height: 0; }
+#view { position: absolute; inset: 0; }
+#view canvas { display: block; width: 100%; height: 100%; }
+#dim { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+#dim text { fill: var(--white); font: 600 17px var(--font); font-variant-numeric: tabular-nums; text-anchor: middle; dominant-baseline: central; }
+
+.foot { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 32px; padding: 0 0 28px; }
+h1 { margin: 0; font: 900 6rem/.9 var(--font); font-stretch: 62%; letter-spacing: -.012em; word-spacing: .14em; }
+.words p { margin: 18px 0 0; max-width: 32ch; color: var(--soft); }
+.block { width: 25rem; border: 1.5px solid var(--line); }
+.block dl { margin: 0; display: grid; grid-template-columns: auto 1fr; }
+.block dt, .block dd { margin: 0; padding: 10px 14px; border-top: 1.5px solid var(--line); }
+.block dt:first-of-type, .block dd:first-of-type { border-top: 0; }
+.block dt { color: var(--soft); border-right: 1.5px solid var(--line); }
+.block dd { font-weight: 700; font-variant-numeric: tabular-nums; min-width: 0; }
+.chip { display: inline-block; width: 12px; height: 12px; margin-right: 10px; background: var(--white); vertical-align: -1px; }
+.chip.no { background: var(--orange); }
+.redraw { display: block; width: 100%; border: 0; border-top: 1.5px solid var(--line); background: transparent; text-align: left; padding: 10px 14px; font-weight: 700; cursor: pointer; transition: background .25s var(--ease), color .25s var(--ease); }
+.redraw:hover { background: var(--white); color: var(--blue); }
+.redraw:focus-visible { outline-offset: -3px; }
+
+@media (max-width: 900px) {
+  .frame { padding: 0 16px; }
+  .bar { padding-top: 14px; }
+  .mark { font-size: 26px; }
+  .btn { min-height: 44px; padding: 0 20px; }
+  .foot { grid-template-columns: minmax(0, 1fr); gap: 14px; padding-bottom: 16px; }
+  h1 { font-size: 3.4rem; }
+  .words p { margin-top: 8px; font-size: 15px; max-width: none; }
+  .block { width: auto; font-size: 15px; }
+  .block dt, .block dd, .redraw { padding: 5px 12px; }
+  .hide-sm { display: none; }
+}
+@media (max-height: 780px) and (min-width: 901px) {
+  h1 { font-size: 4rem; } .words p { display: none; }
+  .block { font-size: 15px; width: 22rem; } .block dt, .block dd, .redraw { padding: 6px 12px; }
+  .bar { padding-top: 12px; } .foot { padding-bottom: 16px; }
+}
+@media (max-height: 720px) and (max-width: 900px) { .words p { display: none; } h1 { font-size: 3rem; } }
 @media (max-height: 520px) {
-  .name { margin-bottom: 10px; font-size: 24px; }
-  h1 { font-size: 2.6rem; }
-  p { margin: 10px 0 14px; font-size: 16px; }
-  .btn { min-height: 44px; }
+  .frame { padding: 0 16px; } .bar { padding-top: 8px; } .mark { font-size: 22px; } .btn { min-height: 38px; padding: 0 16px; font-size: 15px; }
+  .foot { grid-template-columns: minmax(0, 1fr) auto; padding-bottom: 10px; gap: 16px; }
+  h1 { font-size: 2.6rem; } .words p { display: none; }
+  .block { width: 17rem; font-size: 13px; } .block dt, .block dd, .redraw { padding: 3px 10px; }
 }
-@media (max-width: 400px) and (min-height: 521px) { h1 { font-size: 2.7rem !important; } }
-@media (max-width: 800px) and (min-height: 521px) {
-  main { grid-template-rows: minmax(0, 1fr) auto; }
-  #model { grid-row: 1; }
-  .text { grid-row: 2; align-self: end; padding-bottom: 28px; }
-  .name { margin-bottom: 14px; font-size: 26px; }
-  .text { padding: 0 1.25rem 1.75rem; }
-  h1 { font-size: 3.2rem; }
-  p { margin: 14px 0 20px; font-size: 17px; }
-}
+@media (prefers-reduced-motion: reduce) { .btn, .redraw { transition: none; } }
 </style>
 <script type="importmap">{ "imports": { "three": "./demo/vendor/three.module.js", "three/addons/": "./demo/vendor/addons/" } }</script>
 </head>
 <body>
-<main>
-  <div id="model" role="img" aria-label="3D model of the drone the agent designed. Drag to turn it."></div>
-  <div class="text">
-    <p class="name">DroneBench</p>
-    <h1>An agent designed this drone from <b>nothing</b>.</h1>
-    <p>Every design is flown in a simulator before it scores. After 38 attempts in one run, this one is simulated to fly 726 minutes, about 12 hours.</p>
+<div class="sheet"><div class="frame">
+  <header class="bar">
+    <span class="mark">DroneBench</span>
     <a class="btn" href="https://github.com/sisiphamus/dronebench">View the repo</a>
+  </header>
+
+  <div class="draw">
+    <div id="view" role="img" aria-label="A blank blueprint sheet. An AI agent's 38 attempts at a drone are drawn on it one after another; kept designs stay white, rejected ones flash orange and are wiped away. The last design, a long-winged glider, stays."></div>
+    <svg id="dim" aria-hidden="true"></svg>
   </div>
-</main>
+
+  <div class="foot">
+    <div class="words">
+      <h1>Drawn from nothing.</h1>
+      <p>An AI agent designed this drone with no example aircraft. A simulator flew every attempt.</p>
+    </div>
+    <div class="block">
+      <dl>
+        <dt>Attempt</dt><dd id="bAttempt">0 of 38</dd>
+        <dt>Result</dt><dd id="bResult">Blank sheet</dd>
+        <dt class="hide-sm">Battery</dt><dd class="hide-sm" id="bBatt">0 Wh</dd>
+        <dt>Best so far</dt><dd id="bBest">0 min</dd>
+      </dl>
+      <button class="redraw" id="redraw" type="button">Redraw from the start</button>
+    </div>
+  </div>
+</div></div>
+
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-const el = document.getElementById('model');
+const $ = (s) => document.querySelector(s);
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ease = (t) => 1 - Math.pow(1 - Math.min(1, Math.max(0, t)), 3);
+const PLAIN = { battery_current: 'battery current', esc_current: 'speed controller current', motor_current: 'motor current', static_margin: 'balance',
+  stall_margin: 'stall margin', spar: 'wing strength', clearance: 'parts colliding', shell_structure: 'shell too thin', battery_fit: 'battery fit',
+  climb: 'climb rate', mtow: 'too heavy', control_chain: 'controls', harness: 'wiring', airframe_connected: 'parts not connected', fuselage_continuous: 'body broken',
+  tail_volume: 'tail size', servo_torque: 'servo strength', power_chain: 'power chain', payload: 'payload', lifting_surfaces: 'wing or tail missing',
+  no_stall: 'stalled in a flight', gusts_gusty: 'lost control in gusts', gusts_light: 'lost control in gusts', load_factor: 'load in gusts' };
+
+const data = await fetch('data/attempts.json').then((r) => r.json()).catch(() => null);
+const N = data ? data.length : 38;
+const final = data ? data[data.length - 1] : null;
+const bestAt = (i) => Math.max(0, ...data.slice(0, i + 1).filter((a) => a.kept).map((a) => a.score));
+const setBlock = (i, result, kept) => {
+  const a = data[i];
+  $('#bAttempt').textContent = `${a.n} of ${N}`;
+  $('#bBatt').textContent = `${a.wh} Wh`;
+  $('#bBest').textContent = `${bestAt(i).toFixed(0)} min (simulated)`;
+  $('#bResult').innerHTML = result ? `<i class="chip${kept ? '' : ' no'}"></i>${result}` : 'Drawing';
+};
+
 const gl = (() => { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch { return false; } })();
-if (!gl) el.style.display = 'none';
-else {
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (!data || !gl) {
+  // no drawing possible: show the end state in the block, hide the sheet
+  $('.draw').style.visibility = 'hidden';
+  if (final) { const i = N - 1; setBlock(i, `Kept, ${final.score.toFixed(0)} min`, true); }
+  $('#redraw').style.display = 'none';
+} else {
+  const view = $('#view'), dimSvg = $('#dim');
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-  el.appendChild(renderer.domElement);
+  renderer.localClippingEnabled = true;
+  view.appendChild(renderer.domElement);
   const scene = new THREE.Scene();
-  const cam = new THREE.PerspectiveCamera(28, 1, 0.01, 60);
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x8e94ad, 1.55));
-  const sun = new THREE.DirectionalLight(0xffffff, 2); sun.position.set(-2, 4, 3); scene.add(sun);
-  const controls = new OrbitControls(cam, renderer.domElement);
-  controls.enableDamping = true; controls.enablePan = false; controls.enableZoom = false;
-  controls.autoRotate = !reduce; controls.autoRotateSpeed = 1.1;
-  let box = null;
-  const fit = () => {
-    const r = el.getBoundingClientRect(); if (!r.width || !box) return;
-    renderer.setSize(r.width, r.height, false); cam.aspect = r.width / r.height;
-    const wide = r.width > 800 || innerHeight <= 520, pad = wide ? 1.65 : 1.2;
-    if (wide) cam.setViewOffset(r.width, r.height, -r.width * 0.17, 0, r.width, r.height); else cam.clearViewOffset();   // model sits right of the words
-    cam.updateProjectionMatrix();
-    const sz = box.getSize(new THREE.Vector3()), ctr = box.getCenter(new THREE.Vector3());
-    const hf = Math.atan(Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2) * cam.aspect);
-    const dist = (Math.max(sz.x, sz.z) / 2 * pad) / Math.tan(hf);
-    controls.target.copy(ctr);
-    cam.position.copy(ctr).add(new THREE.Vector3(-0.5, 0.5, 1).normalize().multiplyScalar(dist));
-    controls.update();
+  const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 50);
+
+  // materials: ink (current, white), warn (rejected, orange), ghost (the kept design while a new one is tried)
+  const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+  const L = (color, opacity, clip) => new THREE.LineBasicMaterial({ color, transparent: opacity < 1, opacity, clippingPlanes: clip ? [plane] : null });
+  const F = (color, opacity, clip) => new THREE.MeshBasicMaterial({ color, transparent: true, opacity, side: THREE.DoubleSide, depthWrite: false, clippingPlanes: clip ? [plane] : null });
+  const M = {
+    ink: [L(0xffffff, 1, true), F(0xffffff, 0.1, true)],
+    warn: [L(0xff7a3d, 1, true), F(0xffffff, 0.07, true)],
+    ghost: [L(0xffffff, 0.3, false), F(0xffffff, 0.03, false)],
   };
-  new GLTFLoader().load('demo/data/step/38.glb', (g) => {
-    const m = new THREE.MeshStandardMaterial({ color: 0x1c1e33, roughness: 0.55, metalness: 0.04, side: THREE.DoubleSide });
-    g.scene.traverse((o) => { if (o.isMesh) o.material = m; });
-    scene.add(g.scene);
-    box = new THREE.Box3().setFromObject(g.scene);
-    fit();
-    new ResizeObserver(fit).observe(el);
-    (function loop() { controls.update(); renderer.render(scene, cam); requestAnimationFrame(loop); })();
-  }, undefined, () => { el.style.display = 'none'; });
+  const pen = new THREE.Mesh(new THREE.PlaneGeometry(1, 0.014), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+  pen.rotation.x = -Math.PI / 2; pen.visible = false; scene.add(pen);
+
+  const loader = new GLTFLoader();
+  const loadStep = (n) => fetch(`demo/data/step/${n}.glb`).then((r) => r.arrayBuffer()).then((b) => new Promise((res, rej) => loader.parse(b, '', (g) => res(g.scene), rej)));
+  function build(root) {
+    root.updateMatrixWorld(true);
+    const pos = [], fills = new THREE.Group();
+    root.traverse((o) => {
+      if (!o.isMesh) return;
+      const e = new THREE.EdgesGeometry(o.geometry, 18), a = e.attributes.position, v = new THREE.Vector3();
+      for (let i = 0; i < a.count; i++) { v.fromBufferAttribute(a, i).applyMatrix4(o.matrixWorld); pos.push(v.x, v.y, v.z); }
+      const m = new THREE.Mesh(o.geometry, M.ink[1]); m.matrixAutoUpdate = false; m.matrix.copy(o.matrixWorld); fills.add(m);
+    });
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    const lines = new THREE.LineSegments(g, M.ink[0]);
+    const grp = new THREE.Group(); grp.add(fills, lines); grp.visible = false;
+    grp.userData.role = (r) => { lines.material = M[r][0]; fills.children.forEach((c) => { c.material = M[r][1]; }); };
+    scene.add(grp);
+    return { grp, box: new THREE.Box3().setFromObject(root) };
+  }
+
+  // frame: look straight down, nose to the top (span across a wide screen) or nose to the right (span down a tall one)
+  let ext = null, portrait = false, zHalf = 2, pxPerM = 1, margin = 0.46;
+  const steps = [];
+  function layout() {
+    const w = view.clientWidth, h = view.clientHeight; if (!w || !h || !ext) return;
+    renderer.setSize(w, h, false);
+    portrait = h > w * 1.05;
+    margin = portrait ? 0.7 : 0.46;   // room for the dimension line beside the aft end
+    const span = 2 * zHalf, len = ext.max.x - ext.min.x + margin;
+    pxPerM = portrait ? Math.min(w / len, h / (span * 1.12)) : Math.min(w / (span * 1.1), h / len);
+    const cx = (ext.min.x + ext.max.x) / 2 + margin / 2;   // centre of the aircraft plus the room kept for the dimension line
+    cam.left = -w / 2 / pxPerM; cam.right = w / 2 / pxPerM; cam.top = h / 2 / pxPerM; cam.bottom = -h / 2 / pxPerM;
+    cam.position.set(cx, 10, 0);
+    cam.up.set(portrait ? 0 : -1, 0, portrait ? 1 : 0);
+    cam.lookAt(cx, 0, 0);
+    cam.updateProjectionMatrix();
+    dimSvg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  }
+  const proj = new THREE.Vector3();
+  const toPx = (x, z) => { proj.set(x, 0, z).project(cam); return [(proj.x + 1) / 2 * view.clientWidth, (1 - proj.y) / 2 * view.clientHeight]; };
+  let dimSpan = 0, dimOn = 0;
+  function drawDim() {
+    if (!dimOn || !ext) { dimSvg.innerHTML = ''; return; }
+    const xr = ext.max.x + margin * 0.42, h = dimSpan / 2;
+    const [x1, y1] = toPx(xr, h), [x2, y2] = toPx(xr, -h), mx = (x1 + x2) / 2, my = (y1 + y2) / 2, t = 7;
+    const hor = Math.abs(x2 - x1) > Math.abs(y2 - y1);
+    const tick = (x, y) => hor ? `M${x},${y - t}V${y + t}` : `M${x - t},${y}H${x + t}`;
+    const lab = `${dimSpan.toFixed(1)} m`, gap = 34;
+    const a = hor ? `M${x1},${y1}H${mx - gap}M${mx + gap},${y1}H${x2}` : `M${x1},${y1}V${my - 14}M${x1},${my + 14}V${y2}`;
+    dimSvg.innerHTML = `<path d="${a}${tick(x1, y1)}${tick(x2, y2)}" stroke="#fff" stroke-width="1.5" fill="none"/><text x="${mx}" y="${my}">${lab}</text>`;
+  }
+
+  // load every attempt, then draw them in order
+  const loaded = await Promise.all(data.map((a) => loadStep(a.n).then(build)));
+  loaded.forEach((s) => steps.push(s));
+  ext = new THREE.Box3(); loaded.forEach((s) => ext.union(s.box));
+  zHalf = Math.max(...loaded.map((s) => Math.max(Math.abs(s.box.min.z), Math.abs(s.box.max.z)))) + 0.02;
+  layout(); new ResizeObserver(layout).observe(view);
+
+  let run = 0;
+  const wait = (ms, my) => new Promise((res) => setTimeout(() => res(my === run), ms));
+  const frames = (ms, fn, my) => new Promise((res) => {
+    const t0 = performance.now();
+    const f = (t) => { if (my !== run) return res(false); const k = Math.min(1, (t - t0) / ms); fn(k); k < 1 ? requestAnimationFrame(f) : res(true); };
+    requestAnimationFrame(f);
+  });
+  const setPlane = (mode, z) => {   // mode 'draw': show z >= front (grows toward -z); 'erase': show z <= front (shrinks from +z)
+    if (mode === 'draw') { plane.normal.set(0, 0, 1); plane.constant = -z; } else { plane.normal.set(0, 0, -1); plane.constant = z; }
+  };
+  const penAt = (z, color) => { pen.visible = true; pen.position.set((ext.min.x + ext.max.x) / 2, 0.05, z); pen.scale.set((ext.max.x - ext.min.x) + 0.3, 1, 1); pen.material.color.set(color); };
+
+  function loop() { renderer.render(scene, cam); drawDim(); requestAnimationFrame(loop); }
+  loop();
+
+  async function play() {
+    const my = ++run;
+    steps.forEach((s) => { s.grp.visible = false; s.grp.userData.role('ink'); });
+    pen.visible = false; dimOn = 0; dimSpan = 0;
+    $('#bAttempt').textContent = `0 of ${N}`; $('#bResult').textContent = 'Blank sheet'; $('#bBatt').textContent = '0 Wh'; $('#bBest').textContent = '0 min';
+    if (reduce) { showFinal(); return; }
+    if (!(await wait(1400, my))) return;
+    let keptGrp = null;
+    for (let i = 0; i < N; i++) {
+      const a = data[i], s = steps[i], late = i / (N - 1);
+      setBlock(i, null);
+      if (keptGrp) keptGrp.userData.role('ghost');
+      s.grp.userData.role(a.kept ? 'ink' : 'warn'); s.grp.visible = true;
+      const color = a.kept ? 0xffffff : 0xff7a3d;
+      const from = dimSpan || a.span; dimOn = 1;
+      const drawMs = 620 - 400 * late;
+      const ok = await frames(drawMs, (k) => { const z = zHalf - 2 * zHalf * ease(k); setPlane('draw', z); penAt(z, color); dimSpan = from + (a.span - from) * ease(k * 1.6); }, my);
+      if (!ok) return;
+      setPlane('draw', -zHalf - 1); pen.visible = false;
+      const prev = i > 0 ? data.slice(0, i).filter((q) => q.kept).pop() : null;
+      if (a.kept) {
+        setBlock(i, prev ? `Kept, ${(a.score - prev.score >= 0 ? '+' : '') + (a.score - prev.score).toFixed(1)} min` : `Kept, first flight`, true);
+        if (!(await wait(130, my))) return;
+        if (keptGrp) keptGrp.visible = false;
+        keptGrp = s.grp;
+      } else {
+        const why = a.gate ? 'scored lower' : [...new Set(a.fail.map((f) => PLAIN[f] || f.replace(/_/g, ' ')))].slice(0, 2).join(' and ');
+        setBlock(i, `Rejected, ${why}`, false);
+        if (!(await wait(260, my))) return;
+        const ok2 = await frames(190, (k) => { const z = zHalf - 2 * zHalf * ease(k); setPlane('erase', z); penAt(z, 0xff7a3d); }, my);
+        if (!ok2) return;
+        s.grp.visible = false; pen.visible = false;
+        if (keptGrp) keptGrp.userData.role('ink');
+      }
+    }
+    setBlock(N - 1, `Kept, ${final.score.toFixed(0)} min`, true);
+  }
+  function showFinal() {
+    steps.forEach((s) => { s.grp.visible = false; });
+    const s = steps[N - 1]; s.grp.userData.role('ink'); s.grp.visible = true; setPlane('draw', -zHalf - 1);
+    dimSpan = final.span; dimOn = 1; setBlock(N - 1, `Kept, ${final.score.toFixed(0)} min`, true);
+  }
+  $('#redraw').addEventListener('click', play);
+  play();
 }
 </script>
 </body>
