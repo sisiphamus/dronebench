@@ -136,6 +136,24 @@ A learned flight controller: PPO on `FlightEnv` (orbit in wind and turbulence) t
 cascaded autopilot's 152 after 800,000 steps (about 30 minutes on one core), completing all 8 held-out test flights; doing nothing returns -894 and random
 actions -207. One run per agent gives a sanity check that the environment rewards engineering over luck, with no ranking between the search methods.
 
+## Designing from nothing
+
+The test that matters most for an agent is whether it can design and refine without an example. `results/from_scratch/sonnet-5-5/` holds one such run: Claude
+Sonnet 5.5 (`claude -p`) was given `BRIEF.md`, the design format, the program and its parts catalog, and no aircraft. It wrote a Python generator for the
+meshes and parts list, scored 13 versions (5 failed the gate), then used the workspace for 25 `try` steps. It took 22 minutes and about $1.90. It could read the
+program's source, including the gate checks and their limits, and it changed the mission's cruise speed from 55 to 42 km/h, which the brief allows.
+
+| | Attempts | Kept | Score (min) |
+|---|---|---|---|
+| First passing design (version 2) | 2 | | 326 |
+| After 13 versions | 13 | 8 | 621 |
+| After 25 workspace steps | 38 | 20 | 726 |
+
+The gains came from a 5 times larger battery pack (121 to 605 Wh), a wing moved to the top of the body so the pack fits under it, a wing grown from 3.0 to 3.9 m
+with a stronger spar and a bigger tail, and a body made about 27% narrower. Eight attempts failed the `no_stall` check; the agent's final report names finding its cause as the next thing to try. "Kept" counts the first passing design and the 19 changes after it. The final design is 62% battery by mass: flight time rewards that, and the payload check only asks that a camera is on board (the agent swapped to a
+5.9 g camera for a 4 minute gain). `dronebench score results/from_scratch/sonnet-5-5/final_design --flown` re-flies it (726.4 min). `LOG.md` is the agent's own
+step log and `runs.jsonl` has every attempt. A search of the run's tool calls afterwards found none that touched anything outside its folder and the program's source. One run, one model: a sample, not a ranking.
+
 ## What an agent can change
 
 - **`try`**: JSON ops on the parts list and meshes: `remove`, `swap` (new part number and specs), `set`, `scale`, `move`, `add`. Specs an

@@ -1,0 +1,358 @@
+parts:
+- id: wing
+  type: wing
+  role: wing
+  cad: wing.stl
+  material: &id001
+    name: LW-PLA
+    infill: 0.0
+    walls: 2
+    orientation: vase
+  specs:
+    fits:
+    - fuselage
+- id: aileron_L
+  type: surface
+  role: aileron
+  cad: aileron_L.stl
+  material: *id001
+- id: aileron_R
+  type: surface
+  role: aileron
+  cad: aileron_R.stl
+  material: *id001
+- id: htail
+  type: tail
+  role: htail
+  cad: htail.stl
+  material: *id001
+  specs:
+    fits:
+    - vtail
+    - boom
+- id: elevator
+  type: surface
+  role: elevator
+  cad: elevator.stl
+  material: *id001
+  specs:
+    fits:
+    - rudder
+    - vtail
+- id: vtail
+  type: tail
+  role: vtail
+  cad: vtail.stl
+  material: *id001
+  specs:
+    fits:
+    - boom
+- id: rudder
+  type: surface
+  role: rudder
+  cad: rudder.stl
+  material: *id001
+- id: fuselage
+  type: fuselage
+  role: fuselage
+  cad: fuselage.stl
+  material: *id001
+- id: boom
+  type: spar
+  role: tail_boom
+  cad: boom.stl
+  material:
+    name: CF tube
+  specs:
+    outer_d_mm: 16.0
+    inner_d_mm: 14.0
+  connects:
+  - fuselage
+  - htail
+  - vtail
+- id: spar
+  type: spar
+  role: main_spar
+  cad: spar.stl
+  material:
+    name: CF tube
+  specs:
+    outer_d_mm: 16.0
+    inner_d_mm: 14.0
+  connects:
+  - wing
+  - fuselage
+- id: battery
+  type: battery
+  cad: battery.stl
+  part_number: 4S2P Molicel P42A Li-ion
+  connects:
+  - fuselage
+  specs:
+    fits:
+    - fuselage
+- id: motor
+  type: motor
+  cad: motor.stl
+  part_number: SunnySky X2216 880KV
+  connects:
+  - fuselage
+  - prop
+  - esc
+  specs:
+    fits:
+    - fuselage
+- id: prop
+  type: prop
+  cad: prop.stl
+  part_number: APC 9x6E
+  connects:
+  - motor
+- id: esc
+  type: esc
+  part_number: Generic BLHeli 30A ESC
+  connects:
+  - battery
+  - motor
+  - w_batt
+  - w_motor
+  specs:
+    cg_mm:
+    - 340.0
+    - 0
+    - 0
+- id: camera
+  type: camera
+  part_number: RunCam Split 4
+  connects:
+  - fuselage
+  specs:
+    cg_mm:
+    - 60.0
+    - 0
+    - -20
+- id: fc
+  type: fc
+  part_number: Matek F405-WTE
+  connects:
+  - fuselage
+  specs:
+    cg_mm:
+    - 480
+    - 0
+    - 0
+- id: rx
+  type: rx
+  part_number: ExpressLRS EP2 receiver
+  connects:
+  - fc
+  - w_av
+  specs:
+    cg_mm:
+    - 520
+    - 0
+    - 0
+- id: gps
+  type: gps
+  part_number: Matek M10Q-5883
+  connects:
+  - fc
+  - w_av
+  specs:
+    cg_mm:
+    - 560
+    - 0
+    - 40
+- id: servo_ail_L
+  type: servo
+  part_number: Emax ES08MA II
+  connects:
+  - aileron_L
+  - w_servo_ail_L
+  specs:
+    cg_mm: &id002
+    - 451.6
+    - -950.0000000000001
+    - 0
+- id: w_servo_ail_L
+  type: wire
+  material:
+    name: Silicone wire
+  connects:
+  - servo_ail_L
+  - fc
+  specs:
+    mass_g: 9
+    cg_mm: *id002
+- id: hinge_aileron_L
+  type: hinge
+  parent: aileron_L
+  connects:
+  - aileron_L
+  - wing
+  specs:
+    mass_g: 1.0
+    cg_mm: *id002
+- id: link_aileron_L
+  type: linkage
+  connects:
+  - servo_ail_L
+  - aileron_L
+  specs:
+    mass_g: 3.0
+    cg_mm: *id002
+- id: servo_ail_R
+  type: servo
+  part_number: Emax ES08MA II
+  connects:
+  - aileron_R
+  - w_servo_ail_R
+  specs:
+    cg_mm: &id003
+    - 451.6
+    - 950.0000000000001
+    - 0
+- id: w_servo_ail_R
+  type: wire
+  material:
+    name: Silicone wire
+  connects:
+  - servo_ail_R
+  - fc
+  specs:
+    mass_g: 9
+    cg_mm: *id003
+- id: hinge_aileron_R
+  type: hinge
+  parent: aileron_R
+  connects:
+  - aileron_R
+  - wing
+  specs:
+    mass_g: 1.0
+    cg_mm: *id003
+- id: link_aileron_R
+  type: linkage
+  connects:
+  - servo_ail_R
+  - aileron_R
+  specs:
+    mass_g: 3.0
+    cg_mm: *id003
+- id: servo_ele
+  type: servo
+  part_number: Emax ES08MA II
+  connects:
+  - elevator
+  - w_servo_ele
+  specs:
+    cg_mm: &id004
+    - 1150.0000000000002
+    - 0
+    - 0
+- id: w_servo_ele
+  type: wire
+  material:
+    name: Silicone wire
+  connects:
+  - servo_ele
+  - fc
+  specs:
+    mass_g: 9
+    cg_mm: *id004
+- id: hinge_elevator
+  type: hinge
+  parent: elevator
+  connects:
+  - elevator
+  - htail
+  specs:
+    mass_g: 1.0
+    cg_mm: *id004
+- id: link_elevator
+  type: linkage
+  connects:
+  - servo_ele
+  - elevator
+  specs:
+    mass_g: 3.0
+    cg_mm: *id004
+- id: servo_rud
+  type: servo
+  part_number: Emax ES08MA II
+  connects:
+  - rudder
+  - w_servo_rud
+  specs:
+    cg_mm: &id005
+    - 1130.0000000000002
+    - 0
+    - 0
+- id: w_servo_rud
+  type: wire
+  material:
+    name: Silicone wire
+  connects:
+  - servo_rud
+  - fc
+  specs:
+    mass_g: 9
+    cg_mm: *id005
+- id: hinge_rudder
+  type: hinge
+  parent: rudder
+  connects:
+  - rudder
+  - vtail
+  specs:
+    mass_g: 1.0
+    cg_mm: *id005
+- id: link_rudder
+  type: linkage
+  connects:
+  - servo_rud
+  - rudder
+  specs:
+    mass_g: 3.0
+    cg_mm: *id005
+- id: w_batt
+  type: wire
+  material:
+    name: Silicone wire
+  connects:
+  - battery
+  - esc
+  specs:
+    mass_g: 15
+    cg_mm:
+    - 320.0
+    - 0
+    - 0
+- id: w_motor
+  type: wire
+  material:
+    name: Silicone wire
+  connects:
+  - esc
+  - motor
+  specs:
+    mass_g: 8
+    cg_mm:
+    - 220.0
+    - 0
+    - 0
+- id: w_av
+  type: wire
+  material:
+    name: Silicone wire
+  connects:
+  - fc
+  - rx
+  - gps
+  - esc
+  specs:
+    mass_g: 8
+    cg_mm:
+    - 500
+    - 0
+    - 0

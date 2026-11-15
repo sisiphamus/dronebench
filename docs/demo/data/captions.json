@@ -1,0 +1,22 @@
+{
+ "2": "3 m wing, one motor, a 121 Wh battery. A smaller propeller got it through the checks.",
+ "3": "Slower cruise, 55 to 40 km/h. Almost no change.",
+ "6": "A custom battery of 12 cells (181 Wh) on a motor that wastes less power, and a lighter wing spar.",
+ "7": "16 cells, 242 Wh. Wing moved forward to keep the balance.",
+ "9": "Wing moved to the top of the body so the battery fits under it. 20 cells, 302 Wh.",
+ "10": "Wing 3.0 to 3.6 m, tail made bigger to match.",
+ "11": "24 cells, 363 Wh.",
+ "13": "32 cells, 484 Wh, with a thicker spar and a deeper wing (front to back) to carry it.",
+ "15": "Wing 12% deeper front to back and a bigger tail, to lower the stall speed.",
+ "17": "40 cells, 605 Wh.",
+ "23": "Wing 3.6 to 3.9 m, spar scaled up, fin made taller.",
+ "27": "Body 12% narrower: less drag and less shell weight.",
+ "28": "Body another 10% narrower.",
+ "29": "Body another 8% narrower, the last cut that still fits the battery.",
+ "30": "Wiring trimmed from 67 g to 50 g.",
+ "32": "Spar 4% thinner, about 20 g lighter, strength margin kept.",
+ "33": "Lighter camera, 16 g to 5.9 g.",
+ "34": "Battery 5 mm further back.",
+ "36": "Fin 5% shorter.",
+ "38": "Horizontal tail 3% shorter front to back."
+}

@@ -1,0 +1,9 @@
+preset: endurance
+payload_ids:
+- camera
+cruise_kmh: 55
+max_mass_kg: 7.0
+frame:
+  units: mm
+  forward: -x
+  up: +z

@@ -1,0 +1,43 @@
+span: 3.0
+c_root: 0.22
+c_tip: 0.14
+wing_code: '2412'
+x_wing: 0.35
+ail_in: 0.55
+ail_out: 1.35
+ail_frac: 0.75
+spar_od: 16.0
+spar_id: 14.0
+spar_half: 1.4
+spar_x_frac: 0.25
+fus_len: 1.0
+fus_d: 0.14
+boom_od: 16.0
+boom_id: 14.0
+boom_end: 1.42
+ht_span: 0.55
+ht_c: 0.11
+x_ht: 1.3
+el_frac: 0.7
+vt_h: 0.3
+vt_c_root: 0.17
+vt_c_tip: 0.13
+x_vt: 1.28
+ru_frac: 0.7
+motor: SunnySky X2216 880KV
+prop: APC 9x6E
+esc: Generic BLHeli 30A ESC
+battery: 4S2P Molicel P42A Li-ion
+batt_x: 0.12
+batt_len: 0.2
+batt_w: 0.05
+batt_h: 0.05
+camera: RunCam Split 4
+camera_x: 0.06
+cruise_kmh: 55
+mat:
+  name: LW-PLA
+  infill: 0.0
+  walls: 2
+  orientation: vase
+servo: Emax ES08MA II

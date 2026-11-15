@@ -1,0 +1,39 @@
+# LOG
+- v01: first design (3.0 m span, 4S2P Li-ion 600 g, X2216 880KV + APC 10x7E, mid-wing, boom tail). Expected pass; test: FAIL, motor_current 24.2 A vs 20 A limit, clearance elevator/rudder overlap -1.2 mm.
+- v02: prop 10x7E -> 9x6E (less current) and declared elevator/rudder overlap as a fit. Expected pass; test: PASS, 325.7 min, mass 1990 g, SM 0.11, spar SF 4.6. First passing version.
+- v03: cruise 55 -> 40 km/h (expected longer endurance from lower power); test: 325.9 min, essentially unchanged (+0.2). Cruise speed barely matters.
+- v04: battery 4S2P (121 Wh) -> 6S2P (181 Wh, 900 g), motor -> Avenger 2816 620KV for 6S. Expected ~+25% endurance; test: FAIL static margin 0.32 (> 0.25, nose heavy), mass 2349 g; endurance would be 314 min (lower than v03 despite more energy: mass and heavier motor).
+- v05: v04 with battery moved aft (x 0.12->0.20) to fix SM. Expected pass; test: SM fixed (0.16) but FAIL clearance: battery pokes into wing root (-26 mm). Endurance 324 min, no better than v03 (326): 6S motor idle loss (i0 0.9 A x 22 V ~ 20 W) cancels the extra energy.
+- v06: custom 4S3P Li-ion pack (12 P42A cells, 880 g, 181 Wh) on the low-loss X2216 880KV, 4S, plus lighter spar 16/14 -> 12/10 mm (SF 4.6 -> 2.2, saves ~60 g). Expected a big gain from 50% more energy; test: PASS, 417.7 min (+28% vs v03), mass 2216 g, SM 0.20 (near the 0.25 limit).
+- v07: 4S4P pack (16 cells, 242 Wh, 1173 g), wing forward 0.35->0.31 m to rebalance. Expected ~+25% energy for ~+13% mass; test: PASS, 471 min (+13% vs v06), mass 2509 g, but SM 0.25 = exactly at the limit (0.25), nose-heavy.
+- v08: 4S5P pack (20 cells, 302 Wh, 1467 g), smaller htail span 0.55->0.40 to shrink SM, battery nose-forward 0.08. Expected SM <= 0.25; test: FAIL static margin 0.31 (nose heavy); endurance would be 502 min. Lesson: the battery cannot go aft because the mid-wing blocks it.
+- v09: v08 with the wing moved to the top of the fuselage (high wing, z=+75 mm) so the battery can sit under it, battery moved aft 0.08->0.135 m. Expected SM ~0.15 and pass; test: PASS, 524.4 min, SM 0.17, mass 2785 g, spar SF 1.73 (near the 1.5 limit).
+- v10: bigger wing: span 3.0->3.6 m (AR 17->20), spar 14/12 mm and longer, htail span 0.40->0.48, fin 0.30->0.36 m. Expected lower induced power; test: PASS, 557.1 min (+6%), mass 2981 g, SM 0.15, spar SF 1.9.
+- v11: 4S6P pack (24 cells, 363 Wh, 1760 g). Expected ~+15% energy for ~+10% mass; test: PASS, 587.6 min (+5.5%), mass 3274 g, SM 0.17, stall margin still ok.
+- v12: 4S8P pack (32 cells, 484 Wh, 2347 g), fuselage 0.14->0.16 m, cruise 42. Expected ~+20% energy; test: FAIL spar SF 1.46 (<1.5) and gusty-air flight failed (SM 0.07 too low, stall 31.9 vs cruise 42). Would have scored 638.7 min.
+- v13: spar 14/12 -> 16/14, chords 0.22/0.14 -> 0.25/0.16 (more area, lower stall), battery forward 0.18->0.15 (SM), htail span 0.54, fin 0.40. Expected pass; test: PASS, 621.0 min (+5.7% vs v11), mass 4029 g, SM 0.15, spar SF 1.89. First of the big 32-cell designs to pass.
+- ws step 1 (rejected): wing chord x1.12 about LE: tail volumes fell (Vh 0.319 < 0.35, Vv 0.0200 borderline). Lesson: bigger wing needs bigger tail in the same step.
+- ws step 2 (kept): wing chord x1.12 + htail chord x1.25 + fin chord x1.12. Expected neutral (setup for cells); test: IMPROVED 621.0 -> 635.2 min.
+- ws step 3 (rejected): second chord x1.12 round (wing, htail x1.12, fin x1.08). Expected more gain; test: gate no_stall 3.7 s > 0.5 s. Too much chord / trim drifted; stop scaling chord.
+- ws step 4 (kept): battery 4S8P -> 4S10P (40 cells, 605 Wh, 2933 g) moved 20 mm aft. Expected +10-15% energy for ~+14% mass; test: IMPROVED 635.2 -> 658.7 min.
+- ws step 5 (rejected): battery -> 4S12P (48 cells, 3520 g, 5.7 kg total) with a bigger box. Expected more energy; test: gate failed on spar SF 1.43, stall margin 1.27, gusty-air flight and no_stall 15.7 s. The airframe is too small for that mass.
+- ws step 6 (rejected): wing z x1.25 (thicker, more camber). Expected better low-Re L/D; test: 642.7 < 658.7, worse.
+- ws step 7 (rejected): wing z x0.8 (thinner). Expected lower drag; test: gate failed: stall margin 1.22, gusty flight, no_stall 2.6 s. Thickness x1.0 is near the sweet spot.
+- ws step 8 (rejected): battery 12 mm aft (SM 0.12 -> ~0.07). Expected less trim drag; test: gate no_stall 5.5 s > 0.5. Aft CG hurts turbulence handling; keep SM ~0.12.
+- ws step 9 (rejected): span x1.08 with spar scaled. Expected AR gain; test: tail_volume Vv 0.0193 < 0.02 only. Retry with a taller fin.
+- ws step 10 (kept): span x1.08 (3.9 m), spar x1.06 section and x1.08 long, fin height x1.12. Expected less induced drag; test: IMPROVED 658.7 -> 684.8 min.
+- ws step 11 (rejected): second span x1.08 round. Expected another gain; test: Vh 0.345 < 0.35 and no_stall 11.9 s.
+- ws step 12 (rejected): span x1.05 with htail span x1.12, fin x1.06. Expected pass and gain; test: only no_stall 0.85 s > 0.5 s (marginal, wing too highly loaded in turbulence).
+- ws step 13 (rejected): step 12 plus wing chord x1.06 and htail chord x1.06. Expected lower stall; test: worse, no_stall 15.9 s and Vv 0.0195. Three rejections in a row at the span/chord edge; switching to drag cleanup.
+- ws step 14 (kept): fuselage y,z x0.88. Expected less drag and mass; test: IMPROVED 684.8 -> 695.5 min.
+- ws step 15 (kept): fuselage y,z another x0.9. Expected same trend; test: IMPROVED 695.5 -> 703.4 min.
+- ws step 16 (kept): fuselage y,z another x0.92 (radius ~58 mm, last safe step vs 49.5 mm battery corner). Test: IMPROVED 703.4 -> 709.2 min.
+- ws step 17 (kept): wire masses trimmed 67 -> 50 g (gate min 43 g). Test: IMPROVED 709.2 -> 711.8 min.
+- ws step 18 (rejected): battery 4S11P (44 cells). Expected a bit more energy; test: 711.4 vs 711.8, no gain: energy and mass cancel at this size. Cell count is at its optimum.
+- ws step 19 (kept): spar section x0.96 (SF stays above 1.5). Test: IMPROVED 711.8 -> 716.8 min.
+- ws step 20 (kept): camera swapped to Caddx Ratel 2 (5.9 g, still id camera). Test: IMPROVED 716.8 -> 720.8 min (mass and CG both helped).
+- ws step 21 (kept): battery 5 mm aft. Test: IMPROVED 720.8 -> 725.4 min.
+- ws step 22 (rejected): battery another 5 mm aft. Expected more; test: no_stall 2.4 s > 0.5. SM ~0.10 is the edge.
+- ws step 23 (kept): fin height x0.95. Test: IMPROVED 725.4 -> 726.3 min.
+- ws step 24 (rejected): servos -> ES08A II. Expected -14 g; test: 724.5 < 726.3. The swap probably dropped the servo position (cg) I had typed, shifting CG, or nylon gears cost more than they save.
+- ws step 25 (kept): htail chord x0.97. Test: IMPROVED 726.3 -> 726.4 min. Budget used up. Final 726.4 min.
