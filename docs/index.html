@@ -4,658 +4,93 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DroneBench</title>
-<meta name="description" content="A test bench where AI agents design small electric drones and every design is flown in a simulator before it scores.">
-<meta name="theme-color" content="#2a3cff">
+<meta name="description" content="An AI agent designed this drone with no example aircraft. A simulator flies every design before it scores.">
+<meta name="theme-color" content="#e4e6ec">
 <link rel="preload" href="fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 @font-face { font-family: "Archivo"; src: url(fonts/archivo-latin.woff2) format("woff2"); font-weight: 300 900; font-stretch: 62% 125%; font-display: swap; }
-:root {
-  --blue: #2a3cff; --blue-deep: #1a27d4; --ink: #0a0b1a; --paper: #f4f4f5; --white: #ffffff;
-  --muted: #54566a; --line: #d6d7de; --on-blue: rgba(255,255,255,.78); --grey: #e4e6ec; --grey-deep: #d3d6df;
-  --font: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
-  --ease: cubic-bezier(.16,1,.3,1);
-  color-scheme: light;
-}
-html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--paper); color: var(--ink); font: 400 18px/1.55 var(--font); font-stretch: 100%; -webkit-font-smoothing: antialiased; }
-a { color: inherit; text-underline-offset: 4px; text-decoration-thickness: 1px; }
-:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; border-radius: 2px; }
-.wrap { max-width: 1320px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 56px); }
-h1, h2, h3, .num { font-family: var(--font); font-stretch: 62%; font-weight: 900; letter-spacing: -.012em; word-spacing: .12em; margin: 0; }
-
-/* hero: the object fills the screen, the words sit under it */
-.hero { background: var(--grey); color: var(--ink); overflow: hidden; }
-.bar { display: flex; align-items: baseline; gap: 28px; padding: 22px 0; flex-wrap: wrap; }
-.logo { font-family: var(--font); font-stretch: 62%; font-weight: 900; font-size: 30px; text-decoration: none; letter-spacing: -.01em; margin-right: auto; }
-.bar a.l { font-weight: 600; font-size: 15px; text-decoration: none; white-space: nowrap; }
-.bar a.l:hover { text-decoration: underline; }
-.heroStage { display: grid; padding-bottom: 56px; }
-#hero3d { grid-area: 1 / 1; width: 100%; aspect-ratio: 2.1; min-height: 460px; cursor: grab; touch-action: pan-y; }
-#hero3d:active { cursor: grabbing; }
-#hero3d canvas { display: block; width: 100%; height: 100%; }
-.heroText { grid-area: 1 / 1; align-self: end; pointer-events: none; position: relative; z-index: 2; padding-bottom: 8px; }
-.heroText a { pointer-events: auto; }
-.hero h1 { font-size: clamp(3.2rem, 6.4vw, 5.4rem); line-height: .9; max-width: 7.4em; }
-.hero h1 b { font-weight: 900; color: var(--blue); }
-.hero p { color: var(--muted); max-width: 40ch; margin: 22px 0 30px; font-size: 19px; }
-.btns { display: flex; gap: 12px; flex-wrap: wrap; }
-.btn { display: inline-flex; align-items: center; min-height: 48px; padding: 0 26px; border-radius: 999px; font: 700 16px var(--font); text-decoration: none; border: 2px solid var(--ink); cursor: pointer; transition: background .25s var(--ease), color .25s var(--ease), border-color .25s var(--ease), transform .12s; }
-.btn.solid { background: var(--ink); color: var(--white); }
-.btn.solid:hover { background: var(--blue); border-color: var(--blue); }
-.btn.line { background: transparent; color: var(--ink); }
-.btn.line:hover { background: var(--ink); color: var(--white); }
+:root { --ink: #0a0b1a; --grey: #e4e6ec; --muted: #54566a; --blue: #2a3cff; --white: #fff; --font: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif; color-scheme: light; }
+html, body { height: 100%; margin: 0; overflow: hidden; }
+body { background: var(--grey); color: var(--ink); font: 400 19px/1.5 var(--font); -webkit-font-smoothing: antialiased; }
+main { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+#model { grid-area: 1 / 1; min-height: 0; cursor: grab; touch-action: none; }
+#model:active { cursor: grabbing; }
+#model canvas { display: block; width: 100%; height: 100%; }
+.text { grid-area: 1 / 1; align-self: center; z-index: 2; padding: 0 clamp(20px, 5vw, 72px); pointer-events: none; }
+.text a { pointer-events: auto; }
+.name { color: var(--ink); max-width: none; font: 900 30px/1 var(--font); font-stretch: 62%; letter-spacing: -.01em; margin: 0 0 28px; }
+h1 { font: 900 clamp(3rem, 6.6vw, 5.6rem)/.9 var(--font); font-stretch: 62%; letter-spacing: -.012em; word-spacing: .12em; margin: 0; max-width: 7.6em; }
+h1 b { color: var(--blue); font-weight: 900; }
+p { color: var(--muted); max-width: 30ch; margin: 22px 0 30px; }
+.btn { display: inline-flex; align-items: center; min-height: 52px; padding: 0 30px; border-radius: 999px; background: var(--ink); color: var(--white); font: 700 17px var(--font); text-decoration: none; transition: background .25s cubic-bezier(.16,1,.3,1), transform .12s; }
+.btn:hover { background: var(--blue); }
 .btn:active { transform: translateY(1px); }
-.run .btn { border-color: var(--white); }
-.run .btn.solid { background: var(--white); color: var(--blue); }
-.run .btn.solid:hover { background: var(--ink); border-color: var(--ink); color: var(--white); }
-
-section { padding: 112px 0; }
-section h2 { font-size: clamp(2.6rem, 5.4vw, 4.5rem); line-height: .92; max-width: 16ch; }
-.lede { color: var(--muted); max-width: 46ch; margin: 22px 0 0; }
-
-/* the test, drawn: the final design pulled apart as scroll moves */
-.test { background: var(--white); }
-.testGrid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: clamp(24px, 5vw, 80px); align-items: start; margin-top: 28px; }
-.drawWrap { position: relative; margin-top: 48px; }
-#draw { width: 100%; aspect-ratio: 3; background: var(--grey); border-radius: 22px; overflow: hidden; }
-.stats { display: flex; gap: 8px 28px; flex-wrap: wrap; padding: 10px 26px 0; color: var(--muted); font-size: 15px; font-variant-numeric: tabular-nums; }
-.stats b { color: var(--ink); font-weight: 700; }
-#draw canvas { display: block; width: 100%; height: 100%; }
-.checks { margin: 0; padding: 0; list-style: none; }
-.checks li { display: flex; justify-content: space-between; gap: 20px; padding: 14px 0; border-top: 1px solid var(--line); font-size: 17px; }
-.checks li:last-child { border-bottom: 1px solid var(--line); }
-.checks b { font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
-.checks span { color: var(--muted); }
-.flights { margin: 28px 0 0; color: var(--muted); max-width: 44ch; }
-
-/* the design history: scroll drives a real model */
-.story { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(24px, 5vw, 80px); margin-top: 56px; align-items: start; }
-.stage { position: sticky; top: 20px; order: 2; background: var(--grey-deep); color: var(--ink); border-radius: 22px; overflow: hidden; }
-.readout { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 22px 26px 0; }
-.score { font-family: var(--font); font-stretch: 62%; font-weight: 900; font-size: clamp(4rem, 8vw, 7rem); line-height: .9; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
-.score small { font-size: .3em; font-weight: 700; margin-left: 8px; letter-spacing: 0; }
-.delta { font-weight: 700; font-size: 18px; text-align: right; }
-#view { width: 100%; aspect-ratio: 1.55; }
-#view canvas { display: block; width: 100%; height: 100%; }
-.scrub { display: flex; align-items: center; gap: 16px; padding: 0 26px 22px; }
-.scrub .lbl { font-weight: 600; font-size: 15px; min-width: 7.5em; font-variant-numeric: tabular-nums; }
-.scrub input { flex: 1; accent-color: var(--blue); height: 28px; cursor: pointer; }
-.legend { display: flex; gap: 20px; padding: 0 26px 18px; color: var(--muted); font-size: 14px; flex-wrap: wrap; }
-.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; vertical-align: -1px; }
-.steps { order: 1; }
-.step { padding: 120px 0 120px; border-top: 1px solid var(--line); color: #6b6d80; transition: color .4s var(--ease); }
-.step.on { color: var(--ink); }
-.step:first-child { border-top: 0; padding-top: 0; }
-.step h3 { font-size: clamp(2.4rem, 4.2vw, 3.6rem); line-height: .95; }
-.step p { margin: 14px 0 0; max-width: 40ch; }
-.step .meta { font-size: 15px; margin-top: 10px; }
-.step.rej { padding: 28px 0; }
-.step.rej p { margin: 0; font-size: 16px; }
-.step.rej b { color: var(--ink); }
-
-/* four agents */
-.race { background: var(--white); }
-#chart { width: 100%; height: auto; display: block; margin-top: 48px; overflow: visible; }
-#chart text { font: 600 15px var(--font); fill: var(--muted); }
-#chart .end { font-weight: 800; font-size: 17px; }
-#chart path.ln { fill: none; stroke-linejoin: round; stroke-linecap: round; }
-.fine { color: var(--muted); font-size: 15px; margin: 22px 0 0; max-width: 60ch; }
-
-/* two environments */
-.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 6vw, 96px); align-items: end; margin-top: 8px; }
-#learn { width: 100%; height: auto; display: block; overflow: visible; }
-#learn text { font: 600 14px var(--font); fill: var(--muted); }
-.two p { max-width: 44ch; }
-
-/* run it */
-.run { background: var(--blue); color: var(--white); }
-.run h2 { max-width: 12ch; }
-.run .lede { color: var(--on-blue); }
-.runGrid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: clamp(24px, 5vw, 80px); align-items: start; }
-.term { background: var(--ink); border-radius: 16px; padding: 22px 24px; overflow-x: auto; }
-.term pre { margin: 0; font: 500 15px/1.75 ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace; color: #e8e9ff; white-space: pre; }
-.term .cm { color: #8c90b8; }
-.copy { display: block; margin: -6px -8px 14px auto; min-height: 44px; padding: 0 18px; border-radius: 999px; background: var(--white); color: var(--ink); border: 0; font: 700 14px var(--font); cursor: pointer; transition: background .2s var(--ease), color .2s var(--ease); }
-.copy:hover { background: var(--blue); color: var(--white); }
-.copy:focus-visible { outline: 3px solid var(--white); }
-.copy[data-state="done"] { background: #d7ffe0; color: var(--ink); }
-.run .links { margin-top: 28px; display: flex; gap: 12px; flex-wrap: wrap; }
-.run a:focus-visible { outline-color: var(--white); }
-
-/* limits */
-.limits { background: var(--ink); color: var(--white); }
-.limits dl { margin: 48px 0 0; display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: 0 clamp(24px, 5vw, 80px); }
-.limits dt { font-family: var(--font); font-stretch: 62%; font-weight: 900; font-size: clamp(1.7rem, 2.8vw, 2.4rem); line-height: 1; padding: 28px 0; border-top: 2px solid var(--white); }
-.limits dd { margin: 0; padding: 28px 0; border-top: 2px solid var(--white); max-width: 56ch; color: rgba(255,255,255,.82); }
-.limits .more { margin-top: 32px; display: inline-block; font-weight: 700; }
-.limits a:focus-visible { outline-color: var(--white); }
-
-footer { padding: 28px 0 40px; background: var(--ink); color: rgba(255,255,255,.7); font-size: 15px; }
-footer .wrap { display: flex; gap: 24px; flex-wrap: wrap; align-items: baseline; }
-footer .sp { flex: 1; }
-footer a { color: var(--white); font-weight: 600; text-decoration: none; }
-
-@media (max-width: 900px) {
-  .term pre { white-space: pre-wrap; word-break: break-word; }
-  #learn text { font-size: 21px; }
-  .heroStage { display: block; padding-bottom: 40px; }
-  #hero3d { aspect-ratio: 1.3; min-height: 0; }
-  .heroText { padding-top: 8px; }
-  .testGrid { grid-template-columns: 1fr; }
-  #draw { aspect-ratio: 1.45; }
-  .drawWrap { margin-top: 32px; }
-  .stats { padding: 8px 18px 0; }
-  .story { grid-template-columns: 1fr; margin-top: 40px; }
-  .stage { order: 0; top: 0; border-radius: 0 0 18px 18px; margin: 0 calc(-1 * clamp(20px, 4vw, 56px)); z-index: 3; }
-  .readout { padding: 14px 18px 0; } .scrub { padding: 0 18px 14px; } .legend { display: none; }
-  #view { aspect-ratio: 1.9; }
-  .score { font-size: 3.4rem; }
-  .step { padding: 64px 0; }
-  .two, .runGrid, .limits dl { grid-template-columns: 1fr; }
-  .limits dt { padding-bottom: 8px; border-bottom: 0; } .limits dd { border-top: 0; padding-top: 0; }
-  section { padding: 72px 0; }
+.btn:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+@media (max-width: 800px) and (min-height: 521px) {
+  main { grid-template-rows: minmax(0, 1fr) auto; }
+  #model { grid-row: 1; }
+  .text { grid-row: 2; align-self: end; padding-bottom: 28px; }
+  .name { margin-bottom: 14px; font-size: 26px; }
+  h1 { font-size: clamp(2.6rem, 12vw, 3.6rem); }
+  p { margin: 14px 0 20px; font-size: 17px; }
 }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .step, .btn, .copy { transition: none; } }
 </style>
 <script type="importmap">{ "imports": { "three": "./demo/vendor/three.module.js", "three/addons/": "./demo/vendor/addons/" } }</script>
 </head>
 <body>
-
-<div class="hero">
-  <div class="wrap">
-    <nav class="bar" aria-label="Main">
-      <a class="logo" href="./">DroneBench</a>
-      <a class="l" href="demo/">Dashboard</a>
-      <a class="l" href="https://github.com/sisiphamus/dronebench">Source</a>
-    </nav>
-    <div class="heroStage">
-      <div id="hero3d" role="img" aria-label="3D model of the drone the agent designed. Drag to turn it."></div>
-      <div class="heroText">
-        <h1 id="h1">An agent designs a drone. A simulator flies it.</h1>
-        <p id="heroP">Every design is flown in calm air, wind and turbulence before it scores.</p>
-        <div class="btns">
-          <a class="btn solid" href="#run">Test your agent</a>
-          <a class="btn line" href="#story">Watch it design</a>
-        </div>
-      </div>
-    </div>
+<main>
+  <div id="model" role="img" aria-label="3D model of the drone the agent designed. Drag to turn it."></div>
+  <div class="text">
+    <p class="name">DroneBench</p>
+    <h1>An agent designed this drone from <b>nothing</b>.</h1>
+    <p>Every design is flown in a simulator before it scores. After 38 attempts in one run, this one flies 726 simulated minutes.</p>
+    <a class="btn" href="https://github.com/sisiphamus/dronebench">View the repo</a>
   </div>
-</div>
-
-<section class="test" id="test">
-  <div class="wrap">
-    <h2>What every design has to survive</h2>
-    <p class="lede" id="testLede">29 checks decide whether a design counts.</p>
-    <div class="drawWrap">
-      <div id="draw" role="img" aria-label="Line drawing of the final design pulled apart into its parts. It moves closer together as you scroll."></div>
-    </div>
-    <div class="testGrid">
-      <ul class="checks" id="checks"></ul>
-      <p class="flights" id="flights"></p>
-    </div>
-  </div>
-</section>
-
-<section id="story">
-  <div class="wrap">
-    <h2>Every change the agent made</h2>
-    <p class="lede" id="storyLede">Kept changes in order. Rejected attempts are grouped between them.</p>
-    <div class="story">
-      <div class="stage" id="stage">
-        <div class="readout">
-          <div class="score" id="score">&nbsp;</div>
-        </div>
-        <div class="stats" id="stats"></div>
-        <div id="view" role="img" aria-label="3D model of the drone after the selected change. Parts that changed since the last kept step are blue; removed parts are faint."></div>
-        <div class="legend"><span><i style="background:#2a3cff"></i>Changed</span><span><i style="background:rgba(10,11,26,.25)"></i>Removed</span></div>
-        <div class="scrub">
-          <span class="lbl" id="lbl"></span>
-          <input id="range" type="range" min="0" max="1" step="1" value="0" aria-label="Choose a kept step of the run">
-        </div>
-      </div>
-      <div class="steps" id="steps"></div>
-    </div>
-  </div>
-</section>
-
-<section class="race">
-  <div class="wrap">
-    <h2>A different task: improve a given drone</h2>
-    <p class="lede" id="raceLede"></p>
-    <svg id="chart" viewBox="0 0 1200 470" role="img" aria-label="Best flight time reached so far, by attempt, for four agents"></svg>
-    <p class="fine" id="raceNote"></p>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="two">
-      <div>
-        <h2>A policy that learns to fly it</h2>
-        <p class="lede" id="learnText"></p>
-      </div>
-      <div>
-        <svg id="learn" viewBox="0 0 560 360" role="img" aria-label="Learning curve of a flight controller trained with PPO"></svg>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="run" id="run">
-  <div class="wrap">
-    <div class="runGrid">
-      <div>
-        <h2>Bring your agent</h2>
-        <p class="lede">Any command can be the agent. The bench enforces the step budget, replays your result from scratch and checks it against the safety rules.</p>
-        <div class="links">
-          <a class="btn solid" href="https://github.com/sisiphamus/dronebench/blob/main/CONTRIBUTING.md">Submit a result</a>
-        </div>
-      </div>
-      <div class="term">
-        <button class="copy" id="copy" type="button">Copy</button>
-        <pre id="cmds"><span class="cm"># Python 3.11 or newer</span>
-git clone https://github.com/sisiphamus/dronebench &amp;&amp; cd dronebench
-uv venv &amp;&amp; uv pip install -e .
-source .venv/bin/activate
-
-dronebench init ws --fixture falcon_v2 --steps 30
-dronebench run ws --cmd "python my_agent.py"
-dronebench result ws --out results/falcon_v2/my-agent.json
-dronebench verify --standard results/falcon_v2/my-agent.json</pre>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="limits">
-  <div class="wrap">
-    <h2>What it does not know yet</h2>
-    <dl>
-      <dt>No flight logs</dt>
-      <dd>The physics matches theory and one manufacturer's figure within 15% from 45 to 65 km/h. It has not been compared with measured flights.</dd>
-      <dt>Mostly battery</dt>
-      <dd>The from-nothing design is 62% battery by mass. Flight time rewards that. The payload check only asks that a camera is on board, so the agent swapped to one 10 g lighter and gained 4 minutes.</dd>
-      <dt>One kind of aircraft</dt>
-      <dd>A wing, a tail and one or two motors. V-tails and flying wings fail with a message. Takeoff and landing are not modelled, and the propeller data is a generic fit.</dd>
-    </dl>
-    <a class="more" href="https://github.com/sisiphamus/dronebench/blob/main/VALIDATION.md">Read what was checked and what is open</a>
-  </div>
-</section>
-
-<footer>
-  <div class="wrap">
-    <a href="https://github.com/sisiphamus/dronebench">DroneBench on GitHub</a>
-    <span class="sp"></span>
-    <span>MIT license</span>
-  </div>
-</footer>
-
+</main>
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-const $ = (s) => document.querySelector(s);
-const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const j = (u) => fetch(u).then((r) => { if (!r.ok) throw new Error(u); return r.json(); }).catch(() => null);
-const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const easeOut = (t) => (t >= 1 ? 1 : 1 - Math.pow(2, -10 * t));
-const BLUE = '#2a3cff', INK = '#0a0b1a';
-
-const [state, board, learn, caps] = await Promise.all([j('demo/data/state.json'), j('data/leaderboard.json'), j('data/learning.json'), j('demo/data/captions.json')]);
-
-const PLAIN = { battery_current: 'battery current limit', esc_current: 'speed controller current limit', motor_current: 'motor current limit',
-  static_margin: 'balance', stall_margin: 'stall speed margin', spar: 'wing strength', clearance: 'parts colliding', shell_structure: 'printed shell too thin',
-  battery_fit: 'battery does not fit', flight_model: 'could not be flown', climb: 'climb rate', mtow: 'over the weight limit', control_chain: 'controls incomplete',
-  harness: 'wiring', airframe_connected: 'parts not connected', fuselage_continuous: 'fuselage broken', tail_volume: 'tail size', servo_torque: 'servo too weak',
-  power_chain: 'power chain incomplete', payload: 'payload removed', lifting_surfaces: 'wing or tail missing',
-  no_stall: 'stalled in a flight', gusts_gusty: 'lost control in strong gusts', gusts_light: 'lost control in light gusts', load_factor: 'too much load in gusts' };
-function whyRejected(r) {
-  if (!(r.fail_detail || []).length && /regress|lower/.test(r.reason || '')) return 'scored lower than the best so far';
-  const names = (r.fail_detail || []).filter((d) => !d.includes('physics could not run')).map((d) => d.split(':')[0]);
-  const list = [...new Set(names.length ? names : ['flight_model'])].slice(0, 2).map((n) => PLAIN[n] || n.replace(/_/g, ' '));
-  return list.join(' and ');
-}
-
-// ---------------------------------------------------------------- numbers from the run
-let recs = [], kept = [], unit = 'min', base = 0, best = 0;
-if (state) {
-  unit = state.meta.unit || 'min';
-  recs = state.runs.slice().sort((a, b) => a.step - b.step);
-  kept = recs.filter((r) => r.accepted).map((r) => r.step);
-  base = recs.find((r) => r.accepted).score;
-  best = Math.max(...recs.filter((r) => r.accepted).map((r) => r.score));
-  const scratch = !state.meta.has_params && !recs.some((r) => r.step === 0);
-  $('#h1').innerHTML = scratch ? `An agent designed this drone from <b>nothing</b>.` : `An agent took this drone from ${Math.round(base)} to <b>${Math.round(best)}</b> ${unit === 'min' ? 'minutes of flight' : unit}.`;
-  $('#heroP').textContent = scratch
-    ? `It had no example aircraft, only the tests and their source code. After ${recs.length} attempts, ${recs.length - kept.length} of them rejected, the simulator flies the result for ${Math.round(best)} minutes.`
-    : $('#heroP').textContent;
-}
-
-// ---------------------------------------------------------------- 3D helpers
-const loader = new GLTFLoader();
-const modelCache = {};
-function model(n) {
-  if (!modelCache[n]) modelCache[n] = fetch(`demo/data/step/${n}.glb`).then((r) => { if (!r.ok) throw 0; return r.arrayBuffer(); })
-    .then((b) => new Promise((res, rej) => loader.parse(b, '', (g) => res(g.scene), rej))).catch(() => null);
-  return modelCache[n];
-}
-const nameOf = (o) => o.name || (o.parent && o.parent.name) || '';
-function boxes(root) {
-  root.updateMatrixWorld(true);
-  const m = new Map();
-  root.traverse((o) => { if (o.isMesh) m.set(nameOf(o), new THREE.Box3().setFromObject(o)); });
-  return m;
-}
-const same = (a, b) => a.min.distanceTo(b.min) < 0.003 && a.max.distanceTo(b.max) < 0.003;
-const mat = (color, opacity = 1) => new THREE.MeshStandardMaterial({ color, roughness: 0.55, metalness: 0.04, side: THREE.DoubleSide, transparent: true, opacity });
-
-function makeScene(el, { fov = 30, shiftX = 0 } = {}) {
+const el = document.getElementById('model');
+const gl = (() => { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch { return false; } })();
+if (!gl) el.style.display = 'none';
+else {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   el.appendChild(renderer.domElement);
   const scene = new THREE.Scene();
-  const cam = new THREE.PerspectiveCamera(fov, 1, 0.01, 60);
+  const cam = new THREE.PerspectiveCamera(28, 1, 0.01, 60);
   scene.add(new THREE.HemisphereLight(0xffffff, 0x8e94ad, 1.55));
-  const sun = new THREE.DirectionalLight(0xffffff, 2.0); sun.position.set(-2, 4, 3); scene.add(sun);
+  const sun = new THREE.DirectionalLight(0xffffff, 2); sun.position.set(-2, 4, 3); scene.add(sun);
   const controls = new OrbitControls(cam, renderer.domElement);
   controls.enableDamping = true; controls.enablePan = false; controls.enableZoom = false;
-  const resize = () => {
-    const r = el.getBoundingClientRect(); if (!r.width) return;
+  controls.autoRotate = !reduce; controls.autoRotateSpeed = 1.1;
+  let box = null;
+  const fit = () => {
+    const r = el.getBoundingClientRect(); if (!r.width || !box) return;
     renderer.setSize(r.width, r.height, false); cam.aspect = r.width / r.height;
-    if (shiftX && r.width > 900) cam.setViewOffset(r.width, r.height, -r.width * shiftX, 0, r.width, r.height); else cam.clearViewOffset();   // slide the model to the right of the headline
+    const wide = r.width > 800 || innerHeight <= 520, pad = wide ? 1.65 : 1.2;
+    if (wide) cam.setViewOffset(r.width, r.height, -r.width * 0.17, 0, r.width, r.height); else cam.clearViewOffset();   // model sits right of the words
     cam.updateProjectionMatrix();
+    const sz = box.getSize(new THREE.Vector3()), ctr = box.getCenter(new THREE.Vector3());
+    const hf = Math.atan(Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2) * cam.aspect);
+    const dist = (Math.max(sz.x, sz.z) / 2 * pad) / Math.tan(hf);
+    controls.target.copy(ctr);
+    cam.position.copy(ctr).add(new THREE.Vector3(-0.5, 0.5, 1).normalize().multiplyScalar(dist));
+    controls.update();
   };
-  new ResizeObserver(resize).observe(el); resize();
-  const api = { renderer, scene, cam, controls, visible: true };
-  new IntersectionObserver((es) => { api.visible = es[0].isIntersecting; }).observe(el);   // no drawing while it is off screen
-  return api;
+  new GLTFLoader().load('demo/data/step/38.glb', (g) => {
+    const m = new THREE.MeshStandardMaterial({ color: 0x1c1e33, roughness: 0.55, metalness: 0.04, side: THREE.DoubleSide });
+    g.scene.traverse((o) => { if (o.isMesh) o.material = m; });
+    scene.add(g.scene);
+    box = new THREE.Box3().setFromObject(g.scene);
+    fit();
+    new ResizeObserver(fit).observe(el);
+    (function loop() { controls.update(); renderer.render(scene, cam); requestAnimationFrame(loop); })();
+  }, undefined, () => { el.style.display = 'none'; });
 }
-function frame({ cam, controls }, box, dir = new THREE.Vector3(-0.75, 0.42, 0.95), k = 0.72) {
-  const sph = box.getBoundingSphere(new THREE.Sphere());
-  const half = Math.atan(Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2) * Math.min(1, cam.aspect));
-  controls.target.copy(sph.center);
-  cam.position.copy(sph.center).add(dir.clone().normalize().multiplyScalar(sph.radius / Math.sin(half) * k));
-  controls.update();
-}
-
-// frame a wide aircraft by its span, so it fills the width of a wide or a narrow canvas and never leaves it
-function fitWide({ cam, controls }, box, dir = new THREE.Vector3(-0.45, 0.45, 1), pad = 1.12) {
-  const sz = box.getSize(new THREE.Vector3()), ctr = box.getCenter(new THREE.Vector3());
-  const hf = Math.atan(Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2) * cam.aspect);
-  const dist = (Math.max(sz.x, sz.z) / 2 * pad) / Math.tan(hf);
-  controls.target.copy(ctr);
-  cam.position.copy(ctr).add(dir.clone().normalize().multiplyScalar(dist));
-  controls.update();
-}
-
-const gl = (() => { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch { return false; } })();
-if (!gl) { $('#hero3d').style.display = 'none'; $('.drawWrap').style.display = 'none'; $('#stage').style.display = 'none'; $('.story').style.display = 'block'; }
-// ---------------------------------------------------------------- hero: the final design, turning
-if (state && kept.length && gl) {
-  const H = makeScene($('#hero3d'), { fov: 28, shiftX: 0.17 });
-  const group = new THREE.Group(); H.scene.add(group);
-  H.controls.autoRotate = !reduce; H.controls.autoRotateSpeed = 1.1;
-  model(kept[kept.length - 1]).then((m) => {
-    if (!m) { $('#hero3d').style.display = 'none'; return; }
-    const c = m.clone(true); c.traverse((o) => { if (o.isMesh) o.material = mat(0x1c1e33); }); group.add(c);
-    fitWide(H, new THREE.Box3().setFromObject(c), new THREE.Vector3(-0.5, 0.5, 1), innerWidth > 900 ? 1.65 : 1.15);
-  });
-  (function loop() { if (H.visible) { H.controls.update(); H.renderer.render(H.scene, H.cam); } requestAnimationFrame(loop); })();
-} else $('#hero3d').style.display = 'none';
-
-// ---------------------------------------------------------------- the test, drawn: the final design pulled apart
-if (state && kept.length) {
-  const last = kept[kept.length - 1];
-  // each check is pinned to the part that mostly decides it
-  const ROWS = [
-    ['spar', 'Wing spar strength', 'spar', (c) => `${c.value.toFixed(2)}, needs ${c.limit[0]}`],
-    ['static_margin', 'Balance', 'battery', (c) => `${c.value.toFixed(2)}, allowed ${c.limit[0]} to ${c.limit[1]}`],
-    ['stall_margin', 'Stall margin', 'wing', (c) => `${c.value.toFixed(2)}, needs ${c.limit[0]}`],
-    ['climb', 'Climb rate', 'prop', (c) => `${c.value.toFixed(1)} m/s, needs ${c.limit[0]}`],
-    ['motor_current', 'Motor current', 'motor', (c) => `${c.value.toFixed(1)} A, limit ${c.limit[1]}`],
-    ['tail_volume', 'Tail size', 'htail', (c) => `${c.value.vh.toFixed(2)}, needs ${c.limit.vh[0]}`],
-    ['mtow', 'Takeoff mass', 'fuselage', (c) => `${c.value.toFixed(1)} kg, limit ${c.limit[1]}`],
-  ];
-  let rows = [];
-  j(`demo/data/step/${last}.json`).then((pay) => {
-    const checks = (pay && pay.report && pay.report.gate && pay.report.gate.checks) || [];
-    const by = Object.fromEntries(checks.map((c) => [c.name, c]));
-    rows = ROWS.filter(([n]) => by[n] && by[n].value != null && by[n].value !== 'flown');
-    if (!rows.length) { $('#test').style.display = 'none'; return; }
-    $('#checks').innerHTML = rows.map(([n, label, , f], i) => `<li><span>${label}</span><b>${f(by[n])}</b></li>`).join('');
-    const flights = checks.filter((c) => c.value === 'flown').length;
-    $('#testLede').innerHTML = `${checks.length} checks decide whether a design counts. Seven are shown here with the numbers the final drone got.`;
-    $('#flights').textContent = `${flights} flights follow: orbits and upwind and downwind legs in calm air, in wind and in gusts. The score is the flight time measured from them.`;
-  });
-  if (gl) {
-    const D = makeScene($('#draw'), { fov: 28 });
-    D.controls.autoRotate = false;
-    const g = new THREE.Group(); D.scene.add(g);
-    const lineMat = new THREE.LineBasicMaterial({ color: 0x1a27d4 });
-    const fillMat = new THREE.MeshBasicMaterial({ color: 0x2a3cff, transparent: true, opacity: 0.13, side: THREE.DoubleSide, depthWrite: false });
-    // one layer per kind of part, so the pieces separate into rows
-    const LAYER = { fuselage: 3, boom: 3, wing: 2, aileron_L: 2, aileron_R: 2, spar: 1, prop: 0, motor: -1, battery: -2, htail: -3, elevator: -3, vtail: -3, rudder: -3 };
-    const rank = (id) => LAYER[id] ?? 0;
-    const pieces = []; let span = 1;
-    model(last).then((m) => {
-      if (!m) { $('#test').style.display = 'none'; return; }
-      const c = m.clone(true); c.updateMatrixWorld(true);
-      const box = new THREE.Box3().setFromObject(c), ctr = box.getCenter(new THREE.Vector3());
-      span = box.getSize(new THREE.Vector3()).length();
-      c.traverse((o) => {
-        if (!o.isMesh) return;
-        const e = new THREE.Group();   // a faint fill (so smooth bodies show) plus hard edges
-        e.add(new THREE.Mesh(o.geometry, fillMat), new THREE.LineSegments(new THREE.EdgesGeometry(o.geometry, 20), lineMat));
-        e.applyMatrix4(o.matrixWorld);
-        const pc = new THREE.Box3().setFromObject(o).getCenter(new THREE.Vector3());
-        e.userData = { off: pc.clone().sub(ctr), c: pc, name: nameOf(o), r: rank(nameOf(o)), base: e.position.clone() };
-        g.add(e); pieces.push(e);
-      });
-      const sz = box.getSize(new THREE.Vector3()), spanAlongX = sz.x >= sz.z;   // look at the wing from the side so it fills the width
-      const hf = Math.atan(Math.tan(THREE.MathUtils.degToRad(D.cam.fov) / 2) * D.cam.aspect);
-      const dist = (Math.max(sz.x, sz.z) / 2 * (innerWidth > 900 ? 2.0 : 1.6)) / Math.tan(hf);
-      const dir = spanAlongX ? new THREE.Vector3(-0.75, 0.5, 1) : new THREE.Vector3(1, 0.5, -0.75);   // a three-quarter view, so the length of the aircraft shows when it is pulled apart
-      D.controls.target.copy(ctr); D.cam.position.copy(ctr).add(dir.normalize().multiplyScalar(dist)); D.controls.update();
-    });
-    const el = $('#draw');
-    let cur = reduce ? 0.55 : 1, target = cur;
-    const aim = () => { if (reduce) return; const r = el.getBoundingClientRect(), vh = innerHeight; const p = Math.min(1, Math.max(0, (r.top + r.height / 2 - vh * 0.5) / (vh * 0.55))); target = 1 - Math.pow(1 - p, 2); };
-    addEventListener('scroll', aim, { passive: true }); aim();
-    (function loop() {
-      cur += (target - cur) * 0.12;
-      if (D.visible) {
-        const ex = 0.6 + 0.4 * cur;   // always pulled apart, a little more when it first scrolls into view
-        pieces.forEach((e) => { const u = e.userData; e.position.copy(u.base).addScaledVector(u.off, 1.0 * ex); e.position.y += u.r * span * 0.03 * ex; });
-        D.renderer.render(D.scene, D.cam);
-      }
-      requestAnimationFrame(loop);
-    })();
-  }
-}
-
-if (!(state && kept.length)) $('#test').style.display = 'none';   // no data: nothing to draw or list
-
-// ---------------------------------------------------------------- the design history
-const story = state && kept.length;
-storyBlock: if (story) {
-  const steps = $('#steps');
-  const out = []; let run = [];
-  const flush = () => {
-    if (!run.length) return;
-    const lower = run.some((r) => whyRejected(r) === 'scored lower than the best so far');
-    const fails = [...new Set(run.filter((r) => whyRejected(r) !== 'scored lower than the best so far').flatMap((r) => whyRejected(r).split(' and ')))].slice(0, 3).join(', ');
-    const why = [fails && `Failed: ${fails}`, lower && 'Scored lower than the best so far'].filter(Boolean).join('. ');
-    out.push(`<article class="step rej"><p><b>${run.length} ${run.length === 1 ? 'attempt' : 'attempts'} rejected.</b> ${esc(why)}.</p></article>`);
-    run = [];
-  };
-  const say = (r) => (caps && caps[r.step]) || r.note.replace(/->/g, 'to');
-  recs.forEach((r) => {
-    if (r.step === 0) { out.push(`<article class="step on" data-step="0"><h3>Starting design</h3><p>${base.toFixed(1)} ${unit}</p><p class="meta">The Falcon V2 as shipped.</p></article>`); return; }
-    if (!r.accepted) { run.push(r); return; }
-    flush();
-    const prev = recs.filter((q) => q.accepted && q.step < r.step).pop();
-    if (!prev) { out.push(`<article class="step on" data-step="${r.step}" data-kept="1"><h3>First flight</h3><p>${esc(say(r))}</p><p class="meta">${r.score.toFixed(1)} ${unit}</p></article>`); return; }
-    const d = r.score - prev.score;
-    out.push(`<article class="step" data-step="${r.step}" data-kept="1"><h3>${d >= 0 ? '+' : ''}${d.toFixed(1)} ${unit}</h3><p>${esc(say(r))}</p></article>`);
-  });
-  flush();
-  steps.innerHTML = out.join('');
-  if (!gl) { steps.querySelectorAll('.step').forEach((el) => el.classList.add('on')); break storyBlock; }   // no WebGL: the list alone
-
-  const S = makeScene($('#view'), { fov: 30 });
-  const group = new THREE.Group(); S.scene.add(group);
-  S.controls.autoRotate = !reduce; S.controls.autoRotateSpeed = 0.7;
-  S.controls.addEventListener('start', () => { S.controls.autoRotate = false; });
-  let fade = null; // { t0, mats }
-  (function loop(now) {
-    if (fade) { const o = easeOut((now - fade.t0) / 420); fade.mats.forEach(([m, to]) => { m.opacity = to * o; }); if (o >= 1) fade = null; }
-    if (S.visible) { S.controls.update(); S.renderer.render(S.scene, S.cam); }
-    requestAnimationFrame(loop);
-  })(0);
-
-  const statCache = {};
-  const stats = (n) => (statCache[n] ||= j(`demo/data/step/${n}.json`).then((p) => (p && p.report && p.report.aircraft) || null));
-  const range = $('#range'); range.max = kept.length - 1;
-  const scoreEl = $('#score'), lbl = $('#lbl');
-  let shown = base, tween = null, token = 0, current = -1;
-  function setScore(to) {
-    if (reduce) { shown = to; scoreEl.innerHTML = `${to.toFixed(1)}<small>${unit}</small>`; return; }
-    const from = shown, t0 = performance.now();
-    cancelAnimationFrame(tween);
-    const tick = (t) => { const k = easeOut((t - t0) / 700); shown = from + (to - from) * k; scoreEl.innerHTML = `${shown.toFixed(1)}<small>${unit}</small>`; if (k < 1) tween = requestAnimationFrame(tick); };
-    tween = requestAnimationFrame(tick);
-  }
-  async function show(k, instant) {
-    if (k === current) return;
-    current = k;
-    const my = ++token, n = kept[k], r = recs.find((q) => q.step === n);
-    const cur = await model(n), prev = k > 0 ? await model(kept[k - 1]) : null;
-    if (my !== token) return;
-    setScore(r.score);
-    stats(n).then((s) => { if (my === token && s) $('#stats').innerHTML = `<span>Span <b>${s.span_m.toFixed(1)} m</b></span><span>Battery <b>${Math.round(s.battery_energy_wh)} Wh</b></span><span>Mass <b>${(s.mass_g / 1000).toFixed(1)} kg</b></span>`; });
-    if (!cur) { group.clear(); return; }
-    const pr = k > 0 ? r.score - recs.find((q) => q.step === kept[k - 1]).score : 0;
-    lbl.textContent = k === 0 ? 'First flight' : `Kept ${k} of ${kept.length - 1}`;
-    if (document.activeElement !== range) range.value = k;
-    range.setAttribute('aria-valuetext', `${k === 0 ? 'First flight' : 'Kept ' + k + ' of ' + (kept.length - 1)}, ${r.score.toFixed(1)} ${unit}`);
-    group.clear();
-    const mats = [];
-    const old = prev ? boxes(prev) : null, now = boxes(cur);
-    const a = cur.clone(true);
-    a.traverse((o) => {
-      if (!o.isMesh) return;
-      const nm = nameOf(o), ch = old && !(old.has(nm) && same(old.get(nm), now.get(nm)));
-      const m = mat(ch ? 0x2a3cff : nm === 'battery' ? 0x1c1e33 : 0xffffff);   // the body is a ghost so the battery inside can be seen
-      if (ch) { m.depthTest = false; o.renderOrder = 10; }
-      if (nm === 'fuselage') m.depthWrite = false;   // see-through body: the battery inside stays visible
-      mats.push([m, nm === 'fuselage' ? (ch ? 0.5 : 0.3) : ch ? 1 : 0.94]); o.material = m;
-    });
-    group.add(a);
-    if (prev) {
-      const have = new Set(now.keys());
-      const b = prev.clone(true);
-      b.traverse((o) => { if (!o.isMesh) return; if (have.has(nameOf(o))) o.visible = false; else { const m = mat(0x0a0b1a, 0); mats.push([m, 0.22]); o.material = m; } });
-      group.add(b);
-    }
-    fade = instant || reduce ? null : { t0: performance.now(), mats };
-    if (instant || reduce) mats.forEach(([m, to]) => { m.opacity = to; }); else mats.forEach(([m]) => { m.opacity = 0; });
-  }
-  const m0 = await model(kept[0]), mL = await model(kept[kept.length - 1]);
-  if (m0 && mL) {
-    const box = new THREE.Box3().setFromObject(m0).union(new THREE.Box3().setFromObject(mL));
-    fitWide(S, box, undefined, 1.02);
-  }
-  scoreEl.innerHTML = `${base.toFixed(1)}<small>${unit}</small>`;
-  await show(0, true);
-
-  // scroll drives the model: the step crossing the middle of the screen decides
-  const els = [...steps.querySelectorAll('.step')];
-  const io = new IntersectionObserver((es) => es.forEach((e) => {
-    const el = e.target;
-    el.classList.toggle('on', e.isIntersecting);
-    if (e.isIntersecting && el.dataset.kept) show(kept.indexOf(+el.dataset.step));
-    else if (e.isIntersecting && el.dataset.step === '0') show(0);
-  }), { rootMargin: '-42% 0px -42% 0px' });
-  els.forEach((el) => io.observe(el));
-  range.oninput = () => { const k = +range.value; const el = steps.querySelector(`[data-step="${kept[k]}"]`); el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); };
-  kept.forEach((n) => model(n));
-} else {
-  $('#story').style.display = 'none';
-}
-
-// ---------------------------------------------------------------- four agents
-if (board && board.length) {
-  const chart = $('#chart');
-  const top = Math.max(...board.map((q) => q.best));
-  const lead = board.slice().sort((a, b) => b.best - a.best)[0];
-  const short = (l) => l.replace(/ \(design parameters\)/, '').replace('Random search', 'Random numbers');
-  const draw = () => {
-    const narrow = matchMedia('(max-width: 900px)').matches;
-    const W = narrow ? 410 : 1200, H = narrow ? 430 : 470, L = narrow ? 38 : 64, R = narrow ? 168 : 250, T = 18, B = narrow ? 52 : 44;
-    const fs = narrow ? 14 : 15, fe = narrow ? 14 : 17;
-    chart.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    chart.style.setProperty('--fs', fs + 'px');
-    const all = board.flatMap((r) => r.best_so_far);
-    const lo = Math.floor(Math.min(...all) / 50) * 50, hi = Math.ceil(Math.max(...all) / 50) * 50;
-    const n = Math.max(...board.map((r) => r.best_so_far.length - 1));
-    const x = (i) => L + i / n * (W - L - R), y = (v) => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
-    let h = '';
-    for (let v = lo; v <= hi; v += 50) h += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#d6d7de"/><text x="${L - 8}" y="${y(v) + 5}" text-anchor="end" style="font-size:${fs}px">${v}</text>`;
-    for (let i = 0; i <= n; i += 10) h += `<text x="${x(i)}" y="${H - B + 24}" text-anchor="middle" style="font-size:${fs}px">${i}</text>`;
-    h += `<text x="${(L + W - R) / 2}" y="${H - 4}" text-anchor="middle" style="font-size:${fs}px">attempts</text><text x="${L}" y="${T - 6}" style="font-size:${fs}px">minutes of flight</text>`;
-    const ends = [];
-    board.slice().sort((a, b) => a.best - b.best).forEach((r) => {     // the leader is drawn last, on top
-      const isLead = r.best === top;
-      let d = ''; r.best_so_far.forEach((v, i) => { d += i ? `H${x(i).toFixed(1)}V${y(v).toFixed(1)}` : `M${x(i).toFixed(1)},${y(v).toFixed(1)}`; });   // stepped: hold until the next improvement
-      h += `<path class="ln" d="${d}" stroke="${isLead ? BLUE : '#8d8fa3'}" stroke-width="${isLead ? (narrow ? 5 : 6) : (narrow ? 2.5 : 3)}"/>`;
-      ends.push({ y: y(r.best_so_far[r.best_so_far.length - 1]), isLead, label: short(r.label), best: r.best });
-    });
-    ends.sort((a, b) => a.y - b.y);
-    const gap = fe + 9;
-    for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < gap) ends[i].y = ends[i - 1].y + gap;
-    ends.forEach((e) => { h += `<text class="end" x="${W - R + 12}" y="${e.y + 5}" style="font-size:${fe}px;fill:${e.isLead ? BLUE : '#3b3d52'}">${esc(e.label)} ${e.best.toFixed(0)}</text>`; });
-    chart.innerHTML = h;
-    if (!reduce && !drawn) {
-      const paths = [...chart.querySelectorAll('path.ln')];
-      paths.forEach((p) => { const len = p.getTotalLength(); p.style.strokeDasharray = len; p.style.strokeDashoffset = len; });
-      new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { o.disconnect(); drawn = true; paths.forEach((p, i) => { p.style.transition = `stroke-dashoffset 1.6s cubic-bezier(.16,1,.3,1) ${i * 0.12}s`; p.style.strokeDashoffset = 0; }); } }, { threshold: 0.35 }).observe(chart);
-    }
-  };
-  let drawn = false;
-  draw();
-  matchMedia('(max-width: 900px)').addEventListener('change', () => { drawn = true; draw(); });
-  const others = board.filter((r) => r !== lead).map((r) => r.best);
-  $('#raceLede').textContent = `Four agents each started from the same ready-made drone, the Falcon V2, which flies 149 minutes. This is not the drone above. ${lead.label} reached ${lead.best.toFixed(0)} ${unit}, ${lead.gain_pct.toFixed(0)}% more than the starting design. The three automatic searches stopped between ${Math.min(...others).toFixed(0)} and ${Math.max(...others).toFixed(0)}.`;
-  $('#raceNote').textContent = `30 attempts each from the same Falcon V2, in the same weather, with the same safety checks. Attempts that failed a safety check: ${board.map((r) => `${short(r.label)} ${r.gate_failures}`).join(', ')}. One run each, so treat it as a sample.`;
-} else $('.race').style.display = 'none';
-
-// ---------------------------------------------------------------- learned controller
-if (learn && learn.curve && learn.curve.length) {
-  const W = 560, H = 340, L = 56, R = 16, T = 24, B = 40;
-  const xs = learn.curve.map((c) => c.steps), ys = learn.curve.map((c) => c.return), refs = learn.reference;
-  const yLo = Math.min(...ys, refs.random[0]), yHi = Math.max(...ys, refs.autopilot[0]) * 1.08, xm = Math.max(...xs);
-  const x = (v) => L + v / xm * (W - L - R), y = (v) => T + (1 - (v - yLo) / (yHi - yLo)) * (H - T - B);
-  let h = '';
-  for (let v = Math.ceil(yLo / 200) * 200; v <= yHi; v += 200) h += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#d6d7de"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
-  for (let i = 0; i <= 4; i++) { const v = xm * i / 4; h += `<text x="${x(v)}" y="${H - 14}" text-anchor="middle">${v >= 1000 ? Math.round(v / 1000) + 'k' : v}</text>`; }
-  h += `<line x1="${L}" x2="${W - R}" y1="${y(refs.autopilot[0])}" y2="${y(refs.autopilot[0])}" stroke="${INK}" stroke-dasharray="6 5" stroke-width="2"/><text x="${W - R}" y="${y(refs.autopilot[0]) - 8}" text-anchor="end" style="fill:${INK};font-weight:800">autopilot ${refs.autopilot[0].toFixed(0)}</text>`;
-  h += `<line x1="${L}" x2="${W - R}" y1="${y(refs.random[0])}" y2="${y(refs.random[0])}" stroke="#8d8fa3" stroke-dasharray="6 5"/><text x="${W - R}" y="${y(refs.random[0]) - 8}" text-anchor="end">random actions ${refs.random[0].toFixed(0)}</text>`;
-  h += `<path d="${learn.curve.map((c, i) => (i ? 'L' : 'M') + x(c.steps) + ',' + y(c.return)).join('')}" fill="none" stroke="${BLUE}" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>`;
-  h += `<text x="${(L + W - R) / 2}" y="${H + 20}" text-anchor="middle">training steps</text>`;
-  $('#learn').innerHTML = h;
-  const last = learn.curve[learn.curve.length - 1];
-  $('#learnText').textContent = `FlightEnv lets a policy learn to fly any design. After ${last.steps.toLocaleString()} steps a PPO policy holds an orbit in wind and turbulence almost as well as the stock autopilot (${last.return.toFixed(0)} against ${refs.autopilot[0].toFixed(0)}) and finished ${Math.round(last.survival * 100)}% of its 8 test flights. It was trained on a heavier version of the Falcon drone.`;
-} else $('#learn').closest('section').style.display = 'none';
-
-// ---------------------------------------------------------------- copy button
-const copy = $('#copy');
-copy.onclick = async () => {
-  const text = $('#cmds').innerText.split('\n').filter((l) => !l.startsWith('#')).join('\n').replace(/\n{2,}/g, '\n').trim();
-  try { await navigator.clipboard.writeText(text); copy.textContent = 'Copied'; copy.dataset.state = 'done'; }
-  catch { const r = document.createRange(); r.selectNodeContents($('#cmds')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); copy.textContent = 'Press Ctrl+C'; }
-  setTimeout(() => { copy.textContent = 'Copy'; delete copy.dataset.state; }, 2200);
-};
 </script>
 </body>
 </html>
