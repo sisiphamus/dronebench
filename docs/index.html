@@ -474,6 +474,8 @@ if (state && kept.length) {
   }
 }
 
+if (!(state && kept.length)) $('#test').style.display = 'none';   // no data: nothing to draw or list
+
 // ---------------------------------------------------------------- the design history
 const story = state && kept.length;
 storyBlock: if (story) {
