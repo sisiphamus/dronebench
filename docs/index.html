@@ -75,6 +75,7 @@ h1 { margin: 0; font: 900 6rem/.9 var(--font); font-stretch: 62%; letter-spacing
   h1 { font-size: 2.6rem; } .words p { display: none; }
   .block { width: 17rem; font-size: 14px; } .block dt, .block dd { padding: 3px 10px; }
 }
+@media (max-width: 340px) { .mark { font-size: 18px; } .btn { padding: 0 9px; font-size: 13px; min-height: 40px; } .acts { gap: 6px; } .again { display: none; } .frame { padding: 0 12px; } }
 @media (max-width: 420px) { .mark { font-size: 22px; } .btn { padding: 0 12px; font-size: 14px; } .acts { gap: 8px; } .again { font-size: 14px; } }
 @media (prefers-reduced-motion: reduce) { .btn, .again { transition: none; } }
 </style>
@@ -158,8 +159,8 @@ if (!data || !gl) {
   const M = {
     ink: [L(0xffffff, 1, true), F(0xffffff, 0.1, true)],
     warn: [L(0xff7a3d, 1, true), F(0xffffff, 0.07, true)],
-    ghost: [L(0xffffff, 0.3, false), F(0xffffff, 0.03, false)],
-    trace: [L(0xffffff, 0.17, false), F(0xffffff, 0, false)],   // every earlier kept design stays behind as a faint trace
+    ghost: [L(0xffffff, 0.42, false), F(0xffffff, 0.04, false)],
+    trace: [L(0xffffff, 0.22, false), F(0xffffff, 0, false)],   // every earlier kept design stays behind as a faint trace
   };
   const pen = new THREE.Mesh(new THREE.PlaneGeometry(1, 0.014), new THREE.MeshBasicMaterial({ color: 0xffffff }));
   pen.rotation.x = -Math.PI / 2; pen.visible = false; scene.add(pen);
