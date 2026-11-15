@@ -27,6 +27,13 @@ searches for "robotics", "drone", "exploded view technical diagram" and "hardwar
    "hardware startup website" were generic mockups with purple gradients, glass cards and floating phones. That
    is the look to avoid.
 
+## Sites opened for this spec (2026-11-14, real browser, desktop 1440 wide)
+
+First screen of each, plus a scroll down the page for 1X, Zipline and ARC Prize:
+https://www.figure.ai, https://www.1x.tech, https://www.zipline.com, https://www.skydio.com, https://www.anduril.com, https://arcprize.org.
+Cosmos (https://www.cosmos.so, signed in): element searches "robotics", "drone", "exploded view technical diagram", "hardware startup website".
+Not opened: Boston Dynamics, Apptronik, Joby, Wing. Web searches for "best hardware startup websites" returned rankings of companies, not of their sites, so nothing was taken from them.
+
 ## What this means for DroneBench
 
 DroneBench has no product photography and should not fake any. What it has is a drone that exists only as geometry and
@@ -42,9 +49,9 @@ that run, and the history section should be rebuilt from it once it finishes.
 1. **Hero.** The final design, huge, on cool pale grey (#e9eaee), slowly turning, lit like a studio shot. Left
    bottom: a headline of at most seven words and one plain sentence. Two buttons: "Test your agent" (solid dark),
    "Watch it design" (outline). Two nav links.
-2. **The test, as an exploded drawing.** One line drawing of the drone pulled apart, with numbered callouts to
-   the checks (structure, wiring, fit, stability) and a second drawing of the flight path (climb, orbits, wind legs).
-   Blue line art on the same grey. This is the page's explanation, so there is no paragraph.
+2. **The test, as an exploded drawing.** One line drawing of the final drone pulled apart, drawn from its real
+   parts, with the checks and the numbers the drone got listed beside it. Callouts pinned to parts were tried and
+   dropped: the parts that decide a check sit too close together to label cleanly. Blue line art on a grey panel.
 3. **History (the signature).** Scroll scrubs the 3D model from the first passing design to the last, parts that changed drawn blue, the body see-through so the battery shows.
    A running score and one line per step. Failed attempts appear as short ticks, grouped. Starts from a blank
    design, so the first frames are very different from the last.
