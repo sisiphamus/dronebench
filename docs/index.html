@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DroneBench</title>
-<meta name="description" content="An AI agent designed this drone with no example aircraft. A simulator flew every attempt.">
+<meta name="description" content="An AI agent designed this drone with no example aircraft. Every attempt was tested in a simulator.">
 <meta name="theme-color" content="#1b3cf0">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%231b3cf0'/%3E%3Cpath d='M3 17 L29 9 L29 12 L3 20Z' fill='white'/%3E%3C/svg%3E">
 <link rel="preload" href="fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -47,9 +47,9 @@ h1 { margin: 0; font: 900 6rem/.9 var(--font); font-stretch: 62%; letter-spacing
 .block dd { font-weight: 700; font-variant-numeric: tabular-nums; min-width: 0; }
 .chip { display: inline-block; width: 12px; height: 12px; margin-right: 10px; background: var(--white); vertical-align: -1px; }
 .chip.no { background: var(--orange); }
-.redraw { display: block; width: 100%; border: 0; border-top: 1.5px solid var(--line); background: transparent; text-align: left; padding: 10px 14px; font-weight: 700; cursor: pointer; transition: background .25s var(--ease), color .25s var(--ease); }
-.redraw:hover { background: var(--white); color: var(--blue); }
-.redraw:focus-visible { outline-offset: -3px; }
+.acts { display: flex; align-items: center; gap: 22px; }
+.again { min-height: 44px; padding: 0 4px; border: 0; background: transparent; font-weight: 700; text-decoration: underline; text-underline-offset: 5px; text-decoration-thickness: 1.5px; cursor: pointer; transition: text-decoration-color .2s; }
+.again:hover { text-decoration-color: var(--orange); text-decoration-thickness: 3px; }
 
 @media (max-width: 900px) {
   .frame { padding: 0 16px; }
@@ -60,12 +60,12 @@ h1 { margin: 0; font: 900 6rem/.9 var(--font); font-stretch: 62%; letter-spacing
   h1 { font-size: 3.4rem; }
   .words p { margin-top: 8px; font-size: 15px; max-width: none; }
   .block { width: auto; font-size: 15px; }
-  .block dt, .block dd, .redraw { padding: 5px 12px; }
+  .block dt, .block dd { padding: 5px 12px; }
   .hide-sm { display: none; }
 }
 @media (max-height: 780px) and (min-width: 901px) {
   h1 { font-size: 4rem; } .words p { display: none; }
-  .block { font-size: 15px; width: 22rem; } .block dt, .block dd, .redraw { padding: 6px 12px; }
+  .block { font-size: 15px; width: 22rem; } .block dt, .block dd { padding: 6px 12px; }
   .bar { padding-top: 12px; } .foot { padding-bottom: 16px; }
 }
 @media (max-height: 720px) and (max-width: 900px) { .words p { display: none; } h1 { font-size: 3rem; } }
@@ -73,9 +73,9 @@ h1 { margin: 0; font: 900 6rem/.9 var(--font); font-stretch: 62%; letter-spacing
   .frame { padding: 0 16px; } .bar { padding-top: 8px; } .mark { font-size: 22px; } .btn { min-height: 38px; padding: 0 16px; font-size: 15px; }
   .foot { grid-template-columns: minmax(0, 1fr) auto; padding-bottom: 10px; gap: 16px; }
   h1 { font-size: 2.6rem; } .words p { display: none; }
-  .block { width: 17rem; font-size: 13px; } .block dt, .block dd, .redraw { padding: 3px 10px; }
+  .block { width: 17rem; font-size: 13px; } .block dt, .block dd { padding: 3px 10px; }
 }
-@media (prefers-reduced-motion: reduce) { .btn, .redraw { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .btn, .again { transition: none; } }
 </style>
 <script type="importmap">{ "imports": { "three": "./demo/vendor/three.module.js", "three/addons/": "./demo/vendor/addons/" } }</script>
 </head>
@@ -83,7 +83,10 @@ h1 { margin: 0; font: 900 6rem/.9 var(--font); font-stretch: 62%; letter-spacing
 <div class="sheet"><div class="frame">
   <header class="bar">
     <span class="mark">DroneBench</span>
-    <a class="btn" href="https://github.com/sisiphamus/dronebench">View the repo</a>
+    <div class="acts">
+      <button class="again" id="redraw" type="button">Redraw</button>
+      <a class="btn" href="https://github.com/sisiphamus/dronebench">View the repo</a>
+    </div>
   </header>
 
   <div class="draw">
@@ -94,16 +97,15 @@ h1 { margin: 0; font: 900 6rem/.9 var(--font); font-stretch: 62%; letter-spacing
   <div class="foot">
     <div class="words">
       <h1>Drawn from nothing.</h1>
-      <p>An AI agent designed this drone with no example aircraft. A simulator flew every attempt.</p>
+      <p>An AI agent designed this drone with no example aircraft. Every attempt was tested in a simulator.</p>
     </div>
     <div class="block">
       <dl>
         <dt>Attempt</dt><dd id="bAttempt">0 of 38</dd>
         <dt>Result</dt><dd id="bResult">Blank sheet</dd>
         <dt class="hide-sm">Battery</dt><dd class="hide-sm" id="bBatt">0 Wh</dd>
-        <dt>Best so far</dt><dd id="bBest">0 min</dd>
+        <dt>Best, simulated</dt><dd id="bBest">0 min</dd>
       </dl>
-      <button class="redraw" id="redraw" type="button">Redraw from the start</button>
     </div>
   </div>
 </div></div>
@@ -129,7 +131,7 @@ const setBlock = (i, result, kept) => {
   const a = data[i];
   $('#bAttempt').textContent = `${a.n} of ${N}`;
   $('#bBatt').textContent = `${a.wh} Wh`;
-  $('#bBest').textContent = `${bestAt(i).toFixed(0)} min (simulated)`;
+  $('#bBest').textContent = `${bestAt(i).toFixed(0)} min`;
   $('#bResult').innerHTML = result ? `<i class="chip${kept ? '' : ' no'}"></i>${result}` : 'Drawing';
 };
 
@@ -156,6 +158,7 @@ if (!data || !gl) {
     ink: [L(0xffffff, 1, true), F(0xffffff, 0.1, true)],
     warn: [L(0xff7a3d, 1, true), F(0xffffff, 0.07, true)],
     ghost: [L(0xffffff, 0.3, false), F(0xffffff, 0.03, false)],
+    trace: [L(0xffffff, 0.17, false), F(0xffffff, 0, false)],   // every earlier kept design stays behind as a faint trace
   };
   const pen = new THREE.Mesh(new THREE.PlaneGeometry(1, 0.014), new THREE.MeshBasicMaterial({ color: 0xffffff }));
   pen.rotation.x = -Math.PI / 2; pen.visible = false; scene.add(pen);
@@ -228,7 +231,7 @@ if (!data || !gl) {
   const setPlane = (mode, z) => {   // mode 'draw': show z >= front (grows toward -z); 'erase': show z <= front (shrinks from +z)
     if (mode === 'draw') { plane.normal.set(0, 0, 1); plane.constant = -z; } else { plane.normal.set(0, 0, -1); plane.constant = z; }
   };
-  const penAt = (z, color) => { pen.visible = true; pen.position.set((ext.min.x + ext.max.x) / 2, 0.05, z); pen.scale.set((ext.max.x - ext.min.x) + 0.3, 1, 1); pen.material.color.set(color); };
+  const penAt = (z, color) => { pen.visible = true; pen.position.set((ext.min.x + ext.max.x) / 2, 0.05, z); pen.scale.set((ext.max.x - ext.min.x) + 0.1, 1, 1); pen.material.color.set(color); };
 
   function loop() { renderer.render(scene, cam); drawDim(); requestAnimationFrame(loop); }
   loop();
@@ -245,7 +248,7 @@ if (!data || !gl) {
       const a = data[i], s = steps[i], late = i / (N - 1);
       setBlock(i, null);
       if (keptGrp) keptGrp.userData.role('ghost');
-      s.grp.userData.role(a.kept ? 'ink' : 'warn'); s.grp.visible = true;
+      s.grp.userData.role(a.kept ? 'ink' : 'warn'); s.grp.visible = true; s.grp.renderOrder = 2;
       const color = a.kept ? 0xffffff : 0xff7a3d;
       const from = dimSpan || a.span; dimOn = 1;
       const drawMs = 620 - 400 * late;
@@ -256,7 +259,7 @@ if (!data || !gl) {
       if (a.kept) {
         setBlock(i, prev ? `Kept, ${(a.score - prev.score >= 0 ? '+' : '') + (a.score - prev.score).toFixed(1)} min` : `Kept, first flight`, true);
         if (!(await wait(130, my))) return;
-        if (keptGrp) keptGrp.visible = false;
+        if (keptGrp) keptGrp.userData.role('trace');
         keptGrp = s.grp;
       } else {
         const why = a.gate ? 'scored lower' : [...new Set(a.fail.map((f) => PLAIN[f] || f.replace(/_/g, ' ')))].slice(0, 2).join(' and ');
@@ -268,12 +271,13 @@ if (!data || !gl) {
         if (keptGrp) keptGrp.userData.role('ink');
       }
     }
-    setBlock(N - 1, `Kept, ${final.score.toFixed(0)} min`, true);
   }
   function showFinal() {
     steps.forEach((s) => { s.grp.visible = false; });
+    data.forEach((a, i) => { if (a.kept && i < N - 1) { steps[i].grp.userData.role('trace'); steps[i].grp.visible = true; } });
     const s = steps[N - 1]; s.grp.userData.role('ink'); s.grp.visible = true; setPlane('draw', -zHalf - 1);
-    dimSpan = final.span; dimOn = 1; setBlock(N - 1, `Kept, ${final.score.toFixed(0)} min`, true);
+    const kept = data.filter((a) => a.kept), d = final.score - kept[kept.length - 2].score;
+    dimSpan = final.span; dimOn = 1; setBlock(N - 1, `Kept, +${d.toFixed(1)} min`, true);
   }
   $('#redraw').addEventListener('click', play);
   play();
