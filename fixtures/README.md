@@ -1,10 +1,11 @@
 # DroneBench fixtures
 
-Design folders in the PLAN §3 format (`cad/`, `bom.yaml`, `mission.yaml`) plus the scripts that make them.
+Design folders in the [DESIGN_FORMAT.md](../DESIGN_FORMAT.md) format (`cad/`, `bom.yaml`, `mission.yaml`) plus the scripts that make them.
 
 | Folder | Built by | Parts | AUW (part_mass_g) |
 |---|---|---|---|
-| `falcon_v2/` | `build_falcon_v2.py` (reads `falcon_v2/params.yaml`) | 80 | ~3.43 kg |
+| `falcon_v2/` | `build_falcon_v2.py` (reads `falcon_v2/params.yaml`) | 74 | ~3.15 kg |
+| `falcon_v2_padded/` | the same builder, `waste:` switched on | 80 | ~3.43 kg |
 | `trainer/` | `build_trainer.py trainer` | 42 | ~1.03 kg |
 | `bad_tail/` | `build_trainer.py bad_tail` | 42 | ~0.99 kg |
 | `step_mix/` | `build_trainer.py step_mix` | 42 (4 STEP) | ~1.02 kg |
@@ -32,9 +33,9 @@ Propulsion and systems: 2× BrotherHobby Avenger 2816 620KV in nacelles at y = �
 
 Spars: `main_spar` CF 10/8 mm, one straight 1600 mm tube at 25 % root chord; `rear_spar` CF 6/4 mm, 1200 mm at 58 % root chord. Straight tubes through a 0.5° dihedral wing stay inside the skin.
 
-**CG choice**: battery (6S2P Molicel P42A, 900 g, rated 10C: the cell is 45 A continuous) placed automatically (`battery.x_mm: auto`) so the CG sits at `target_cg_frac_mac` = 0.29 MAC (x ≈ 451 mm). The pipeline gives SM ≈ 0.17 (NP ≈ 0.46 MAC). The nose ballast moves the CG forward by ≈ 0.04 MAC, so removing it brings SM to ≈ 0.13, closer to the middle of the 0.05-0.20 band; removing every seeded part leaves SM ≈ 0.09. The CG sits slightly forward on purpose so that the ballast and belly plate come back `unnecessary`, not `helpful`.
+**CG choice**: battery (6S2P Molicel P42A, 900 g, rated 10C: the cell is 45 A continuous) placed automatically (`battery.x_mm: auto`) so the CG sits at `target_cg_frac_mac` = 0.29 MAC (x ≈ 451 mm). The pipeline gives SM ≈ 0.17 (NP ≈ 0.46 MAC). In `falcon_v2_padded` the nose ballast moves the CG forward by ≈ 0.04 MAC, so removing it brings SM to ≈ 0.13; removing every planted part leaves SM ≈ 0.09, which is the default `falcon_v2`.
 
-**Seeded waste** (switch off under `waste:` in params.yaml):
+**Planted waste** (`falcon_v2_padded` only; the default `falcon_v2` has none, so nothing in it exists to be removed). Switches under `waste:` in params.yaml:
 | id | what | why it is waste |
 |---|---|---|
 | `ballast_nose` | 80 g steel block in the nose | CG already in range without it |

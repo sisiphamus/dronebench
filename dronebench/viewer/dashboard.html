@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Public+Sans:wght@400;500;600;700&display=swap">
+<title>DroneBench</title>
+<style>
+:root {
+  --bg: #f4f4f5; --panel: #ffffff; --ink: #0a0b1a; --muted: #5c5c5c; --faint: #8f8f8f; --line: #d4d4d4; --line2: #111111;
+  --hot: #2a3cff;
+  --display: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --text: "Public Sans", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 var(--text); overflow: hidden; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+.disp { font-family: var(--display); font-stretch: 62%; font-weight: 800; letter-spacing: -.01em; }
+
+#app { display: grid; grid-template-rows: 54px 1fr; height: 100%; }
+header { display: flex; align-items: baseline; gap: 22px; padding: 0 20px; border-bottom: 2px solid var(--ink); background: var(--panel); }
+header { align-items: center; }
+.logo { font-family: var(--display); font-stretch: 62%; font-weight: 800; font-size: 26px; letter-spacing: -.01em; color: var(--ink); text-decoration: none; }
+.runmeta { color: var(--muted); font-size: 13.5px; }
+.runmeta b { color: var(--ink); font-weight: 600; }
+.sp { flex: 1; }
+.live { color: var(--muted); font-size: 13px; }
+.live.on { color: var(--ink); font-weight: 600; }
+header a.back { color: var(--ink); font-size: 13.5px; font-weight: 600; }
+
+#grid { display: grid; grid-template-columns: minmax(0, 1fr) 380px; grid-template-rows: minmax(0, 1fr) 270px; gap: 0; min-height: 0; }
+.cell { min-width: 0; min-height: 0; position: relative; }
+#stage { grid-column: 1; grid-row: 1; background: #e4e4e2; background: #e5e5e5; overflow: hidden; border-right: 1px solid var(--line); }
+#stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+#side { grid-column: 2; grid-row: 1 / span 2; background: var(--panel); overflow-y: auto; }
+#lower { grid-column: 1; grid-row: 2; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); border-top: 2px solid var(--ink); border-right: 1px solid var(--line); background: var(--panel); }
+#chartbox, #logbox { position: relative; min-height: 0; min-width: 0; }
+#logbox { border-left: 1px solid var(--line); }
+
+.ov { position: absolute; z-index: 2; pointer-events: none; }
+#banner { top: 18px; left: 22px; display: flex; flex-direction: column; gap: 4px; max-width: 60%; }
+.verdict { font-family: var(--display); font-stretch: 62%; font-weight: 800; font-size: 30px; line-height: 1; letter-spacing: -.01em; }
+.verdict.rejected { color: var(--hot); }
+.stepnote { font-size: 15px; font-weight: 500; }
+.reason { font-size: 13px; color: var(--hot); font-weight: 500; }
+#tools { left: 22px; right: 22px; bottom: 18px; display: flex; align-items: center; gap: 12px; pointer-events: none; flex-wrap: wrap; }
+#tools > * { pointer-events: auto; }
+.seg { display: inline-flex; background: var(--panel); border: 1px solid var(--ink); border-radius: 2px; overflow: hidden; }
+.seg button { border: 0; background: transparent; padding: 7px 13px; font-size: 13px; font-weight: 500; }
+.seg button + button { border-left: 1px solid var(--ink); }
+.seg button.on { background: var(--ink); color: #fff; }
+.tbtn { background: var(--panel); border: 1px solid var(--ink); border-radius: 2px; padding: 7px 13px; font-size: 13px; font-weight: 500; }
+.tbtn.on { background: var(--ink); color: #fff; }
+.rng { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 500; background: var(--panel); border: 1px solid var(--ink); border-radius: 2px; padding: 6px 12px; }
+.rng input { width: 110px; accent-color: var(--ink); }
+#legend { right: 22px; top: 18px; display: flex; flex-direction: column; gap: 5px; align-items: flex-start; font-size: 13px; color: var(--ink); }
+#legend span { display: flex; align-items: center; gap: 8px; }
+#legend i { width: 10px; height: 10px; display: inline-block; border: 1px solid var(--ink); }
+#tip { position: fixed; z-index: 9; pointer-events: none; display: none; background: var(--ink); color: #fff; padding: 3px 9px; border-radius: 2px; font-size: 12.5px; }
+#msg { inset: 0; display: none; place-items: center; color: var(--muted); }
+
+.sec { padding: 18px 22px; border-bottom: 1px solid var(--line); }
+.sec h4 { margin: 0 0 10px; font-size: 14px; font-weight: 700; display: flex; justify-content: space-between; align-items: baseline; }
+.sec h4 span:last-child { font-weight: 400; color: var(--muted); font-size: 13px; }
+.hero .big { font-family: var(--display); font-stretch: 62%; font-weight: 800; font-size: 96px; line-height: .9; letter-spacing: -.02em; }
+.hero .big small { font-size: 26px; font-weight: 700; color: var(--muted); margin-left: 8px; letter-spacing: 0; }
+.hero .d { margin-top: 10px; font-size: 15px; font-weight: 600; }
+.hero .d.down { color: var(--hot); }
+.hero .d small { font-weight: 400; color: var(--muted); margin-left: 6px; }
+.gatehead { margin-top: 14px; font-size: 14px; font-weight: 600; }
+.gatehead.fail { color: var(--hot); }
+.gatehead span { font-weight: 400; color: var(--muted); }
+.mlist { margin: 0; padding: 0; list-style: none; }
+.mlist li { display: grid; grid-template-columns: 1fr auto 56px; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.mlist li:last-child { border: 0; }
+.mlist .k { color: var(--muted); } .mlist .v { font-weight: 600; text-align: right; } .mlist .dd { color: var(--faint); text-align: right; font-size: 12.5px; }
+.chk { display: grid; grid-template-columns: 1fr auto; gap: 3px 10px; align-items: baseline; padding: 7px 0 6px; font-size: 13.5px; }
+.chk .nm { text-transform: capitalize; } .chk .val { color: var(--muted); font-size: 12.5px; text-align: right; }
+.chk.f .nm, .chk.f .val { color: var(--hot); font-weight: 600; }
+.chk .hb { grid-column: 1 / 3; height: 3px; background: var(--line); }
+.chk .hb i { display: block; height: 100%; background: var(--ink); }
+.chk .hb i.tight, .chk .hb i.bad { background: var(--hot); }
+.det h3 { margin: 0 0 2px; font-family: var(--display); font-stretch: 62%; font-weight: 800; font-size: 30px; line-height: 1; word-break: break-word; }
+.det .sub { color: var(--muted); font-size: 13px; margin: 4px 0 10px; }
+.det p { margin: 8px 0; }
+.nb { display: inline-block; padding: 1px 8px; font-weight: 700; font-size: 13px; border: 1px solid var(--ink); }
+.nb.unnecessary { background: var(--hot); border-color: var(--hot); color: #fff; }
+.nb.required { background: var(--ink); color: #fff; }
+.kv { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+.kv td { padding: 5px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.kv td:first-child { color: var(--muted); width: 38%; }
+a.lnk { color: var(--ink); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.rm { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13.5px; cursor: pointer; border-bottom: 1px solid var(--line); }
+.rm:hover { background: var(--bg); } .rm .g { color: var(--hot); font-weight: 600; }
+
+#chartbox svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+#chartbox .ttl, #logbox .ttl { position: absolute; top: 12px; left: 22px; font-size: 14px; font-weight: 700; z-index: 1; }
+#chartbox .ax text { fill: var(--muted); font-size: 11.5px; }
+#chartbox .ax line { stroke: var(--line); }
+#logbox .scroll { position: absolute; inset: 38px 0 0 0; overflow-y: auto; }
+table.log { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.log th { position: sticky; top: 0; background: var(--panel); text-align: left; color: var(--muted); font-weight: 500; font-size: 12.5px; padding: 4px 10px; border-bottom: 1px solid var(--ink); }
+table.log td { padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.log tr { cursor: pointer; } table.log tr:hover td { background: var(--bg); }
+table.log tr.sel td { background: var(--ink); color: #fff; }
+table.log tr.sel td * { color: #fff !important; }
+.v-imp { font-weight: 700; } .v-rej { color: var(--hot); font-weight: 700; } .v-neu { color: var(--muted); }
+.ops { color: var(--muted); font-size: 12px; display: block; }
+@media (max-width: 1000px) {
+  html, body { overflow: auto; } #app { height: auto; }
+  #grid { grid-template-columns: 1fr; grid-template-rows: 62vh auto 540px; }
+  #stage { border-right: 0; }
+  #side { grid-column: 1; grid-row: 2; } #lower { grid-column: 1; grid-row: 3; grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; border-right: 0; }
+  #logbox { border-left: 0; border-top: 1px solid var(--line); }
+  .hero .big { font-size: 80px; } #legend { display: none; } header { gap: 14px; } .runmeta { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.js", "three/addons/": "./vendor/addons/" } }
+</script>
+</head>
+<body>
+<div id="app">
+  <header>
+    <a class="logo" href="./">DroneBench</a>
+    <span class="runmeta" id="runmeta"></span>
+    <div class="sp"></div>
+    <span class="live" id="live"></span>
+    <a class="back" id="back" href="../" hidden>Overview</a>
+  </header>
+  <div id="grid">
+    <div id="stage" class="cell">
+      <div id="banner" class="ov"></div>
+      <div id="legend" class="ov"></div>
+      <div id="tools" class="ov">
+        <div class="seg" id="modes"><button data-m="necessity" class="on">Needed</button><button data-m="function">Job</button><button data-m="changes">Changes</button></div>
+        <button class="tbtn" id="ghostb">Show baseline</button>
+        <label class="rng">Explode <input id="explode" type="range" min="0" max="1" step="0.01" value="0"></label>
+        <button class="tbtn" id="play">Replay</button>
+      </div>
+      <div id="msg" class="ov"></div>
+    </div>
+    <div id="side" class="cell">
+      <div class="sec" id="sHero"></div>
+      <div class="sec" id="sTiles"></div>
+      <div class="sec" id="sGate"></div>
+      <div class="sec" id="sDetail"></div>
+    </div>
+    <div id="lower">
+      <div id="chartbox"><div class="ttl">Score by step</div><svg id="chart"></svg></div>
+      <div id="logbox"><div class="ttl">Attempts</div><div class="scroll"><table class="log" id="log"></table></div></div>
+    </div>
+  </div>
+</div>
+<div id="tip"></div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const NEC = { required: '#555555', helpful: '#a8a8a8', unnecessary: '#2a3cff', not_tested: '#b9b9b9' };
+const FUNC = { lift: '#4e79a7', stability: '#76b7b2', control: '#59a14f', propulsion: '#e15759', power: '#f28e2b',
+  avionics: '#b07aa1', structure: '#9c755f', fastening: '#8c8c8c', payload: '#edc948', aerodynamic_fairing: '#ff9da7',
+  ballast: '#8a8a8a', cosmetic: '#d4a6c8', unknown: '#7b8494' };
+const CH = { same: '#c9c9c9', changed: '#3d3d3d', added: '#3d3d3d' };
+
+const S = { meta: null, runs: [], version: '', sel: 0, follow: true, mode: 'necessity', ghost: false, explode: 0,
+            play: null, reports: {}, models: {}, part: null, hover: null };
+
+// ------------------------------------------------------------------ data
+const STATIC = !!document.querySelector('meta[name=static]');   // exported site: read data/ files instead of the live API
+const url = (u) => !STATIC ? u : u === '/api/state' ? 'data/state.json'
+  : u.replace(/^\/api\/step\/(\d+)\/model\.glb$/, 'data/step/$1.glb').replace(/^\/api\/step\/(\d+)$/, 'data/step/$1.json');
+async function jget(u) { u = url(u); const r = await fetch(u, { cache: 'no-store' }); if (!r.ok) throw new Error(u + ' ' + r.status); return r.json(); }
+
+function steps() {           // one record per step number, last write wins
+  const m = new Map();
+  for (const r of S.runs) if (Number.isInteger(r.step)) m.set(r.step, r);
+  return [...m.values()].sort((a, b) => a.step - b.step);
+}
+const rec = (n) => steps().find((r) => r.step === n);
+function verdict(r) {
+  if (!r) return 'baseline';
+  if (r.step === 0) return 'baseline';
+  if (!r.accepted) return 'rejected';
+  const prev = bestBefore(r.step);
+  const d = (r.score ?? 0) - prev;
+  return d > 1e-6 ? 'improved' : Math.abs(d) <= 1e-6 ? 'neutral' : 'kept';
+}
+function bestBefore(n) { let b = -Infinity; for (const r of steps()) if (r.step < n && r.accepted) b = Math.max(b, r.score ?? 0); return isFinite(b) ? b : 0; }
+async function report(n) {
+  if (S.reports[n] !== undefined) return S.reports[n];
+  const p = await jget('/api/step/' + n);
+  S.reports[n] = p.report ? { report: p.report, ops: p.ops } : null;
+  return S.reports[n];
+}
+async function poll() {
+  try {
+    const st = await jget('/api/state');
+    setLive(true);
+    if (st.version !== S.version) {
+      const hadN = steps().length;
+      S.version = st.version; S.meta = st.meta; S.runs = st.runs;
+      const ss = steps();
+      if (S.follow && ss.length) S.sel = hadN === 0 ? st.meta.current_step : ss[ss.length - 1].step;
+      drawHeader(); drawChart(); drawLog();
+      await select(S.sel, ss.length !== hadN);
+    }
+  } catch (e) { setLive(false); }
+}
+function setLive(ok) {
+  const el = $('#live');
+  if (STATIC) { el.className = 'live'; el.textContent = 'Recorded run'; return; }
+  const recent = S.runs.length && (Date.now() - new Date(S.runs[S.runs.length - 1].timestamp).getTime()) < 45000;
+  el.className = 'live' + (ok && recent ? ' on' : '');
+  el.textContent = !ok ? 'Server offline' : recent ? 'Agent is working' : 'Waiting for the next attempt';
+}
+setInterval(() => setLive(S.version !== ''), 5000);
+
+// ------------------------------------------------------------------ header + chart + log
+function drawHeader() {
+  const m = S.meta; if (!m) return;
+  $('#runmeta').innerHTML = `<b>${esc(m.fixture)}</b> · goal: ${esc(m.preset)} · scored by ${m.fidelity === 'analytic' ? 'closed-form estimate' : 'flying it (6-DOF)'} · ${m.steps} of ${m.max_steps} steps used`;
+  if (STATIC) $('#back').hidden = false;
+}
+function opsText(r) {
+  const ops = r.ops || [];
+  if (!ops.length) return '';
+  return ops.slice(0, 3).map((o) => {
+    if (o.op === 'params') return Object.entries(o.set || {}).map(([k, v]) => `${k}=${v}`).join(', ');
+    if (o.op === 'remove') return `remove ${o.id}`;
+    if (o.op === 'swap') return `swap ${o.id} → ${(o.entry || {}).part_number || '…'}`;
+    if (o.op === 'set') return `set ${o.id}.${o.path} = ${JSON.stringify(o.value)}`;
+    if (o.op === 'scale') return `scale ${(o.ids || []).length} part(s) ×${(o.factors || []).join('/')}`;
+    if (o.op === 'move') return `move ${(o.ids || []).join(',')}`;
+    if (o.op === 'add') return `add ${(o.entry || {}).id || ''}`;
+    return o.op;
+  }).join('; ') + (ops.length > 3 ? ` (+${ops.length - 3})` : '');
+}
+function failText(r) {
+  if (r.errors && r.errors.length) return r.errors[0];
+  if (r.fail_detail && r.fail_detail.length) return r.fail_detail.join(' · ');
+  if (r.reason) return r.reason;
+  return (r.failures || []).join(', ');
+}
+function drawLog() {
+  const rows = steps().slice().reverse().map((r) => {
+    const v = verdict(r);
+    const cls = v === 'improved' ? 'v-imp' : v === 'rejected' ? 'v-rej' : 'v-neu';
+    const d = v === 'baseline' ? '' : v === 'rejected' ? (r.gate_pass === false ? 'gate' : 'worse') : ((r.delta ?? ((r.score ?? 0) - bestBefore(r.step))) >= 0 ? '+' : '') + (r.delta ?? ((r.score ?? 0) - bestBefore(r.step))).toFixed(2);
+    const what = v === 'rejected' ? failText(r) : '';
+    return `<tr data-s="${r.step}" class="${r.step === S.sel ? 'sel' : ''}"><td class="num">${r.step}</td>
+      <td class="${cls}"><b>${v === 'baseline' ? 'start' : v === 'improved' ? 'kept' : v}</b></td><td class="num ${cls}">${d}</td>
+      <td>${esc(r.note || opsText(r) || (r.step === 0 ? 'baseline design' : ''))}<span class="ops">${v === 'rejected' ? esc(what) : ''}</span></td></tr>`;
+  }).join('');
+  $('#log').innerHTML = `<thead><tr><th>#</th><th>Result</th><th>Δ</th><th>Change</th></tr></thead><tbody>${rows}</tbody>`;
+  $('#log').querySelectorAll('tr[data-s]').forEach((tr) => tr.onclick = () => { S.follow = false; select(+tr.dataset.s); });
+}
+function drawChart() {
+  const svg = $('#chart'); const box = $('#chartbox').getBoundingClientRect();
+  const W = box.width, H = box.height, L = 48, R = 20, T = 56, B = 28;
+  const ss = steps(); if (!ss.length || W < 50) { svg.innerHTML = ''; return; }
+  const unit = (S.meta && S.meta.unit) || '';
+  const maxStep = Math.max(S.meta ? S.meta.max_steps : 10, ss[ss.length - 1].step);
+  const vals = ss.filter((r) => (r.score ?? 0) > 0).map((r) => r.score);
+  const base = ss[0].score ?? 0;
+  let lo = Math.min(...vals, base), hi = Math.max(...vals, base);
+  const pad = Math.max((hi - lo) * 0.18, hi * 0.02, 0.5); lo -= pad; hi += pad;
+  const x = (n) => L + (n / Math.max(1, maxStep)) * (W - L - R);
+  const y = (v) => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
+  let best = -Infinity; const pts = [];
+  for (const r of ss) if (r.accepted) { best = Math.max(best, r.score ?? 0); pts.push([r.step, best]); }
+  let d = '';
+  pts.forEach(([n, v], i) => { d += (i === 0 ? `M${x(n)},${y(v)}` : `H${x(n)}V${y(v)}`); });
+  if (pts.length) d += `H${x(Math.max(ss[ss.length - 1].step, pts[pts.length - 1][0]))}`;
+  const ticks = 3, yt = [...Array(ticks + 1)].map((_, i) => lo + (hi - lo) * i / ticks);
+  const xt = []; const sx = Math.max(1, Math.ceil(maxStep / 12)); for (let n = 0; n <= maxStep; n += sx) xt.push(n);
+  let h = '<g class="ax">';
+  yt.forEach((v) => h += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v.toFixed(hi - lo > 20 ? 0 : 1)}</text>`);
+  xt.forEach((n) => h += `<text x="${x(n)}" y="${H - 8}" text-anchor="middle">${n}</text>`);
+  h += `</g><line x1="${L}" x2="${W - R}" y1="${y(base)}" y2="${y(base)}" stroke="#8f8f8f" stroke-dasharray="3 4"/><text x="${W - R}" y="${y(base) + 14}" fill="#5c5c5c" font-size="11.5" text-anchor="end">start ${base.toFixed(1)}${unit ? ' ' + esc(unit) : ''}</text>`;
+  if (pts.length) h += `<path d="${d}" fill="none" stroke="#111" stroke-width="2.4" stroke-linejoin="miter"/>`;
+  const gateY = H - B - 8;
+  for (const r of ss) {
+    const v = verdict(r); const cx = x(r.step), sel = r.step === S.sel;
+    let cy = y(r.score ?? 0), el;
+    if (v === 'rejected' && (r.score ?? 0) <= 0) {
+      cy = gateY; el = `<path d="M${cx - 4.5},${cy - 4.5}l9,9m0,-9l-9,9" stroke="#2a3cff" stroke-width="2.4"/>`;
+    } else if (v === 'rejected') el = `<circle cx="${cx}" cy="${cy}" r="5" fill="#fff" stroke="#2a3cff" stroke-width="2.4"/>`;
+    else if (v === 'baseline') el = `<circle cx="${cx}" cy="${cy}" r="5" fill="#fff" stroke="#111" stroke-width="2.4"/>`;
+    else el = `<circle cx="${cx}" cy="${cy}" r="5" fill="#111"/>`;
+    h += `<g data-s="${r.step}" style="cursor:pointer">${sel ? `<rect x="${cx - 10}" y="${cy - 10}" width="20" height="20" fill="none" stroke="#111" stroke-width="1.5"/>` : ''}<rect x="${cx - 12}" y="${cy - 12}" width="24" height="24" fill="transparent"/>${el}</g>`;
+  }
+  h += `<g font-size="12" fill="#111"><circle cx="${W - R - 232}" cy="22" r="4.5" fill="#111"/><text x="${W - R - 223}" y="26">kept</text><circle cx="${W - R - 178}" cy="22" r="4.5" fill="#fff" stroke="#2a3cff" stroke-width="2.2"/><text x="${W - R - 169}" y="26">scored lower</text><path d="M${W - R - 84},18l8,8m0,-8l-8,8" stroke="#2a3cff" stroke-width="2.2"/><text x="${W - R - 71}" y="26">failed gate</text></g>`;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.innerHTML = h;
+  svg.querySelectorAll('g[data-s]').forEach((g) => {
+    g.onclick = () => { S.follow = false; select(+g.dataset.s); };
+    g.onmouseenter = (e) => { const r = rec(+g.dataset.s); tip(e, `Step ${r.step}: ${(r.score ?? 0).toFixed(2)} ${unit}${r.note ? ', ' + r.note : ''}`); };
+    g.onmousemove = (e) => moveTip(e); g.onmouseleave = hideTip;
+  });
+}
+new ResizeObserver(() => drawChart()).observe($('#chartbox'));
+
+// ------------------------------------------------------------------ side panels
+const METRICS = [['endurance_min', 'Endurance', 'min', 1], ['mass_g', 'Mass', 'g', 0], ['cruise_kmh', 'Cruise speed', 'km/h', 0],
+  ['stall_kmh', 'Stall speed', 'km/h', 1], ['wh_per_km', 'Energy per km', 'Wh', 2], ['static_margin', 'Static margin', '', 3],
+  ['spar_sf', 'Spar safety factor', '', 2], ['climb_ms', 'Climb rate', 'm/s', 1], ['ld_max', 'Best lift to drag', '', 1]];
+const fx = (v, nd) => (v === null || v === undefined || !isFinite(v)) ? '–' : (+v).toFixed(nd);
+
+function drawSide(n) {
+  const r = rec(n), R = S.reports[n] && S.reports[n].report, B = S.reports[0] && S.reports[0].report;
+  const unit = (S.meta && S.meta.unit) || '';
+  const score = r ? (r.score ?? 0) : 0, base = (S.meta && S.meta.baseline) || 0;
+  const d = score - base;
+  const failed = r && r.step > 0 && !r.accepted && (r.score ?? 0) <= 0;
+  const nOk = R ? R.gate.checks.filter((c) => c.pass).length : 0, nAll = R ? R.gate.checks.length : 0;
+  $('#sHero').innerHTML = `<div class="hero"><h4><span>Step ${n}${r && r.agent && r.agent !== 'agent' ? ' by ' + esc(r.agent) : ''}</span><span></span></h4>
+    <div class="big">${failed ? '0' : fx(score, 1)}<small>${esc(unit)}</small></div>
+    <div class="d num ${d < -1e-9 ? 'down' : ''}">${failed ? 'Gate failed' : (d >= 0 ? '+' : '') + d.toFixed(1) + ' ' + esc(unit)}</div>
+    <div class="gatehead ${R && !R.gate.pass ? 'fail' : ''}">${R ? (R.gate.pass ? 'Gate passed' : 'Gate failed') : ''} <span>${R ? nOk + ' of ' + nAll + ' checks' : ''}</span></div></div>`;
+  if (!R) { $('#sTiles').style.display = $('#sGate').style.display = 'none'; return; }
+  $('#sTiles').style.display = $('#sGate').style.display = '';
+  const a = R.aircraft || {}, b = (B && B.aircraft) || {};
+  $('#sTiles').innerHTML = '<ul class="mlist">' + METRICS.map(([k, name, u, nd]) => {
+    const dv = (a[k] ?? null) !== null && (b[k] ?? null) !== null && n !== 0 ? a[k] - b[k] : null;
+    return `<li><span class="k">${name}</span><span class="v num">${fx(a[k], nd)} ${u}</span><span class="dd num">${dv === null || Math.abs(dv) < 1e-9 ? '' : (dv > 0 ? '+' : '') + dv.toFixed(nd)}</span></li>`;
+  }).join('') + '</ul>';
+  $('#sGate').innerHTML = '<h4><span>Checks</span><span></span></h4>' + R.gate.checks.map((c) => {
+    const lim = c.limit, val = c.value; let head = null, vs = '';
+    if (typeof val === 'number') {
+      if (Array.isArray(lim)) {
+        const [lo, hi] = lim, ps = [];
+        if (lo !== null && lo !== 0) ps.push((val - lo) / Math.abs(lo));
+        if (hi !== null && hi !== 0) ps.push((hi - val) / Math.abs(hi));
+        if (lo !== null && hi !== null) ps.push(Math.min(val - lo, hi - val) / ((hi - lo) / 2));
+        head = ps.length ? Math.min(...ps) : null;
+        vs = `${fx(val, 2)} (${lo === null ? 'max ' + fx(hi, 2) : hi === null ? 'min ' + fx(lo, 2) : fx(lo, 2) + ' to ' + fx(hi, 2)})`;
+      } else if (typeof lim === 'number') { head = lim ? (val - lim) / Math.abs(lim) : null; vs = `${fx(val, 2)} (min ${fx(lim, 2)})`; }
+    } else vs = c.pass ? (c.value === 'flown' ? 'flown' : 'ok') : (c.value === 'failed' ? 'failed' : 'missing');
+    const pct = head === null ? (c.pass ? 100 : 6) : Math.max(4, Math.min(100, head * 220));
+    const cls = !c.pass ? 'bad' : head !== null && head < 0.12 ? 'tight' : '';
+    return `<div class="chk ${c.pass ? '' : 'f'}" title="${esc(c.detail || '')}"><span class="nm">${esc(c.name.replace(/_/g, ' '))}</span><span class="val num">${vs}</span><div class="hb"><i class="${cls}" style="width:${pct}%"></i></div></div>`;
+  }).join('');
+  drawDetail(R);
+}
+function drawDetail(R) {
+  const el = $('#sDetail'); const id = S.part;
+  const p = id && R.parts.find((q) => q.id === id);
+  if (p) {
+    const mat = p.material || {}, op = p.operating_point || {};
+    el.innerHTML = `<div class="det"><h4><span>Part</span><a class="lnk" id="clr">Close</a></h4><h3>${esc(p.id)}</h3>
+      <div class="sub">${esc(p.type)}${p.part_number ? ', ' + esc(p.part_number) : ''}</div>
+      <span class="nb ${esc(p.necessity)}">${esc((p.necessity === 'unnecessary' ? 'removable' : (p.necessity || '').replace('_', ' ')))}</span>
+      <p>${esc(p.why || '')}</p><p style="color:var(--muted);font-size:13px">${esc(p.removal_test || '')}</p>
+      <table class="kv"><tr><td>Function</td><td>${esc(p.function)}</td></tr><tr><td>Mass</td><td class="num">${fx(p.mass_g, 1)} g</td></tr>
+      <tr><td>Material</td><td>${esc(mat.name || '–')}${mat.kind === 'printed' ? ` (infill ${fx(mat.infill, 2)}, walls ${mat.walls ?? '–'})` : ''}</td></tr>
+      ${p.score_delta_if_removed != null ? `<tr><td>If removed</td><td class="num">${p.score_delta_if_removed > 0 ? '+' : ''}${fx(p.score_delta_if_removed, 2)} score</td></tr>` : ''}
+      ${Object.entries(op).slice(0, 4).map(([k, v]) => `<tr><td>${esc(k.replace(/_/g, ' '))}</td><td class="num">${esc(typeof v === 'number' ? fx(v, 2) : v)}</td></tr>`).join('')}
+      ${(p.interfaces || []).slice(0, 4).map((i) => `<tr><td>Touches</td><td><a class="lnk" data-p="${esc(i.mates)}">${esc(i.mates)}</a>, ${esc(i.joint || '')}</td></tr>`).join('')}</table></div>`;
+    $('#clr').onclick = () => { S.part = null; recolor(); drawDetail(R); };
+    el.querySelectorAll('a[data-p]').forEach((a) => a.onclick = () => pickPart(a.dataset.p));
+    return;
+  }
+  const un = R.parts.filter((q) => q.necessity === 'unnecessary' && !q.locked).sort((a, b) => (b.score_delta_if_removed || 0) - (a.score_delta_if_removed || 0));
+  const tested = R.parts.some((q) => q.necessity && q.necessity !== 'not_tested');
+  el.innerHTML = `<h4><span>${tested ? 'Parts that can still go' : 'Parts'}</span><span>${tested ? un.length : R.parts.length}</span></h4>` +
+    (tested ? (un.slice(0, 9).map((q) => `<div class="rm" data-p="${esc(q.id)}"><span>${esc(q.id)}</span><span class="g num">${q.score_delta_if_removed ? '+' + fx(q.score_delta_if_removed, 1) : ''}</span></div>`).join('') || '<div style="color:var(--muted)">Nothing left to remove.</div>')
+      : '<div style="color:var(--muted)">Not tested: this attempt was rejected.</div>') +
+    '';
+  el.querySelectorAll('.rm').forEach((d) => d.onclick = () => pickPart(d.dataset.p));
+}
+
+// ------------------------------------------------------------------ 3D
+const stage = $('#stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+stage.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+const cam = new THREE.PerspectiveCamera(36, 1, 0.01, 50);
+cam.position.set(-1.7, 1.15, 2.2);
+const controls = new OrbitControls(cam, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08; controls.target.set(0.5, 0, 0);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x9a9a9a, 1.35));
+const sun = new THREE.DirectionalLight(0xffffff, 1.9); sun.position.set(-2, 4, 3); scene.add(sun);
+const rim = new THREE.DirectionalLight(0xffffff, 0.8); rim.position.set(3, 1, -3); scene.add(rim);
+const grid = new THREE.GridHelper(4, 40, 0xbdbdbd, 0xd2d2d2); scene.add(grid);
+const curG = new THREE.Group(), ghostG = new THREE.Group(); scene.add(ghostG, curG);
+const loader = new GLTFLoader();
+let centroid = new THREE.Vector3(), fitted = false, curStep = null, loadToken = 0;
+
+function resize() {
+  const r = stage.getBoundingClientRect(); renderer.setSize(r.width, r.height, false);
+  cam.aspect = r.width / Math.max(1, r.height); cam.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stage); resize();
+(function loop() { controls.update(); renderer.render(scene, cam); requestAnimationFrame(loop); })();
+
+async function model(n) {
+  if (S.models[n] !== undefined) return S.models[n];
+  S.models[n] = (async () => {
+    const r = await fetch(url(`/api/step/${n}/model.glb`));
+    if (!r.ok) return null;
+    const buf = await r.arrayBuffer();
+    return await new Promise((res, rej) => loader.parse(buf, '', (g) => res(g.scene), rej));
+  })().catch(() => null);
+  return S.models[n];
+}
+function partBoxes(root) {
+  const m = new Map(); root.traverse((o) => { if (o.isMesh) { o.geometry.computeBoundingBox(); m.set(o.name || o.parent.name, o.geometry.boundingBox.clone()); } });
+  return m;
+}
+function nameOf(o) { return o.name || (o.parent && o.parent.name); }
+function fillGroup(group, root, ghost) {
+  group.clear();
+  if (!root) return;
+  const c = root.clone(true);
+  c.traverse((o) => {
+    if (!o.isMesh) return;
+    o.userData.pid = nameOf(o);
+    o.material = new THREE.MeshStandardMaterial({ color: 0x9a9a9a, roughness: 0.62, metalness: 0.05, flatShading: false,
+      transparent: ghost, opacity: ghost ? 0.12 : 1, depthWrite: !ghost, side: THREE.DoubleSide });
+    const g = o.geometry; o.userData.center = (g.boundingBox || (g.computeBoundingBox(), g.boundingBox)).getCenter(new THREE.Vector3());
+  });
+  group.add(c);
+}
+function meshes(group) { const a = []; group.traverse((o) => { if (o.isMesh) a.push(o); }); return a; }
+
+function changeMap(curRoot, baseRoot) {
+  const out = new Map();
+  if (!curRoot || !baseRoot) return out;
+  const cb = partBoxes(curRoot), bb = partBoxes(baseRoot);
+  for (const [id, box] of cb) {
+    const b = bb.get(id);
+    if (!b) out.set(id, 'added');
+    else if (box.min.distanceTo(b.min) > 2e-4 || box.max.distanceTo(b.max) > 2e-4) out.set(id, 'changed');
+    else out.set(id, 'same');
+  }
+  for (const id of bb.keys()) if (!cb.has(id)) out.set(id, 'removed');
+  return out;
+}
+let changes = new Map(), curReport = null, baseReport = null;
+
+function recolor() {
+  const byId = new Map((curReport ? curReport.parts : []).map((p) => [p.id, p]));
+  const baseIds = new Map((baseReport ? baseReport.parts : []).map((p) => [p.id, p]));
+  for (const m of meshes(curG)) {
+    const id = m.userData.pid, p = byId.get(id);
+    let col = '#9a9a9a', op = 1;
+    if (S.mode === 'necessity') col = NEC[(p && p.necessity) || 'not_tested'] || NEC.not_tested;
+    else if (S.mode === 'function') col = FUNC[(p && p.function) || 'unknown'] || FUNC.unknown;
+    else { const ch = changes.get(id) || 'same'; col = CH[ch] || CH.same; op = ch === 'same' ? 0.7 : 1; }
+    m.material.color.set(col); m.material.transparent = op < 1; m.material.opacity = op;
+    m.material.emissive = new THREE.Color(id === S.part ? 0x444444 : id === S.hover ? 0x2a2a2a : 0x000000);
+  }
+  for (const m of meshes(ghostG)) {
+    const gone = changes.get(m.userData.pid) === 'removed';
+    const show = S.ghost || (S.mode === 'changes' && (gone || changes.get(m.userData.pid) === 'changed'));
+    m.visible = show && (S.mode !== 'changes' || S.ghost || gone || changes.get(m.userData.pid) === 'changed');
+    if (gone) { m.material.color.set('#2a3cff'); m.material.opacity = 0.55; m.material.transparent = true; }
+    else { m.material.color.set('#444444'); m.material.opacity = S.mode === 'changes' ? 0.16 : 0.1; }
+  }
+  legend();
+  explode();
+}
+function legend() {
+  const items = S.mode === 'necessity' ? [['Needed to fly', NEC.required], ['Helps a little', NEC.helpful], ['Can be removed', NEC.unnecessary], ['Not tested', NEC.not_tested]]
+    : S.mode === 'changes' ? [['Unchanged', CH.same], ['Changed or added', CH.changed], ['Removed since the start', NEC.unnecessary]]
+      : Object.entries(FUNC).filter(([k]) => curReport && curReport.parts.some((p) => p.function === k)).map(([k, c]) => [k, c]);
+  $('#legend').innerHTML = items.map(([n, c]) => `<span><i style="background:${c}"></i>${esc(n)}</span>`).join('');
+}
+function explode() {
+  const k = S.explode;
+  for (const m of meshes(curG)) { const c = m.userData.center; m.position.set((c.x - centroid.x) * k * 0.9, (c.y - centroid.y) * k * 1.2, (c.z - centroid.z) * k * 0.9); }
+}
+
+async function select(n, animate) {
+  S.sel = n; drawLog(); drawChart();
+  const tok = ++loadToken;
+  const [cur, base] = await Promise.all([report(n), report(0)]);
+  if (tok !== loadToken) return;
+  curReport = cur && cur.report; baseReport = base && base.report;
+  const r = rec(n), v = verdict(r);
+  // banner
+  let b = `<div class="verdict ${v === 'rejected' ? 'rejected' : ''}">${v === 'baseline' ? 'Starting design' : v === 'improved' ? 'Kept, scored higher' : v === 'rejected' ? 'Rejected' : 'Kept'}</div>`;
+  if (r && (r.note || opsText(r))) b += `<div class="stepnote">${esc(r.note || opsText(r))}</div>`;
+  if (r && v === 'rejected') b += `<div class="reason">${esc(failText(r))}</div>`;
+  $('#banner').innerHTML = b;
+  drawSide(n);
+  const [cm, bm] = await Promise.all([model(n), model(0)]);
+  if (tok !== loadToken) return;
+  const msg = $('#msg');
+  if (!cm) { msg.style.display = 'grid'; msg.textContent = 'No model for this attempt (the edit was invalid, so nothing was built).'; curG.clear(); ghostG.clear(); return; }
+  msg.style.display = 'none';
+  if (curStep !== n) { fillGroup(curG, cm, false); }
+  if (!ghostG.children.length || ghostG.userData.base !== 0) { fillGroup(ghostG, bm, true); ghostG.userData.base = 0; }
+  curStep = n;
+  changes = changeMap(cm, bm);
+  const box = new THREE.Box3().setFromObject(curG); box.getCenter(centroid);
+  if (!fitted) {
+    fitted = true; const size = box.getSize(new THREE.Vector3()), mx = Math.max(size.x, size.z, 0.5);
+    controls.target.copy(centroid); cam.position.copy(centroid).add(new THREE.Vector3(-mx * 0.75, mx * 0.5, mx * 1.05)); controls.update();
+    grid.position.y = box.min.y - 0.02;
+  }
+  recolor();
+}
+function pickPart(id) { S.part = id; recolor(); if (curReport) drawDetail(curReport); }
+
+// picking
+const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
+function hit(e) {
+  const r = renderer.domElement.getBoundingClientRect();
+  mouse.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(mouse, cam);
+  const h = ray.intersectObjects(meshes(curG).filter((m) => m.visible), false)[0];
+  return h ? h.object.userData.pid : null;
+}
+let down = null;
+renderer.domElement.addEventListener('pointerdown', (e) => down = [e.clientX, e.clientY]);
+renderer.domElement.addEventListener('pointerup', (e) => { if (down && Math.hypot(e.clientX - down[0], e.clientY - down[1]) < 4) pickPart(hit(e)); down = null; });
+renderer.domElement.addEventListener('pointermove', (e) => {
+  const id = hit(e);
+  if (id !== S.hover) { S.hover = id; recolor(); }
+  if (id) tip(e, id + (curReport ? ' · ' + ((curReport.parts.find((p) => p.id === id) || {}).necessity || '').replace('_', ' ') : '')); else hideTip();
+});
+renderer.domElement.addEventListener('pointerleave', hideTip);
+function tip(e, t) { const el = $('#tip'); el.style.display = 'block'; el.textContent = t; moveTip(e); }
+function moveTip(e) { const el = $('#tip'); el.style.left = e.clientX + 14 + 'px'; el.style.top = e.clientY + 12 + 'px'; }
+function hideTip() { $('#tip').style.display = 'none'; }
+
+// controls
+$('#modes').querySelectorAll('button').forEach((b) => b.onclick = () => {
+  S.mode = b.dataset.m; $('#modes').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b)); recolor();
+});
+$('#ghostb').onclick = () => { S.ghost = !S.ghost; $('#ghostb').classList.toggle('on', S.ghost); recolor(); };
+$('#explode').oninput = (e) => { S.explode = +e.target.value; explode(); };
+$('#play').onclick = () => {
+  if (S.play) { clearInterval(S.play); S.play = null; $('#play').textContent = 'Replay'; return; }
+  const seq = steps().filter((r) => r.accepted).map((r) => r.step); if (seq.length < 2) return;
+  let i = 0; S.follow = false; $('#play').textContent = 'Stop';
+  const tick = () => { select(seq[i]); i += 1; if (i >= seq.length) { clearInterval(S.play); S.play = null; $('#play').textContent = 'Replay'; } };
+  tick(); S.play = setInterval(tick, 1500);
+};
+addEventListener('keydown', (e) => {
+  const ss = steps().map((r) => r.step), i = ss.indexOf(S.sel);
+  if (e.key === 'ArrowRight' && i < ss.length - 1) { S.follow = i + 1 === ss.length - 1; select(ss[i + 1]); }
+  if (e.key === 'ArrowLeft' && i > 0) { S.follow = false; select(ss[i - 1]); }
+});
+
+poll(); if (!STATIC) setInterval(poll, 1500);
+</script>
+</body>
+</html>

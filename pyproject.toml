@@ -1,19 +1,38 @@
 [project]
 name = "dronebench"
-version = "0.1.0"
-description = "Benchmark environment for small electric fixed-wing UAV designs"
+version = "0.2.0"
+description = "Design and flight environment for small electric fixed-wing UAVs: designs are flown in a 6-DOF simulator before they score"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
-dependencies = ["numpy", "scipy", "trimesh", "pyyaml", "shapely", "rtree", "networkx", "cascadio", "lxml"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = ["numpy", "scipy", "trimesh", "pyyaml", "shapely", "rtree", "networkx", "cascadio", "lxml", "aerosandbox", "numba", "gymnasium", "cma"]
+
+[project.optional-dependencies]
+rl = ["stable-baselines3", "torch"]
+dev = ["pytest"]
+
+[project.urls]
+Homepage = "https://sisiphamus.github.io/dronebench/"
+Source = "https://github.com/sisiphamus/dronebench"
 
 [project.scripts]
 dronebench = "dronebench.cli:main"
 
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["dronebench*"]
 
 [tool.setuptools.package-data]
-dronebench = ["viewer/*.html", "viewer/*.js"]
+dronebench = ["viewer/*.html", "viewer/*.js", "viewer/vendor/*.js", "viewer/vendor/addons/*/*.js"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["tests"]

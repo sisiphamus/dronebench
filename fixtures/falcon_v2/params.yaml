@@ -1,3 +1,4 @@
+builder: falcon_v2
 # Parametric Titan Falcon V2 replica. Edit and rerun:  .venv/bin/python fixtures/build_falcon_v2.py
 # Lengths in mm (frame: x aft from the nose, y right, z up). Deterministic; rebuild < 10 s.
 wing:
@@ -50,9 +51,9 @@ payload:
   part_number: Sony RX0 II
   mass_g: 132
   size_mm: [59, 41, 35]
-waste:                       # seeded unnecessary parts (the idiot-index demo)
-  ballast_nose: true
-  gps_2: true
-  spar_doubler: true
-  fairings: true
-  fuse_armor: true
+waste:                       # planted unnecessary parts; all off in the default Falcon (see falcon_v2_padded)
+  ballast_nose: false
+  gps_2: false
+  spar_doubler: false
+  fairings: false
+  fuse_armor: false

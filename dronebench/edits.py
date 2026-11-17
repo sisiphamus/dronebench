@@ -39,7 +39,7 @@ UNITS_TO_M = {"mm": 1e-3, "cm": 1e-2, "m": 1.0, "in": 0.0254}
 METRE_EXTS = {".glb", ".gltf", ".step", ".stp"}
 SET_ROOTS = {"specs", "material", "part_number", "qty", "role", "type", "connects", "group", "parent", "notes"}
 MATERIAL_FIELDS = {"name", "infill", "walls", "orientation"}
-MISSION_PATHS = {"preset", "cruise_kmh", "usable_battery_fraction", "rho"}
+MISSION_PATHS = {"cruise_kmh"}      # the rest of mission.yaml (preset, usable battery, air density, MTOW, payload) is the task, not the design
 PRESETS = ("endurance", "range", "speed", "payload", "efficiency")
 SCALE_RANGE = (0.2, 5.0)
 MAX_MOVE_M = 2.0
@@ -343,7 +343,7 @@ def _op_add(st: _Stage, op: dict) -> None:
 def _op_mission(st: _Stage, op: dict) -> None:
     path, value = op.get("path"), op.get("value")
     if path not in MISSION_PATHS:
-        raise ValueError(f"mission: path must be one of {sorted(MISSION_PATHS)} (payload and frame are fixed)")
+        raise ValueError(f"mission: path must be one of {sorted(MISSION_PATHS)} (payload and frame are fixed, and so is everything else in mission.yaml)")
     if path == "preset" and value not in PRESETS:
         raise ValueError(f"mission: preset must be one of {PRESETS}")
     if path != "preset" and value is not None and not isinstance(value, (int, float)):

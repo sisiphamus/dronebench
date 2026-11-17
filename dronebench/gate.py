@@ -230,14 +230,28 @@ def check_control_chain(design, links) -> Check:
         probs.append("no flight controller")
     if not design.of_type("rx"):
         probs.append("no receiver")
+    if not design.of_type("gps"):
+        probs.append("no GPS (every mission is navigated; the simulator would fly without one, a real aircraft would not)")
     surfaces = [p for p in design.parts.values() if p.role in CONTROL_ROLES and p.type != "servo"]
     driven = {}
     for s in design.of_type("servo"):
         surf = servo_surface(s, links)
         if surf:
             driven.setdefault(surf, []).append(s.id)
+    roles = {s.role for s in surfaces}
+    for axis, need in (("roll", ("aileron", "elevon")), ("pitch", ("elevator", "elevon", "ruddervator")),
+                       ("yaw", ("rudder", "ruddervator"))):
+        if not roles & set(need):
+            probs.append(f"no {axis} control surface ({' / '.join(need)})")
     ok_count = 0
+    hinges = design.of_type("hinge")
     for surf in surfaces:
+        if not any(h.parent == surf.id or surf.id in h.connects for h in hinges):
+            probs.append(f"{surf.id} has no hinge (nothing holds it on)")
+            continue
+        if not any(l.parent == surf.id or surf.id in l.connects for l in design.of_type("linkage")):
+            probs.append(f"{surf.id} has no linkage (the servo would move nothing)")
+            continue
         servos = driven.get(surf.id, [])
         if not servos:
             probs.append(f"{surf.id} ({surf.role}) has no servo")
@@ -357,6 +371,162 @@ def check_clearance(design, G, links) -> Check:
     return Check("clearance", len(pen) + len(strikes), [None, 0], not probs, "; ".join(probs))
 
 
+def check_harness(design: Design, G) -> Check:
+    """Every ESC needs a power lead from the battery, and the wiring must weigh at least a minimum for the
+    ESCs, servos and FC it serves (10 g/ESC, 7 g/servo lead, 5 g FC). Deleting the wire parts to save their mass is
+    not a design improvement."""
+    if G is None:
+        return Check("harness", 0, [None, 0], True, "no part graph given; not checked")
+
+    def wires_of(pid):
+        if pid not in G:
+            return set()
+        return {n for n in G.neighbors(pid) if G.nodes[n].get("type") == "wire"
+                and any(l["kind"] == "electrical" for l in G.edges[pid, n]["links"])}
+
+    probs = []
+    batts = [b.id for b in design.of_type("battery")]
+    fcs = [f.id for f in design.of_type("fc")]
+    for e in design.of_type("esc"):
+        if batts and not any(wires_of(e.id) & wires_of(b) for b in batts):
+            probs.append(f"{e.id}: no power wiring to the battery")
+    wires = design.of_type("wire")
+    have = sum(float(w.mass_g or 0) for w in wires)
+    need = 10.0 * len(design.of_type("esc")) + 7.0 * len(design.of_type("servo")) + (5.0 if fcs else 0.0)
+    if have + 1e-9 < need:
+        probs.append(f"harness mass {have:.0f} g < {need:.0f} g minimum for {len(design.of_type('esc'))} ESC(s), "
+                     f"{len(design.of_type('servo'))} servo(s)")
+    return Check("harness", len(probs), [None, 0], not probs, "; ".join(probs[:6]))
+
+
+SHELL_ROLES = ("wing", "htail", "vtail", "fuselage", "nacelle")
+
+
+def check_shell_structure(design: Design) -> Check:
+    """Printed airframe shells need a skin and internal ribs or webs (walls >= 2; in vase mode the second wall stands
+    for the printed ribs). A single wall with nothing behind it has no bending or buckling margin, and nothing else
+    in the model would notice, so thinning shells is not allowed to pass as a weight saving."""
+    bad = []
+    for p in design.parts.values():
+        m = p.material
+        if m is None or m.kind != "printed" or (p.role or p.type) not in SHELL_ROLES or p.mesh is None:
+            continue
+        if m.walls is not None and m.walls < 2:
+            bad.append(f"{p.id} (walls {m.walls})")
+    return Check("shell_structure", len(bad), [None, 0], not bad,
+                 "" if not bad else "printed shell with a single wall and no ribs: " + ", ".join(bad[:8]))
+
+
+LIION_PACK_CM3_PER_CELL = 29.1     # 21700 cell (21 x 70 mm) plus 20% for wiring, spacing and wrap
+LIPO_WH_PER_CM3 = 0.33             # pouch pack, about 330 Wh/L
+
+
+def check_battery_fit(design: Design, pin) -> Check:
+    """The pack has to fit inside the volume the CAD gives it. An agent may add cells (more energy), but the cells take
+    room: energy without volume is a free lunch the model would otherwise grant."""
+    from .physics import propulsion as P
+    b = pin.battery if pin is not None else None
+    parts = [p for p in design.of_type("battery") if getattr(p, "bbox_m", None) is not None]
+    if b is None or not parts:
+        return Check("battery_fit", 0.0, [None, 1.0], True, "no battery CAD to compare")
+    cells = max(int(b.cells_s), 1) * P.pack_parallel(b)
+    if (b.chemistry or "").lower().replace("-", "") == "liion":
+        need = cells * LIION_PACK_CM3_PER_CELL
+    else:
+        need = P.battery_energy_wh(b) / LIPO_WH_PER_CM3
+    have = 0.0
+    for p in parts:
+        d = np.abs(np.asarray(p.bbox_m[1], float) - np.asarray(p.bbox_m[0], float))
+        have += float(d[0] * d[1] * d[2]) * 1e6
+    ratio = need / max(have, 1e-9)
+    return Check("battery_fit", round(ratio, 2), [None, 1.05], ratio <= 1.05,
+                 f"pack needs {need:.0f} cm3, the CAD gives it {have:.0f} cm3")
+
+
+def check_mtow(design: Design, mass_kg: float) -> Check:
+    lim = design.mission.max_mass_kg
+    if lim is None:
+        return Check("mtow", round(mass_kg, 3), [None, None], True, "no takeoff mass limit in mission.yaml")
+    return Check("mtow", round(mass_kg, 3), [None, lim], mass_kg <= lim + 1e-9, f"takeoff mass {mass_kg:.2f} kg vs limit {lim:.2f} kg")
+
+
+FUSELAGE_GAP_MM = 10.0
+
+
+def check_fuselage_continuous(design: Design) -> Check:
+    """The fuselage shells must run nose to tail with no missing section. A section deleted from the middle
+    leaves less skin to drag through the air, which the drag model would otherwise score as a gain."""
+    shells = [p for p in design.parts.values()
+              if (p.type == "fuselage" or p.role == "fuselage") and getattr(p, "bbox_m", None) is not None]
+    if len(shells) < 2:
+        return Check("fuselage_continuous", 0, [None, 0], True, "")
+    spans = sorted((float(p.bbox_m[0][0]), float(p.bbox_m[1][0]), p.id) for p in shells)
+    reach, last, gaps = spans[0][1], spans[0][2], []
+    for lo, hi, pid in spans[1:]:
+        gap = (lo - reach) * 1000.0
+        if gap > FUSELAGE_GAP_MM:
+            gaps.append(f"{gap:.0f} mm missing between {last} and {pid}")
+        if hi > reach:
+            reach, last = hi, pid
+    return Check("fuselage_continuous", len(gaps), [None, 0], not gaps, "; ".join(gaps))
+
+
+CONNECT_MM = 25.0   # parts closer than this are treated as held together (standoffs, brackets, mounting pods)
+
+
+def _surface_points(part, n=300) -> np.ndarray:
+    import trimesh
+    pts, _ = trimesh.sample.sample_surface(part.mesh, n, seed=0)
+    return np.vstack([np.asarray(part.mesh.vertices), pts])
+
+
+def airframe_clusters(design: Design, G) -> list[list[str]]:
+    """Groups of meshed parts that hang together: physical contacts, then anything within CONNECT_MM."""
+    import networkx as nx
+    from scipy.spatial import cKDTree
+    meshed = [p for p in design.parts.values() if getattr(p, "mesh", None) is not None]
+    h = nx.Graph()
+    h.add_nodes_from(p.id for p in meshed)
+    for u, v, a in G.edges(data=True):
+        if u in h and v in h and any(l["kind"] == "physical" for l in a["links"]):
+            h.add_edge(u, v)
+    comps = list(nx.connected_components(h))
+    if len(comps) > 1:
+        trees, boxes = {}, {}
+        by_id = {p.id: p for p in meshed}
+        for i, c in enumerate(comps):
+            pts = np.vstack([_surface_points(by_id[x]) for x in c])
+            trees[i] = cKDTree(pts)
+            boxes[i] = (pts.min(0), pts.max(0))
+        cg = nx.Graph()
+        cg.add_nodes_from(trees)
+        lim = CONNECT_MM * 1e-3
+        for i in trees:
+            for j in trees:
+                if i < j:
+                    lo_i, hi_i = boxes[i]; lo_j, hi_j = boxes[j]
+                    if (np.maximum(lo_i, lo_j) - np.minimum(hi_i, hi_j) > lim).any():
+                        continue
+                    d, _ = trees[j].query(trees[i].data, distance_upper_bound=lim)
+                    if np.isfinite(d).any():
+                        cg.add_edge(i, j)
+        merged = [sorted(x for k in grp for x in comps[k]) for grp in nx.connected_components(cg)]
+    else:
+        merged = [sorted(c) for c in comps]
+    return sorted(merged, key=len, reverse=True)
+
+
+def check_airframe_connected(design: Design, G) -> Check:
+    if G is None:
+        return Check("airframe_connected", 1, [None, 1], True, "no part graph given; not checked")
+    groups = airframe_clusters(design, G)
+    if len(groups) <= 1:
+        return Check("airframe_connected", 1, [None, 1], True, "every part is attached to the airframe")
+    stray = [x for g in groups[1:] for x in g]
+    return Check("airframe_connected", len(groups), [None, 1], False,
+                 f"{len(groups)} separate pieces; not attached to the main airframe: " + ", ".join(stray[:10]))
+
+
 # ---------------------------------------------------------------- gate
 
 def evaluate_gate(design: Design, graph, geom: AeroGeometry, pres: PhysicsResult, pin=None,
@@ -378,8 +548,9 @@ def evaluate_gate(design: Design, graph, geom: AeroGeometry, pres: PhysicsResult
             c.passed = False
             c.detail = f"physics could not run: {note}" + (f" ({c.detail})" if c.detail else "")
     checks = [check_lifting_surfaces(design, geom), *phys, check_power_chain(design, links), check_control_chain(design, links), check_payload(design),
-              check_clearance(design, graph, links)]
+              check_clearance(design, graph, links), check_airframe_connected(design, graph), check_harness(design, graph), check_fuselage_continuous(design), check_shell_structure(design),
+              check_battery_fit(design, pin), check_mtow(design, pres.mass_kg)]
     order = ["lifting_surfaces", "static_margin", "stall_margin", "climb", "spar", "tail_volume", "servo_torque",
-             "motor_current", "esc_current", "battery_current", "power_chain", "control_chain", "payload", "clearance"]
+             "motor_current", "esc_current", "battery_current", "power_chain", "control_chain", "payload", "clearance", "airframe_connected", "harness", "fuselage_continuous", "shell_structure", "battery_fit", "mtow"]
     checks.sort(key=lambda c: order.index(c.name))
     return GateResult(passed=all(c.passed for c in checks), checks=checks)

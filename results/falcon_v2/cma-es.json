@@ -1,0 +1,829 @@
+{
+  "format": "dronebench-result/1",
+  "dronebench": "0.2.0",
+  "fixture": "falcon_v2",
+  "builder": "falcon_v2",
+  "preset": "endurance",
+  "fidelity": "flown",
+  "start_params": {},
+  "start_design_sha256": "abcfb87adfa04d4fe946a5ebc2a32e29394cb661cb8491d5690d4786d6417a67",
+  "agent": "cma",
+  "baseline": 148.8376,
+  "best": 158.7548,
+  "unit": "min",
+  "budget": 30,
+  "attempts": 30,
+  "accepted": 4,
+  "steps": [
+    {
+      "step": 1,
+      "kind": "build",
+      "accepted": false,
+      "score": 0.0,
+      "note": "cma",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2283.0484,
+            "wing.root_chord_mm": 250.6401,
+            "wing.tip_chord_mm": 44.8203,
+            "wing.break_y_mm": 553.7158,
+            "wing.dihedral_deg": 0.8894,
+            "htail.area_m2": 0.0533,
+            "htail.arm_mm": 828.5185,
+            "vtail.area_m2": 0.0366,
+            "fuselage.wall_mm": 2.4517,
+            "propulsion.prop": "APC 11x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 2,
+      "kind": "build",
+      "accepted": false,
+      "score": 0.0,
+      "note": "cma",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2055.2772,
+            "wing.root_chord_mm": 254.1239,
+            "wing.tip_chord_mm": 64.2652,
+            "wing.break_y_mm": 552.5043,
+            "wing.dihedral_deg": 0.4224,
+            "htail.area_m2": 0.0667,
+            "htail.arm_mm": 751.8997,
+            "vtail.area_m2": 0.0426,
+            "fuselage.wall_mm": 2.2217,
+            "propulsion.prop": "APC 12x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 3,
+      "kind": "build",
+      "accepted": false,
+      "score": 123.8739,
+      "note": "cma",
+      "reason": "regression: 123.87 < best 148.84 (use --keep to accept anyway)",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2198.4001,
+            "wing.root_chord_mm": 249.5389,
+            "wing.tip_chord_mm": 49.5622,
+            "wing.break_y_mm": 559.8899,
+            "wing.dihedral_deg": 0.3794,
+            "htail.area_m2": 0.08,
+            "htail.arm_mm": 718.8745,
+            "vtail.area_m2": 0.0382,
+            "fuselage.wall_mm": 2.2887,
+            "propulsion.prop": "APC 11x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 4,
+      "kind": "build",
+      "accepted": false,
+      "score": 0.0,
+      "note": "cma",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 1962.2747,
+            "wing.root_chord_mm": 263.5866,
+            "wing.tip_chord_mm": 70.4198,
+            "wing.break_y_mm": 635.3924,
+            "wing.dihedral_deg": 0.4137,
+            "htail.area_m2": 0.0666,
+            "htail.arm_mm": 716.377,
+            "vtail.area_m2": 0.0476,
+            "fuselage.wall_mm": 2.4082,
+            "propulsion.prop": "APC 11x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S1P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 5,
+      "kind": "build",
+      "accepted": true,
+      "score": 149.4585,
+      "note": "cma",
+      "reason": null,
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2107.0586,
+            "wing.root_chord_mm": 269.4432,
+            "wing.tip_chord_mm": 54.512,
+            "wing.break_y_mm": 586.1486,
+            "wing.dihedral_deg": 0.0246,
+            "htail.area_m2": 0.0717,
+            "htail.arm_mm": 740.5995,
+            "vtail.area_m2": 0.0426,
+            "fuselage.wall_mm": 2.5359,
+            "propulsion.prop": "APC 11x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 6,
+      "kind": "build",
+      "accepted": false,
+      "score": 141.5277,
+      "note": "cma",
+      "reason": "regression: 141.53 < best 149.46 (use --keep to accept anyway)",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2004.7354,
+            "wing.root_chord_mm": 279.169,
+            "wing.tip_chord_mm": 57.0013,
+            "wing.break_y_mm": 588.5857,
+            "wing.dihedral_deg": 0.7198,
+            "htail.area_m2": 0.0743,
+            "htail.arm_mm": 800.9246,
+            "vtail.area_m2": 0.0468,
+            "fuselage.wall_mm": 2.7541,
+            "propulsion.prop": "APC 10x7E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 7,
+      "kind": "build",
+      "accepted": true,
+      "score": 155.9757,
+      "note": "cma",
+      "reason": null,
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2175.5947,
+            "wing.root_chord_mm": 284.2938,
+            "wing.tip_chord_mm": 69.4461,
+            "wing.break_y_mm": 641.731,
+            "wing.dihedral_deg": 0.3306,
+            "htail.area_m2": 0.0728,
+            "htail.arm_mm": 735.8875,
+            "vtail.area_m2": 0.0406,
+            "fuselage.wall_mm": 2.531,
+            "propulsion.prop": "APC 11x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 8,
+      "kind": "build",
+      "accepted": false,
+      "score": 140.6817,
+      "note": "cma",
+      "reason": "regression: 140.68 < best 155.98 (use --keep to accept anyway)",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 1977.0926,
+            "wing.root_chord_mm": 272.5716,
+            "wing.tip_chord_mm": 57.9073,
+            "wing.break_y_mm": 586.452,
+            "wing.dihedral_deg": 0.1719,
+            "htail.area_m2": 0.0737,
+            "htail.arm_mm": 735.4529,
+            "vtail.area_m2": 0.0378,
+            "fuselage.wall_mm": 2.655,
+            "propulsion.prop": "APC 11x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 9,
+      "kind": "build",
+      "accepted": false,
+      "score": 143.5717,
+      "note": "cma",
+      "reason": "regression: 143.57 < best 155.98 (use --keep to accept anyway)",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2022.0018,
+            "wing.root_chord_mm": 268.5966,
+            "wing.tip_chord_mm": 61.2159,
+            "wing.break_y_mm": 568.5579,
+            "wing.dihedral_deg": 0.0515,
+            "htail.area_m2": 0.0688,
+            "htail.arm_mm": 758.8089,
+            "vtail.area_m2": 0.0401,
+            "fuselage.wall_mm": 2.6865,
+            "propulsion.prop": "APC 11x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 10,
+      "kind": "build",
+      "accepted": false,
+      "score": 0.0,
+      "note": "cma",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 1978.9168,
+            "wing.root_chord_mm": 278.0013,
+            "wing.tip_chord_mm": 42.554,
+            "wing.break_y_mm": 584.4239,
+            "wing.dihedral_deg": 0.4009,
+            "htail.area_m2": 0.0829,
+            "htail.arm_mm": 752.2572,
+            "vtail.area_m2": 0.0426,
+            "fuselage.wall_mm": 2.5428,
+            "propulsion.prop": "APC 12x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 11,
+      "kind": "build",
+      "accepted": false,
+      "score": 143.3229,
+      "note": "cma",
+      "reason": "regression: 143.32 < best 155.98 (use --keep to accept anyway)",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2053.7058,
+            "wing.root_chord_mm": 237.2717,
+            "wing.tip_chord_mm": 64.5519,
+            "wing.break_y_mm": 551.9639,
+            "wing.dihedral_deg": 0.0581,
+            "htail.area_m2": 0.0608,
+            "htail.arm_mm": 776.1181,
+            "vtail.area_m2": 0.038,
+            "fuselage.wall_mm": 2.8781,
+            "propulsion.prop": "APC 11x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 12,
+      "kind": "build",
+      "accepted": false,
+      "score": 153.8508,
+      "note": "cma",
+      "reason": "regression: 153.85 < best 155.98 (use --keep to accept anyway)",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2146.0964,
+            "wing.root_chord_mm": 270.1411,
+            "wing.tip_chord_mm": 55.8088,
+            "wing.break_y_mm": 599.3133,
+            "wing.dihedral_deg": 0.644,
+            "htail.area_m2": 0.0666,
+            "htail.arm_mm": 709.4418,
+            "vtail.area_m2": 0.0447,
+            "fuselage.wall_mm": 2.5177,
+            "propulsion.prop": "APC 11x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 13,
+      "kind": "build",
+      "accepted": false,
+      "score": 0.0,
+      "note": "cma",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2147.2894,
+            "wing.root_chord_mm": 276.4608,
+            "wing.tip_chord_mm": 68.7839,
+            "wing.break_y_mm": 661.4067,
+            "wing.dihedral_deg": 1.2567,
+            "htail.area_m2": 0.0652,
+            "htail.arm_mm": 744.7473,
+            "vtail.area_m2": 0.0452,
+            "fuselage.wall_mm": 2.5543,
+            "propulsion.prop": "APC 12x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 14,
+      "kind": "build",
+      "accepted": false,
+      "score": 0.0,
+      "note": "cma",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2117.5533,
+            "wing.root_chord_mm": 279.8172,
+            "wing.tip_chord_mm": 64.3171,
+            "wing.break_y_mm": 665.3708,
+            "wing.dihedral_deg": 0.509,
+            "htail.area_m2": 0.0658,
+            "htail.arm_mm": 688.4841,
+            "vtail.area_m2": 0.0406,
+            "fuselage.wall_mm": 2.5282,
+            "propulsion.prop": "APC 11x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 15,
+      "kind": "build",
+      "accepted": false,
+      "score": 0.0,
+      "note": "cma",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2339.2806,
+            "wing.root_chord_mm": 293.3003,
+            "wing.tip_chord_mm": 52.8318,
+            "wing.break_y_mm": 615.4783,
+            "wing.dihedral_deg": 0.4756,
+            "htail.area_m2": 0.0751,
+            "htail.arm_mm": 665.4146,
+            "vtail.area_m2": 0.0406,
+            "fuselage.wall_mm": 2.5277,
+            "propulsion.prop": "APC 11x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 16,
+      "kind": "build",
+      "accepted": true,
+      "score": 158.3144,
+      "note": "cma",
+      "reason": null,
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2172.3865,
+            "wing.root_chord_mm": 282.2952,
+            "wing.tip_chord_mm": 68.1124,
+            "wing.break_y_mm": 610.0243,
+            "wing.dihedral_deg": 0.597,
+            "htail.area_m2": 0.0685,
+            "htail.arm_mm": 711.2342,
+            "vtail.area_m2": 0.0385,
+            "fuselage.wall_mm": 2.4215,
+            "propulsion.prop": "APC 11x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 17,
+      "kind": "build",
+      "accepted": false,
+      "score": 147.3223,
+      "note": "cma",
+      "reason": "regression: 147.32 < best 158.31 (use --keep to accept anyway)",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2083.0525,
+            "wing.root_chord_mm": 254.2103,
+            "wing.tip_chord_mm": 76.2856,
+            "wing.break_y_mm": 604.4177,
+            "wing.dihedral_deg": 0.3059,
+            "htail.area_m2": 0.0752,
+            "htail.arm_mm": 730.0577,
+            "vtail.area_m2": 0.042,
+            "fuselage.wall_mm": 2.457,
+            "propulsion.prop": "APC 10x7E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 18,
+      "kind": "build",
+      "accepted": false,
+      "score": 0.0,
+      "note": "cma",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2082.3675,
+            "wing.root_chord_mm": 260.8704,
+            "wing.tip_chord_mm": 41.0538,
+            "wing.break_y_mm": 650.5909,
+            "wing.dihedral_deg": 0.7622,
+            "htail.area_m2": 0.0832,
+            "htail.arm_mm": 730.3986,
+            "vtail.area_m2": 0.0463,
+            "fuselage.wall_mm": 2.6884,
+            "propulsion.prop": "APC 12x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S1P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 19,
+      "kind": "build",
+      "accepted": false,
+      "score": 0.0,
+      "note": "cma",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2116.4268,
+            "wing.root_chord_mm": 267.733,
+            "wing.tip_chord_mm": 68.4532,
+            "wing.break_y_mm": 662.7998,
+            "wing.dihedral_deg": 0.2667,
+            "htail.area_m2": 0.0554,
+            "htail.arm_mm": 737.6865,
+            "vtail.area_m2": 0.0358,
+            "fuselage.wall_mm": 2.351,
+            "propulsion.prop": "APC 12x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 20,
+      "kind": "build",
+      "accepted": false,
+      "score": 153.072,
+      "note": "cma",
+      "reason": "regression: 153.07 < best 158.31 (use --keep to accept anyway)",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2068.0533,
+            "wing.root_chord_mm": 264.4447,
+            "wing.tip_chord_mm": 75.9155,
+            "wing.break_y_mm": 623.6726,
+            "wing.dihedral_deg": 1.1088,
+            "htail.area_m2": 0.0707,
+            "htail.arm_mm": 691.5216,
+            "vtail.area_m2": 0.0371,
+            "fuselage.wall_mm": 2.2241,
+            "propulsion.prop": "APC 11x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 21,
+      "kind": "build",
+      "accepted": false,
+      "score": 151.4489,
+      "note": "cma",
+      "reason": "regression: 151.45 < best 158.31 (use --keep to accept anyway)",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2064.3633,
+            "wing.root_chord_mm": 292.8348,
+            "wing.tip_chord_mm": 72.925,
+            "wing.break_y_mm": 582.9087,
+            "wing.dihedral_deg": 0.8542,
+            "htail.area_m2": 0.0713,
+            "htail.arm_mm": 666.3513,
+            "vtail.area_m2": 0.0413,
+            "fuselage.wall_mm": 2.398,
+            "propulsion.prop": "APC 11x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 22,
+      "kind": "build",
+      "accepted": false,
+      "score": 0.0,
+      "note": "cma",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2013.5992,
+            "wing.root_chord_mm": 282.7327,
+            "wing.tip_chord_mm": 63.304,
+            "wing.break_y_mm": 596.7512,
+            "wing.dihedral_deg": 1.3469,
+            "htail.area_m2": 0.083,
+            "htail.arm_mm": 718.4271,
+            "vtail.area_m2": 0.0408,
+            "fuselage.wall_mm": 2.586,
+            "propulsion.prop": "APC 12x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 23,
+      "kind": "build",
+      "accepted": true,
+      "score": 158.7548,
+      "note": "cma",
+      "reason": null,
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2211.1607,
+            "wing.root_chord_mm": 273.7099,
+            "wing.tip_chord_mm": 66.1854,
+            "wing.break_y_mm": 668.6002,
+            "wing.dihedral_deg": 0.3683,
+            "htail.area_m2": 0.0707,
+            "htail.arm_mm": 692.3848,
+            "vtail.area_m2": 0.038,
+            "fuselage.wall_mm": 2.5539,
+            "propulsion.prop": "APC 11x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 24,
+      "kind": "build",
+      "accepted": false,
+      "score": 148.3873,
+      "note": "cma",
+      "reason": "regression: 148.39 < best 158.75 (use --keep to accept anyway)",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2094.4609,
+            "wing.root_chord_mm": 265.8898,
+            "wing.tip_chord_mm": 63.0546,
+            "wing.break_y_mm": 661.6828,
+            "wing.dihedral_deg": 0.3573,
+            "htail.area_m2": 0.0781,
+            "htail.arm_mm": 707.0983,
+            "vtail.area_m2": 0.04,
+            "fuselage.wall_mm": 2.5621,
+            "propulsion.prop": "APC 11x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 25,
+      "kind": "build",
+      "accepted": false,
+      "score": 157.2412,
+      "note": "cma",
+      "reason": "regression: 157.24 < best 158.75 (use --keep to accept anyway)",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2186.2724,
+            "wing.root_chord_mm": 270.7792,
+            "wing.tip_chord_mm": 72.3984,
+            "wing.break_y_mm": 643.6619,
+            "wing.dihedral_deg": 0.4369,
+            "htail.area_m2": 0.0663,
+            "htail.arm_mm": 713.219,
+            "vtail.area_m2": 0.0404,
+            "fuselage.wall_mm": 2.5748,
+            "propulsion.prop": "APC 11x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 26,
+      "kind": "build",
+      "accepted": false,
+      "score": 147.966,
+      "note": "cma",
+      "reason": "regression: 147.97 < best 158.75 (use --keep to accept anyway)",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2017.9142,
+            "wing.root_chord_mm": 277.9357,
+            "wing.tip_chord_mm": 68.3879,
+            "wing.break_y_mm": 662.7901,
+            "wing.dihedral_deg": 0.8268,
+            "htail.area_m2": 0.08,
+            "htail.arm_mm": 694.9964,
+            "vtail.area_m2": 0.042,
+            "fuselage.wall_mm": 2.217,
+            "propulsion.prop": "APC 11x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 27,
+      "kind": "build",
+      "accepted": false,
+      "score": 0.0,
+      "note": "cma",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2025.2622,
+            "wing.root_chord_mm": 273.6595,
+            "wing.tip_chord_mm": 67.8874,
+            "wing.break_y_mm": 699.1085,
+            "wing.dihedral_deg": 0.9797,
+            "htail.area_m2": 0.0666,
+            "htail.arm_mm": 709.1967,
+            "vtail.area_m2": 0.0317,
+            "fuselage.wall_mm": 2.4889,
+            "propulsion.prop": "APC 12x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 28,
+      "kind": "build",
+      "accepted": false,
+      "score": 158.3505,
+      "note": "cma",
+      "reason": "regression: 158.35 < best 158.75 (use --keep to accept anyway)",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2178.0196,
+            "wing.root_chord_mm": 266.9976,
+            "wing.tip_chord_mm": 60.1557,
+            "wing.break_y_mm": 659.1922,
+            "wing.dihedral_deg": 0.4763,
+            "htail.area_m2": 0.0757,
+            "htail.arm_mm": 630.6239,
+            "vtail.area_m2": 0.0344,
+            "fuselage.wall_mm": 2.3197,
+            "propulsion.prop": "APC 11x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 29,
+      "kind": "build",
+      "accepted": false,
+      "score": 0.0,
+      "note": "cma",
+      "reason": "gate failed",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2274.6614,
+            "wing.root_chord_mm": 279.81,
+            "wing.tip_chord_mm": 78.0428,
+            "wing.break_y_mm": 627.194,
+            "wing.dihedral_deg": 0.3629,
+            "htail.area_m2": 0.0646,
+            "htail.arm_mm": 702.3578,
+            "vtail.area_m2": 0.0456,
+            "fuselage.wall_mm": 2.1617,
+            "propulsion.prop": "APC 11x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    },
+    {
+      "step": 30,
+      "kind": "build",
+      "accepted": false,
+      "score": 153.0411,
+      "note": "cma",
+      "reason": "regression: 153.04 < best 158.75 (use --keep to accept anyway)",
+      "ops": [
+        {
+          "op": "params",
+          "set": {
+            "wing.span_mm": 2072.7548,
+            "wing.root_chord_mm": 281.7128,
+            "wing.tip_chord_mm": 72.7682,
+            "wing.break_y_mm": 681.5677,
+            "wing.dihedral_deg": 0.4743,
+            "htail.area_m2": 0.0682,
+            "htail.arm_mm": 701.7933,
+            "vtail.area_m2": 0.0353,
+            "fuselage.wall_mm": 2.4385,
+            "propulsion.prop": "APC 11x8E",
+            "propulsion.motor": "BrotherHobby Avenger 2816 620KV",
+            "battery.part_number": "6S2P Molicel P42A Li-ion"
+          }
+        }
+      ]
+    }
+  ]
+}

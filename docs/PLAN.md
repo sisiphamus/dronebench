@@ -1,4 +1,6 @@
-# DroneBench — Build Plan
+# DroneBench — original build plan (v0.1, closed-form scoring)
+
+> Historical. The flown evaluation that replaced the closed-form score is described in the README and VALIDATION.md; the design folder format is in DESIGN_FORMAT.md. `falcon_v2` no longer carries planted waste (that is `falcon_v2_padded`).
 
 DroneBench is a benchmark environment for small electric fixed-wing UAVs. You give it a design folder (CAD + parts list), and it returns a score, a pass/fail flight check, and a report on every part: its function, why it is there, whether it is needed, specs, material, tolerances, headroom and regulations. It never suggests changes. An outside agent (Claude Code in the demo, a recommender later) edits the design and re-scores it.
 

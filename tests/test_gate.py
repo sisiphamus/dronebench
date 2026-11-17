@@ -29,6 +29,9 @@ def make_design() -> Design:
         _p("aileron_R", "surface", (0.35, 0.4, 0), role="aileron", parent="wing_R"),
         _p("elevator", "surface", (0.95, 0, 0), role="elevator", parent="htail"),
         _p("rudder", "surface", (0.95, 0, 0.1), role="rudder", parent="vtail"),
+        *[_p(f"hinge_{s}", "hinge", parent=s) for s in ("aileron_L", "aileron_R", "elevator", "rudder")],
+        *[_p(f"link_{s}", "linkage", connects=[sv, s]) for s, sv in (("aileron_L", "servo_ail_L"), ("aileron_R", "servo_ail_R"),
+                                                                  ("elevator", "servo_elev"), ("rudder", "servo_rud"))],
         _p("servo_ail_L", "servo", connects=["aileron_L", "fc"], specs={"torque_kgcm": 2.0, "mass_g": 9}),
         _p("servo_ail_R", "servo", connects=["aileron_R", "fc"], specs={"torque_kgcm": 2.0, "mass_g": 9}),
         _p("servo_elev", "servo", connects=["elevator", "fc"], specs={"torque_kgcm": 2.0, "mass_g": 9}),
@@ -86,7 +89,7 @@ def check(g, name):
 
 
 NAMES = ["lifting_surfaces", "static_margin", "stall_margin", "climb", "spar", "tail_volume", "servo_torque",
-         "motor_current", "esc_current", "battery_current", "power_chain", "control_chain", "payload", "clearance"]
+         "motor_current", "esc_current", "battery_current", "power_chain", "control_chain", "payload", "clearance", "airframe_connected", "harness", "fuselage_continuous", "shell_structure", "battery_fit", "mtow"]
 
 
 def test_all_pass():
@@ -160,6 +163,20 @@ def test_control_chain():
     d = make_design()
     del d.parts["rx"]
     assert "no receiver" in check(gate_of(d), "control_chain").detail
+    d = make_design()
+    del d.parts["hinge_rudder"]
+    c = check(gate_of(d), "control_chain")
+    assert not c.passed and "rudder has no hinge" in c.detail    # a surface with nothing holding it on is not a design
+    d = make_design()
+    del d.parts["link_elevator"]
+    c = check(gate_of(d), "control_chain")
+    assert not c.passed and "elevator has no linkage" in c.detail    # a servo that moves nothing
+    d = make_design()
+    del d.parts["gps_2"]
+    assert check(gate_of(d), "control_chain").passed        # one navigation fix is enough
+    del d.parts["gps"]
+    c = check(gate_of(d), "control_chain")
+    assert not c.passed and "no GPS" in c.detail            # the missions are navigated; the simulator would fly without it
     d = make_design()
     d.parts["servo_rud"].connects = ["rudder"]  # not wired to the FC
     assert "not linked to the FC" in check(gate_of(d), "control_chain").detail

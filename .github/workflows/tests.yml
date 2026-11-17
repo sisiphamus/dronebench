@@ -1,0 +1,43 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv venv --python 3.12 && uv pip install -e ".[dev]"
+      - run: .venv/bin/python -m pytest -q
+
+  replay-results:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v5
+      - name: List result files changed by the pull request
+        run: git -c core.quotepath=off diff -z --name-only --no-renames --diff-filter=AM origin/${{ github.base_ref }}...HEAD -- 'results/*.json' > "$RUNNER_TEMP/changed.list"
+      - name: Check them with the base branch's code, not the pull request's
+        run: |
+          # The checker is the base branch's copy of the code, so a pull request cannot change how it is judged.
+          git worktree add "$RUNNER_TEMP/base" origin/${{ github.base_ref }}
+          (cd "$RUNNER_TEMP/base" && uv venv --python 3.12 && uv pip install -e .)
+          checker="$RUNNER_TEMP/base/.venv/bin/dronebench"
+          if ! "$checker" verify --help > /dev/null 2>&1; then
+            echo "The base branch has no verify command yet (this is the pull request that adds it); using this pull request's code once."
+            uv venv --python 3.12 && uv pip install -e .
+            checker="$PWD/.venv/bin/dronebench"
+          fi
+          status=0
+          while IFS= read -r -d '' f; do
+            echo "== $f"
+            "$checker" verify --standard "$f" || status=1
+          done < "$RUNNER_TEMP/changed.list"
+          exit $status

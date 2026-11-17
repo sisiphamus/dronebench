@@ -13,7 +13,7 @@ from test_viewer import fake_design, load_sample
 def fake_eval(monkeypatch):
     calls = []
 
-    def _eval(design_dir, preset=None, necessity=True):
+    def _eval(design_dir, preset=None, necessity=True, flown=False):
         calls.append((str(design_dir), preset, necessity))
         rep = load_sample()
         if preset:
@@ -152,3 +152,76 @@ def test_runs_append_load(tmp_path):
     assert recs[0]["ops"][0]["id"] == "gps_2" and recs[0]["metrics"]["wh_per_km"] == 1.52
     assert {"timestamp", "design", "preset", "score", "gate_pass", "failures", "mass_g"} <= set(recs[0])
     assert next_step(p, "claude") == 11
+
+
+def test_init_start_numbers_reach_the_workspace(monkeypatch, capsys):
+    from dronebench import workspace as W
+    seen = {}
+
+    def fake_init(ws, fixture, preset, steps, force, necessity, fidelity, sets=None):
+        seen.update(fixture=fixture, sets=sets)
+        return {"fixture": fixture, "preset": "endurance", "baseline": 100.0, "unit": "min", "max_steps": steps}
+
+    monkeypatch.setattr(W, "init", fake_init)
+    assert cli.main(["init", "w", "--set", "wing.span_mm=1900", "--set", "propulsion.prop=APC 12x6E"]) == 0
+    assert seen["sets"] == {"wing.span_mm": 1900, "propulsion.prop": "APC 12x6E"}
+    assert "baseline 100.00" in capsys.readouterr().out
+
+
+def test_run_with_a_command_uses_it_as_the_agent(monkeypatch):
+    from dronebench import agents
+    seen = {}
+    monkeypatch.setattr(agents, "run_command", lambda ws, cmd, label="agent", say=print: seen.update(ws=ws, cmd=cmd, label=label) or 5)
+    assert cli.main(["run", "w", "--cmd", "python my_agent.py", "--label", "mine"]) == 5
+    assert seen == {"ws": "w", "cmd": "python my_agent.py", "label": "mine"}
+
+
+def test_run_label_defaults_to_the_command_name(monkeypatch):
+    from dronebench import agents
+    seen = {}
+    monkeypatch.setattr(agents, "run_command", lambda ws, cmd, label="agent", say=print: seen.update(label=label) or 0)
+    for line, label in (("python my_agent.py --fast", "my_agent"), ("python3 -u agents/solver.py", "solver"),
+                        ("uv run tool.py x", "tool"), ("python -m mypkg.agent", "mypkg.agent"),
+                        ("./run.sh", "run.sh"), ("my-agent --budget 5", "my-agent"),
+                        ("FOO=1 python a.py", "a"), ("python -W ignore b.py", "b")):
+        assert cli.main(["run", "w", "--cmd", line]) == 0
+        assert seen["label"] == label, line
+
+
+def test_verify_a_file_that_is_not_text_is_a_usage_error(tmp_path):
+    f = tmp_path / "r.json"
+    f.write_bytes(b"\xff\xfe\x00bad")
+    assert cli.main(["verify", str(f)]) == 2
+
+
+def test_run_with_an_empty_or_broken_command_is_a_usage_error(monkeypatch, capsys):
+    from dronebench import agents
+    monkeypatch.setattr(agents, "run_command", lambda *a, **k: pytest.fail("must not run"))
+    monkeypatch.setattr(agents, "run_random", lambda *a, **k: pytest.fail("must not fall back to the random agent"))
+    assert cli.main(["run", "w", "--cmd", ""]) == 2
+    assert cli.main(["run", "w", "--cmd", "echo 'unclosed"]) == 2
+    assert capsys.readouterr().err.count("--cmd") >= 1
+
+
+def test_verify_standard_flag_reaches_the_replay(tmp_path, monkeypatch, capsys):
+    from dronebench import results
+    seen = {}
+
+    def fake(r, design=None, standard=False):
+        seen["standard"] = standard
+        return {"ok": False, "replayed": 0, "baseline": None, "best": None,
+                "mismatches": [{"what": "standard task", "claimed": "-", "replayed": "-", "why": "fixture is 'x'"}]}
+
+    monkeypatch.setattr(results, "verify_result", fake)
+    f = tmp_path / "r.json"
+    f.write_text(json.dumps({"best": 1}))
+    assert cli.main(["verify", str(f), "--standard"]) == 3
+    assert seen["standard"] is True and "NOT VERIFIED" in capsys.readouterr().out
+
+
+def test_result_warns_about_edits_that_cannot_be_replayed(tmp_path, monkeypatch, capsys):
+    from dronebench import results
+    monkeypatch.setattr(results, "export_result", lambda ws: {
+        "steps": [{"step": 3, "accepted": True, "ops": [{"op": "add", "cad_file": "/x.stl"}]}]})
+    assert cli.main(["result", "w"]) == 0
+    assert "step 3" in capsys.readouterr().err

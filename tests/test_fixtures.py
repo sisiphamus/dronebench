@@ -41,7 +41,7 @@ def _mass_g(name, scale=1e-3):
     return tot
 
 
-@pytest.mark.parametrize("name", ["falcon_v2", "trainer", "bad_tail", "step_mix", "third_party"])
+@pytest.mark.parametrize("name", ["falcon_v2", "falcon_v2_padded", "trainer", "bad_tail", "step_mix", "third_party"])
 def test_design_folder_valid(name):
     d = FIX / name
     parts = _bom(name)
@@ -71,13 +71,28 @@ def test_falcon_meshes_watertight():
 
 
 def test_falcon_mass():
-    assert 3300 <= _mass_g("falcon_v2") <= 3700
+    assert 3000 <= _mass_g("falcon_v2") <= 3300
+    assert 3300 <= _mass_g("falcon_v2_padded") <= 3700
+
+
+WASTE = ("ballast_nose", "gps_2", "spar_doubler", "fairing_L", "fairing_R", "fuse_armor")
+
+
+def test_falcon_has_no_planted_waste():
+    """The default Falcon is a plain design: nothing in it exists only to be removed."""
+    parts = {p["id"] for p in _bom("falcon_v2")}
+    assert not parts & set(WASTE)
+
+
+def test_padded_falcon_is_the_clean_one_plus_waste():
+    clean = {p["id"] for p in _bom("falcon_v2")}
+    padded = {p["id"] for p in _bom("falcon_v2_padded")}
+    assert padded - clean == set(WASTE)
+    assert clean <= padded
 
 
 def test_falcon_contents():
     parts = {p["id"]: p for p in _bom("falcon_v2")}
-    for waste in ("ballast_nose", "gps_2", "spar_doubler", "fairing_L", "fairing_R", "fuse_armor"):
-        assert waste in parts
     assert "remote_id" not in {p["type"] for p in parts.values()}
     servos = [p for p in parts.values() if p["type"] == "servo"]
     assert len(servos) == 7

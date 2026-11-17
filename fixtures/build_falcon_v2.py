@@ -396,7 +396,7 @@ def build(params: dict, out: Path, verbose=True):
     A.add("wiring_signal", "wire", part_number="servo extensions + signal leads",
           specs={"mass_g": 45, "gauge_awg": 26, "cg_mm": mm3((x_le + 0.25, 0, z_root))})
 
-    # ---------------- seeded waste
+    # ---------------- planted waste (off in falcon_v2, on in falcon_v2_padded)
     wst = P.get("waste", {})
     if wst.get("ballast_nose"):
         A.add("ballast_nose", "ballast", mk.box((0.030, 0.024, 0.0142), (0.058, 0, ctop + 0.0072)),
@@ -459,7 +459,7 @@ edit params.yaml and rebuild. Frame: mm, x aft (nose at 0), y right, z up.
 {sm_note}
 AUW estimate (dronebench.materials.part_mass_g): {total:.0f} g
 specs.fits lists parts this part is allowed to sit inside (declared fits for the clearance check)."""
-    mission = {"preset": "endurance", "payload_ids": ["camera"], "cruise_kmh": 55,
+    mission = {"preset": "endurance", "payload_ids": ["camera"], "cruise_kmh": 55, "max_mass_kg": 7.0,
                "frame": {"units": "mm", "forward": "-x", "up": "+z"}}
     A.write(out, mission, header)
     info = {"S": S, "mac": mac, "x_le_mac": x_le_mac, "x_ac": x_ac_w, "mass_g": total, "cg": cg,

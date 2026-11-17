@@ -10,7 +10,7 @@ import numpy as np
 from .assemble import LinkIndex, edge_links, pair_motors, part_mass_g, spec
 from .model import AeroGeometry, Design, GateResult, MassProps, Material, Part, PhysicsResult
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 SERVO_TYPES = ("servo",)
 
 
